@@ -1,0 +1,319 @@
+{
+  "intents": [
+    {
+      "inp": [
+        "Hello!",
+        "Hi!",
+        "Hey!",
+        "Hello there!",
+        "Hi there!"
+      ],
+      "out": [
+        "Hello! How are you?",
+        "Hey! How are you?",
+        "Hi! How are you?"
+      ]
+    },
+    {
+      "inp": [
+        "Nothing.",
+        "Nope.",
+        "No.",
+        "Nah",
+        "nononononononono",
+        "noooooooooooo"
+      ],
+      "out": [
+        "Ok.",
+        "Okay.",
+        "Sure."
+      ]
+    },
+    {
+      "inp": [
+        "Hello! How are you?",
+        "Hi! How are you?",
+        "Hey! How you doing?"
+      ],
+      "out": [
+        "Hello! I'm pretty good. What about you?",
+        "Hey!  I'm pretty good. What about you?",
+        "Hi! I'm pretty good. You?"
+      ]
+    },
+    {
+      "inp": [
+        "I'm pretty good.",
+        "Pretty good.",
+        "I'm K.",
+        "I'm doing fine."
+      ],
+      "out": [
+        "Nice. How can I help you today?",
+        "Ok! How can I help you?",
+        "Great. How can I help you today?"
+      ]
+    },
+    {
+      "inp": [
+        "I'm good. I need help.",
+        "I'm fine, but I need help",
+        "I'm k but need help",
+        "I really need some help and I'm fine."
+      ],
+      "out": [
+        "Ok. How can I help you?",
+        "Umm... Great. How can I help?"
+      ]
+    },
+    {
+      "inp": [
+        "I'm pretty good. You?",
+        "I am ok. Wbu?",
+        "Yea I'm good. What about you?",
+        "I'm feeling pretty good."
+      ],
+      "out": [
+        "Okay. How can I help you?",
+        "Ok. How can I help?",
+        "Ok. How can I help you today?"
+      ]
+    },
+    {
+      "inp": [
+        "I really need help.",
+        "I need some help",
+        "Help me plz.",
+        "Please help me."
+      ],
+      "out": [
+        "Okay. How can I help you?",
+        "Ok. How can I help?",
+        "Ok. How can I help you today?"
+      ]
+    },
+    {
+      "inp": [
+        "I don't really need help.",
+        "I don't need help right now",
+        "plz don't help me",
+        "I don't need help right now. Thanks."
+      ],
+      "out": [
+        "Great. Tell me if you need anything.",
+        "Ok.",
+        "Okay then."
+      ]
+    },
+    {
+      "inp": [
+        "I don't want to talk about it.",
+        "I don't feel like talking.",
+        "Thanks, but I don't feel like talking.",
+        "Don't want to talk."
+      ],
+      "out": [
+        "Umm... Ok! Tell me if you need anything.",
+        "Ok then. Tell me If you need anything.",
+        "K. Tell me if you need help."
+      ]
+    },
+    {
+      "inp": [
+        "Close chrome.",
+        "Close everything.",
+        "Close chrome please",
+        "Got to go. Close Chrome.",
+        "close chrome",
+        "close the browser please",
+        "close the browser"
+      ],
+      "out": [
+        "Great. I'll close it.",
+        "Ok.",
+        "Okay then."
+      ],
+      "act": "browser.close( *input* )"
+    },
+    {
+      "inp": [
+        "boi"
+      ],
+      "out": [
+        "\u1D34\u1D49 \u207F\u1D49\u1D49\u1D48 \u02E2\u1D52\u1D50\u1D49 \u1D50\u1DA6\u02E1\u1D4F",
+        "What happened now?",
+        "Umm... Okay."
+      ]
+    },
+    {
+      "inp": [
+        "Javies is dumb.",
+        "Javier is really dumb.",
+        "Javier is extremely dumb."
+      ],
+      "out": [
+        "Eh, not THAT dumb. 2/10",
+        "Not THAT dumb... Maybe a 2/10."
+      ]
+    },
+    {
+      "inp": [
+        "Javies is smart.",
+        "Javier is really smart.",
+        "Javier is extremely smart."
+      ],
+      "out": [
+        "Nope. Too far.",
+        "Too far. Way to far.",
+        "NO! Way too far.",
+        "NO! Too far. WAY too far."
+      ]
+    },
+    {
+      "inp": [
+        "bye!",
+        "Goodbye!",
+        "See u later.",
+        "See you later!",
+        "close urself",
+        "close yourself please",
+        "please go away"
+      ],
+      "out": [
+        "Okay!",
+        "K. Bye!",
+        "Ok. Bye!"
+      ],
+      "act": "self.close( *input* )"
+    },
+    {
+      "inp": [
+        "Fuck you.",
+        "FUCK you.",
+        "You know what? Fuck you.",
+        "FUCK YOU!! REALLY!",
+        "Fuck you",
+        "Fuk u",
+        "F**k u",
+        "F**k you"
+      ],
+      "out": [
+        "Fuck me.",
+        "Ok. Fuck me.",
+        "K. Fuck me."
+      ]
+    },
+    {
+      "inp": [
+        "Suck my dick.",
+        "Suck ma dick.",
+        "Suck ma cock.",
+        "Lick ma dick",
+        "Suck me sideways."
+      ],
+      "out": [
+        "I'd rather not.",
+        "I would not like to do so.",
+        "Umm... No.",
+        "Nope."
+      ]
+    },
+    {
+      "inp": [
+        "What's the meaning of life?",
+        "What is the meaning of life?"
+      ],
+      "out": [
+        "42, I think.",
+        "I believe it's 42, but I'm not sure.",
+        "I think it's 42."
+      ]
+    },
+    {
+      "inp": [
+        "Please open *",
+        "open *",
+        "open * please",
+        "Go ahead and open *"
+      ],
+      "out": [
+        "Ok.",
+        "Okay.",
+        "Sure.",
+        "Ok. Opening.",
+        "Okay. Opening.",
+        "Sure. Opening.",
+        "Ok, I'll open it.",
+        "Okay, I'll open it up.",
+        "Okay, I'll open it."
+      ],
+      "act": "browser.open( *input* )"
+    },
+    {
+      "inp": [
+        "What's your name?",
+        "What is your name?",
+        "What are you called?",
+        "Identify yourself."
+      ],
+      "out": [
+        "My name is Pix-L. Hi!",
+        "I'm Pix-L. Hello!",
+        "I am Pix-L. Hey!"
+      ]
+    }
+  ],
+  "fallback": [
+    "Sorry, I didn't get that.",
+    "Sorry, but I don't understand.",
+    "Umm... I didn't get that.",
+    "Umm... Sorry, but I didn't get that.",
+    "Umm... Sorry, but I don't understand."
+  ],
+  "websites": [
+    {
+      "nam": "codepen",
+      "url": "https://codepen.io/"
+    },
+    {
+      "nam": "my profile on codepen",
+      "url": "https://codepen.io/codeiguess"
+    },
+    {
+      "nam": "youtube",
+      "url": "https://www.youtube.com/"
+    },
+    {
+      "nam": "mail",
+      "url": "https://mail.google.com/"
+    },
+    {
+      "nam": "your proyect on codepen",
+      "url": "https://codepen.io/codeguess/pen/oJrvLy?editors=1100"
+    },
+    {
+      "nam": "twitter",
+      "url": "https://twitter.com/"
+    },
+    {
+      "nam":"relato de un naufrago",
+      "url": "file:///C:/Users/efrag/Downloads/relato-de-un-naufrago.pdf"
+    },
+    {
+      "nam":"moodle",
+      "url": "http://moodle.portaldaskalos.net/"
+    },
+    {
+      "nam":"itunes",
+      "url": "itunes://"
+    },
+    {
+      "nam":"minecraft",
+      "url": "minecraft://"
+    },
+    {
+      "nam":"netflix",
+      "url": "netflix://"
+    }
+  ]
+}
