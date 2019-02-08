@@ -336,6 +336,20 @@
         "Umm... No.",
         "No... sorry."
       ]
+    },
+    {
+      "inp": [
+        "Do you fit inside me",
+        "do u fit inside me",
+        "you think you fit inside me"
+      ],
+      "out": [
+        "Umm... I don't think so...",
+        "I'd rather not.",
+        "Umm... No.",
+        "No... sorry.",
+        "I don't think I do."
+      ]
     }
   ],
   "fallback": [
