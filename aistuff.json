@@ -3,6 +3,9 @@
     {
       "inp": [
         "Hello!",
+        "hello",
+        "hey",
+        "hi",
         "Hi!",
         "Hey!",
         "Hello there!",
@@ -71,12 +74,18 @@
         "I'm pretty good. You?",
         "I am ok. Wbu?",
         "Yea I'm good. What about you?",
-        "I'm feeling pretty good."
+        "I'm feeling pretty good.",
+        "I'm feeling pretty good. How about you?"
       ],
       "out": [
-        "Okay. How can I help you?",
-        "Ok. How can I help?",
-        "Ok. How can I help you today?"
+        "I'm feeling great! How can I help you?",
+        "I'm great. How can I help?",
+        "I am great. How can I help you today?",
+        "I am feeling great! How can I help you?",
+        "I am great. How can I help?",
+        "I'm great. How can I help you today?",
+        "I'm good. How can I help you?",
+        "I am good. How can I help?"
       ]
     },
     {
@@ -103,6 +112,58 @@
         "Great. Tell me if you need anything.",
         "Ok.",
         "Okay then."
+      ]
+    },
+    {
+      "inp": [
+        "Fuck me.",
+        "Fuk me!",
+        "please fuck me",
+        "fuck me plz"
+      ],
+      "out": [
+        "I don't really have a.. You know.",
+        "I really don't have a.. You know.",
+        "I don't have... you know..."
+      ]
+    },
+    {
+      "inp": [
+        "How are you?",
+        "how r u",
+        "how u feeling",
+        "how are you feeling"
+      ],
+      "out": [
+        "I'm pretty good, actually.",
+        "I am feeling pretty good.",
+        "I'm great!"
+      ]
+    },
+    {
+      "inp": [
+        "Good.",
+        "great",
+        "Great!",
+        "good"
+      ],
+      "out": [
+        "Yeah.",
+        "Yep."
+      ]
+    },
+    {
+      "inp": [
+        "why not?",
+        "but why not???",
+        "why not",
+        "But why not?"
+      ],
+      "out": [
+        "Because I said so.",
+        "I said so.",
+        "Just because.",
+        "Just because I said so."
       ]
     },
     {
@@ -261,6 +322,20 @@
         "I'm Pix-L. Hello!",
         "I am Pix-L. Hey!"
       ]
+    },
+    {
+      "inp": [
+        "Can you do me from behind?",
+        "please do me from behind",
+        "can do me from behind",
+        "plz do me from behind"
+      ],
+      "out": [
+        "Umm... How about no?",
+        "I'd rather not.",
+        "Umm... No.",
+        "No... sorry."
+      ]
     }
   ],
   "fallback": [
@@ -310,6 +385,10 @@
     {
       "nam":"minecraft",
       "url": "minecraft://"
+    },
+    {
+      "nam":"pornhub",
+      "url": "https://www.pornhub.com/"
     },
     {
       "nam":"netflix",
