@@ -363,6 +363,20 @@
         "Umm... I guess, if you pay me enough.",
         "No... Unless you pay me enough."
       ]
+    },
+    {
+      "inp": [
+        "anal sideways?",
+        "should we do anal sideways?",
+        "can you suck me sideways".
+        "sideways"
+      ],
+      "out": [
+        "Umm... If you pay me enough.",
+        "If you pay me enough I guess...",
+        "Umm... I guess, if you pay me enough.",
+        "No... Unless you pay me enough."
+      ]
     }
   ],
   "fallback": [
