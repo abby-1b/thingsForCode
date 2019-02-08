@@ -377,6 +377,18 @@
         "Umm... I guess, if you pay me enough.",
         "No... Unless you pay me enough."
       ]
+    },
+    {
+      "inp": [
+        "i came orange juice",
+        "do you cum orange juice"
+      ],
+      "out": [
+        "no",
+        "NO",
+        "No.",
+        "No..."
+      ]
     }
   ],
   "fallback": [
