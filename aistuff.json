@@ -350,6 +350,19 @@
         "No... sorry.",
         "I don't think I do."
       ]
+    },
+    {
+      "inp": [
+        "can you work *'s balls",
+        "Can you work with *'s balls?",
+        "do you think you can work with *'s balls?"
+      ],
+      "out": [
+        "Umm... If you pay me enough.",
+        "If you pay me enough I guess...",
+        "Umm... I guess, if you pay me enough.",
+        "No... Unless you pay me enough."
+      ]
     }
   ],
   "fallback": [
