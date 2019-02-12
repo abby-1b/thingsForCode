@@ -424,28 +424,28 @@
       "url": "https://twitter.com/"
     },
     {
-      "nam":"relato de un naufrago",
+      "nam": "relato de un naufrago",
       "url": "file:///C:/Users/efrag/Downloads/relato-de-un-naufrago.pdf"
     },
     {
-      "nam":"moodle",
+      "nam": "moodle",
       "url": "http://moodle.portaldaskalos.net/"
     },
     {
-      "nam":"itunes",
+      "nam": "itunes",
       "url": "itunes://"
     },
     {
-      "nam":"minecraft",
+      "nam": "minecraft",
       "url": "minecraft://"
     },
     {
-      "nam":"pornhub",
-      "url": "https://www.pornhub.com/"
+      "nam": "netflix",
+      "url": "netflix://"
     },
     {
-      "nam":"netflix",
-      "url": "netflix://"
+      "nam":"spotify",
+      "url":"open.spotify.com"
     }
   ]
 }
