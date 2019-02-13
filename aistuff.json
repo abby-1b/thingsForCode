@@ -389,6 +389,36 @@
         "No.",
         "No..."
       ]
+    },
+    {
+      "inp": [
+        "please play * on spotify",
+        "play some *",
+        "please play some *",
+        "play *",
+        "please play *",
+        "please play * on cast",
+        "play some * on cast",
+        "please play some * on cast",
+        "play * on cast",
+        "please play * on cast",
+        "please cast *",
+        "play cast *",
+        "please cast some *",
+        "play *",
+        "please cast *"
+      ],
+      "out": [
+        "Ok.",
+        "Okay.",
+        "Sure.",
+        "Ok. Playing.",
+        "Okay. Playing.",
+        "Sure. Playing.",
+        "Ok, I'll play it.",
+        "Okay, I'll play it."
+      ],
+      "act": "browser.castMusic( *input* )"
     }
   ],
   "fallback": [
