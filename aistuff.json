@@ -406,7 +406,9 @@
         "play cast *",
         "please cast some *",
         "play *",
-        "please cast *"
+        "please cast *",
+        "cast something on Spotify",
+        "cast anything on spotify"
       ],
       "out": [
         "Ok.",
