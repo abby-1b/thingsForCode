@@ -116,19 +116,6 @@
     },
     {
       "inp": [
-        "Fuck me.",
-        "Fuk me!",
-        "please fuck me",
-        "fuck me plz"
-      ],
-      "out": [
-        "I don't really have a.. You know.",
-        "I really don't have a.. You know.",
-        "I don't have... you know..."
-      ]
-    },
-    {
-      "inp": [
         "How are you?",
         "how r u",
         "how u feeling",
@@ -208,30 +195,6 @@
     },
     {
       "inp": [
-        "Javies is dumb.",
-        "Javier is really dumb.",
-        "Javier is extremely dumb."
-      ],
-      "out": [
-        "Eh, not THAT dumb. 2/10",
-        "Not THAT dumb... Maybe a 2/10."
-      ]
-    },
-    {
-      "inp": [
-        "Javies is smart.",
-        "Javier is really smart.",
-        "Javier is extremely smart."
-      ],
-      "out": [
-        "Nope. Too far.",
-        "Too far. Way to far.",
-        "NO! Way too far.",
-        "NO! Too far. WAY too far."
-      ]
-    },
-    {
-      "inp": [
         "bye!",
         "Goodbye!",
         "See u later.",
@@ -246,23 +209,6 @@
         "Ok. Bye!"
       ],
       "act": "self.close( *input* )"
-    },
-    {
-      "inp": [
-        "Fuck you.",
-        "FUCK you.",
-        "You know what? Fuck you.",
-        "FUCK YOU!! REALLY!",
-        "Fuck you",
-        "Fuk u",
-        "F**k u",
-        "F**k you"
-      ],
-      "out": [
-        "Fuck me.",
-        "Ok. Fuck me.",
-        "K. Fuck me."
-      ]
     },
     {
       "inp": [
@@ -312,6 +258,7 @@
     },
     {
       "inp": [
+        "Who are you?"
         "What's your name?",
         "What is your name?",
         "What are you called?",
@@ -350,77 +297,6 @@
         "No... sorry.",
         "I don't think I do."
       ]
-    },
-    {
-      "inp": [
-        "can you work *'s balls",
-        "Can you work with *'s balls?",
-        "do you think you can work with *'s balls?"
-      ],
-      "out": [
-        "Umm... If you pay me enough.",
-        "If you pay me enough I guess...",
-        "Umm... I guess, if you pay me enough.",
-        "No... Unless you pay me enough."
-      ]
-    },
-    {
-      "inp": [
-        "anal sideways?",
-        "should we do anal sideways?",
-        "can you suck me sideways",
-        "sideways"
-      ],
-      "out": [
-        "Umm... If you pay me enough.",
-        "If you pay me enough I guess...",
-        "Umm... I guess, if you pay me enough.",
-        "No... Unless you pay me enough."
-      ]
-    },
-    {
-      "inp": [
-        "i came orange juice",
-        "do you cum orange juice"
-      ],
-      "out": [
-        "no",
-        "NO",
-        "No.",
-        "No..."
-      ]
-    },
-    {
-      "inp": [
-        "please play * on spotify",
-        "play some *",
-        "please play some *",
-        "play *",
-        "please play *",
-        "please play * on cast",
-        "play some * on cast",
-        "please play some * on cast",
-        "play * on cast",
-        "please play * on cast",
-        "please cast *",
-        "play cast *",
-        "please cast some *",
-        "play *",
-        "please cast *",
-        "cast something on Spotify",
-        "cast anything on spotify"
-      ],
-      "out": [
-        "Ok.",
-        "Okay.",
-        "Sure.",
-        "Ok. Playing.",
-        "Okay. Playing.",
-        "Sure. Playing.",
-        "Ok, I'll play it.",
-        "Okay, I'll play it."
-      ],
-      "act": "browser.castMusic( *input* )"
     }
   ],
   "fallback": [
@@ -434,10 +310,6 @@
     {
       "nam": "codepen",
       "url": "https://codepen.io/"
-    },
-    {
-      "nam": "my profile on codepen",
-      "url": "https://codepen.io/codeiguess"
     },
     {
       "nam": "youtube",
@@ -454,14 +326,6 @@
     {
       "nam": "twitter",
       "url": "https://twitter.com/"
-    },
-    {
-      "nam": "relato de un naufrago",
-      "url": "file:///C:/Users/efrag/Downloads/relato-de-un-naufrago.pdf"
-    },
-    {
-      "nam": "moodle",
-      "url": "http://moodle.portaldaskalos.net/"
     },
     {
       "nam": "itunes",
