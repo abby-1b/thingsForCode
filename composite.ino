@@ -1,9 +1,14 @@
-#define HS D3
-#define VS D4
-#define VF D5
-#define VD D6
+// D3
+#define HS 0
+// D5
+#define VS 14
+// D6
+#define VF 12
+// D7
+#define VD 13
 
 int m;
+
 void setup() {
   pinMode(HS, OUTPUT);
   pinMode(VS, OUTPUT);
