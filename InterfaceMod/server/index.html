@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Mod!</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name = "viewport" content = "width=device-width, minimum-scale=1.0, maximum-scale = 1.0, user-scalable = no">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            body, html {
+                width: 100%;
+                height: 100%;
+                padding: 0;
+                margin: 0;
+                overflow: hidden;
+            }
+            img {
+                image-rendering: optimizeSpeed;             /*                     */
+                image-rendering: -moz-crisp-edges;          /* Firefox             */
+                image-rendering: -o-crisp-edges;            /* Opera               */
+                image-rendering: -webkit-optimize-contrast; /* Chrome (and Safari) */
+                image-rendering: pixelated;                 /* Chrome as of 2019   */
+                image-rendering: optimize-contrast;         /* CSS3 Proposed       */
+                -ms-interpolation-mode: nearest-neighbor;   /* IE8+                */
+            }
+            #worldContainer {
+                width: 200%;
+                height: 200%;
+                transform-origin: 25% 25%;
+                transform: translate(-25%, -25%);
+
+                background-image: linear-gradient(45deg, #ddd 25%, transparent 25%), linear-gradient(-45deg, #ddd 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ddd 75%), linear-gradient(-45deg, transparent 75%, #ddd 75%);
+                background-size: 20px 20px;
+                background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+
+                transition: transform .25s;
+            }
+            #player {
+                position: absolute;
+                width: calc(25px * 2);
+                height: calc(16px * 2);
+                padding: 0;
+                margin: 0;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+
+                transition: transform .2s;
+                z-index: 1000;
+            }
+            #icons {
+                position: absolute;
+                width: 0;
+                height: 0;
+                padding: 0;
+                margin: 0;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+            }
+            .icon {
+                width: 50px;
+                height: 50px;
+                position: absolute;
+                transform: translate(-50%,-50%);
+                transition: transform .2s;
+            }
+            .village { content: url("icons/village.png"); }
+            .temple { content: url("icons/temple.png"); }
+            .portal { content: url("icons/portal.png"); }
+            .fortress { content: url("icons/fortress.png"); }
+            .stronghold { content: url("icons/stronghold.png"); }
+        </style>
+    </head>
+    <body>
+        <div id="worldContainer">
+            <img src="player.png" id="player"/>
+            <div id="icons"></div>
+        </div>
+        <script src="/script.js" async defer></script>
+    </body>
+</html>
