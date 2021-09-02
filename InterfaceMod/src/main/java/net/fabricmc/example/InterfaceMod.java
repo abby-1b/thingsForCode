@@ -3,13 +3,10 @@ package net.fabricmc.example;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.api.ClientModInitializer;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.gen.feature.StructureFeature;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -83,10 +80,12 @@ public class InterfaceMod implements ModInitializer {
                     BlockPos temple = this.nearestStructure(0, server, player, StructureFeature.DESERT_PYRAMID);
                     BlockPos portal = this.nearestStructure(0, server, player, StructureFeature.RUINED_PORTAL);
                     BlockPos stronghold = this.nearestStructure(0, server, player, StructureFeature.STRONGHOLD);
+                    BlockPos shipwreck = this.nearestStructure(0, server, player, StructureFeature.SHIPWRECK);
                     structureLocations += ",Village:" + village.getX() + ":" + village.getZ();
                     structureLocations += ",Temple:" + temple.getX() + ":" + temple.getZ();
                     structureLocations += ",Portal:" + portal.getX() + ":" + portal.getZ();
                     structureLocations += ",Stronghold:" + stronghold.getX() + ":" + stronghold.getZ();
+                    structureLocations += ",Shipwreck:" + shipwreck.getX() + ":" + shipwreck.getZ();
 				} else { // The End
                     structureLocations += ",nd";
 				}

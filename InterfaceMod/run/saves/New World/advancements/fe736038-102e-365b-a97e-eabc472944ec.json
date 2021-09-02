@@ -1,0 +1,432 @@
+{
+  "minecraft:recipes/decorations/light_blue_bed_from_white_bed": {
+    "criteria": {
+      "has_bed": "2021-09-01 14:29:27 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/misc/iron_nugget_from_blasting": {
+    "criteria": {
+      "has_iron_sword": "2021-09-01 14:21:57 -0400"
+    },
+    "done": true
+  },
+  "minecraft:adventure/kill_a_mob": {
+    "criteria": {
+      "minecraft:blaze": "2021-09-01 14:25:19 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/magenta_bed_from_white_bed": {
+    "criteria": {
+      "has_bed": "2021-09-01 14:29:27 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/brewing/blaze_powder": {
+    "criteria": {
+      "has_blaze_rod": "2021-09-01 14:25:41 -0400"
+    },
+    "done": true
+  },
+  "minecraft:end/root": {
+    "criteria": {
+      "entered_end": "2021-09-01 14:28:30 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/orange_bed_from_white_bed": {
+    "criteria": {
+      "has_bed": "2021-09-01 14:29:27 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/combat/diamond_chestplate": {
+    "criteria": {
+      "has_diamond": "2021-09-01 14:21:55 -0400"
+    },
+    "done": true
+  },
+  "minecraft:nether/obtain_blaze_rod": {
+    "criteria": {
+      "blaze_rod": "2021-09-01 14:25:41 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/tools/diamond_axe": {
+    "criteria": {
+      "has_diamond": "2021-09-01 14:21:55 -0400"
+    },
+    "done": true
+  },
+  "minecraft:nether/root": {
+    "criteria": {
+      "entered_nether": "2021-09-01 14:22:49 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/brewing/magma_cream": {
+    "criteria": {
+      "has_blaze_powder": "2021-09-01 14:28:02 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/building_blocks/end_stone_bricks_from_end_stone_stonecutting": {
+    "criteria": {
+      "has_end_stone": "2021-09-01 14:28:49 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/building_blocks/end_stone_brick_stairs_from_end_stone_stonecutting": {
+    "criteria": {
+      "has_end_stone": "2021-09-01 14:28:49 -0400"
+    },
+    "done": true
+  },
+  "minecraft:adventure/adventuring_time": {
+    "criteria": {
+      "minecraft:forest": "2021-09-01 14:18:58 -0400",
+      "minecraft:mountains": "2021-09-01 14:26:33 -0400",
+      "minecraft:river": "2021-09-01 14:19:30 -0400",
+      "minecraft:wooded_hills": "2021-09-01 14:33:55 -0400",
+      "minecraft:swamp": "2021-09-01 14:20:50 -0400",
+      "minecraft:plains": "2021-09-01 14:19:31 -0400"
+    },
+    "done": false
+  },
+  "minecraft:recipes/combat/diamond_leggings": {
+    "criteria": {
+      "has_diamond": "2021-09-01 14:21:55 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/purple_bed_from_white_bed": {
+    "criteria": {
+      "has_bed": "2021-09-01 14:29:27 -0400"
+    },
+    "done": true
+  },
+  "minecraft:nether/find_fortress": {
+    "criteria": {
+      "fortress": "2021-09-01 14:24:15 -0400"
+    },
+    "done": true
+  },
+  "minecraft:husbandry/root": {
+    "criteria": {
+      "consumed_item": "2021-09-01 14:29:58 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/chest": {
+    "criteria": {
+      "has_lots_of_items": "2021-09-01 14:22:26 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/transportation/birch_boat": {
+    "criteria": {
+      "in_water": "2021-09-01 14:27:00 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/building_blocks/end_stone_brick_slab_from_end_stone_stonecutting": {
+    "criteria": {
+      "has_end_stone": "2021-09-01 14:28:49 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/black_bed_from_white_bed": {
+    "criteria": {
+      "has_bed": "2021-09-01 14:29:27 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/enchanting_table": {
+    "criteria": {
+      "has_obsidian": "2021-09-01 14:21:47 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/transportation/acacia_boat": {
+    "criteria": {
+      "in_water": "2021-09-01 14:27:00 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/combat/diamond_sword": {
+    "criteria": {
+      "has_diamond": "2021-09-01 14:21:55 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/misc/iron_ingot_from_nuggets": {
+    "criteria": {
+      "has_iron_nugget": "2021-09-01 14:22:26 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/cyan_bed_from_white_bed": {
+    "criteria": {
+      "has_bed": "2021-09-01 14:29:27 -0400"
+    },
+    "done": true
+  },
+  "minecraft:adventure/root": {
+    "criteria": {
+      "killed_something": "2021-09-01 14:25:19 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/transportation/jungle_boat": {
+    "criteria": {
+      "in_water": "2021-09-01 14:27:00 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/jukebox": {
+    "criteria": {
+      "has_diamond": "2021-09-01 14:21:55 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/transportation/spruce_boat": {
+    "criteria": {
+      "in_water": "2021-09-01 14:27:00 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/misc/gold_nugget_from_blasting": {
+    "criteria": {
+      "has_golden_chestplate": "2021-09-01 14:22:24 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/tools/flint_and_steel": {
+    "criteria": {
+      "has_obsidian": "2021-09-01 14:21:47 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/gray_bed_from_white_bed": {
+    "criteria": {
+      "has_bed": "2021-09-01 14:29:27 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/building_blocks/end_stone_bricks": {
+    "criteria": {
+      "has_end_stone": "2021-09-01 14:28:49 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/lime_bed_from_white_bed": {
+    "criteria": {
+      "has_bed": "2021-09-01 14:29:27 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/building_blocks/diamond_block": {
+    "criteria": {
+      "has_diamond": "2021-09-01 14:21:55 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/transportation/dark_oak_boat": {
+    "criteria": {
+      "in_water": "2021-09-01 14:27:00 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/tools/diamond_pickaxe": {
+    "criteria": {
+      "has_diamond": "2021-09-01 14:21:55 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/tools/diamond_hoe": {
+    "criteria": {
+      "has_diamond": "2021-09-01 14:21:55 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/tools/diamond_shovel": {
+    "criteria": {
+      "has_diamond": "2021-09-01 14:21:55 -0400"
+    },
+    "done": true
+  },
+  "minecraft:adventure/kill_all_mobs": {
+    "criteria": {
+      "minecraft:blaze": "2021-09-01 14:25:19 -0400",
+      "minecraft:spider": "2021-09-01 14:33:45 -0400",
+      "minecraft:enderman": "2021-09-01 14:31:22 -0400"
+    },
+    "done": false
+  },
+  "minecraft:story/enter_the_nether": {
+    "criteria": {
+      "entered_nether": "2021-09-01 14:22:49 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/misc/ender_eye": {
+    "criteria": {
+      "has_blaze_powder": "2021-09-01 14:28:02 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/end_crystal": {
+    "criteria": {
+      "has_ender_eye": "2021-09-01 14:28:13 -0400"
+    },
+    "done": true
+  },
+  "minecraft:story/enter_the_end": {
+    "criteria": {
+      "entered_end": "2021-09-01 14:28:30 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/green_bed_from_white_bed": {
+    "criteria": {
+      "has_bed": "2021-09-01 14:29:27 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/brown_bed_from_white_bed": {
+    "criteria": {
+      "has_bed": "2021-09-01 14:29:27 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/end_stone_brick_wall_from_end_stone_stonecutting": {
+    "criteria": {
+      "has_end_stone": "2021-09-01 14:28:49 -0400"
+    },
+    "done": true
+  },
+  "minecraft:husbandry/balanced_diet": {
+    "criteria": {
+      "bread": "2021-09-01 14:29:58 -0400"
+    },
+    "done": false
+  },
+  "minecraft:recipes/decorations/lantern": {
+    "criteria": {
+      "has_iron_nugget": "2021-09-01 14:22:26 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/ender_chest": {
+    "criteria": {
+      "has_ender_eye": "2021-09-01 14:28:13 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/pink_bed_from_white_bed": {
+    "criteria": {
+      "has_bed": "2021-09-01 14:29:27 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/misc/iron_nugget_from_smelting": {
+    "criteria": {
+      "has_iron_sword": "2021-09-01 14:21:57 -0400"
+    },
+    "done": true
+  },
+  "minecraft:nether/explore_nether": {
+    "criteria": {
+      "minecraft:nether_wastes": "2021-09-01 14:23:38 -0400",
+      "minecraft:soul_sand_valley": "2021-09-01 14:23:45 -0400",
+      "minecraft:basalt_deltas": "2021-09-01 14:22:51 -0400"
+    },
+    "done": false
+  },
+  "minecraft:recipes/decorations/yellow_bed_from_white_bed": {
+    "criteria": {
+      "has_bed": "2021-09-01 14:29:27 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/chain": {
+    "criteria": {
+      "has_iron_nugget": "2021-09-01 14:22:26 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/misc/gold_nugget_from_smelting": {
+    "criteria": {
+      "has_golden_chestplate": "2021-09-01 14:22:24 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/combat/diamond_boots": {
+    "criteria": {
+      "has_diamond": "2021-09-01 14:21:55 -0400"
+    },
+    "done": true
+  },
+  "minecraft:story/mine_diamond": {
+    "criteria": {
+      "diamond": "2021-09-01 14:21:55 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/combat/diamond_helmet": {
+    "criteria": {
+      "has_diamond": "2021-09-01 14:21:55 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/red_bed_from_white_bed": {
+    "criteria": {
+      "has_bed": "2021-09-01 14:29:27 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/transportation/oak_boat": {
+    "criteria": {
+      "in_water": "2021-09-01 14:27:00 -0400"
+    },
+    "done": true
+  },
+  "minecraft:story/follow_ender_eye": {
+    "criteria": {
+      "in_stronghold": "2021-09-01 14:26:33 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/misc/fire_charge": {
+    "criteria": {
+      "has_blaze_powder": "2021-09-01 14:28:02 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/blue_bed_from_white_bed": {
+    "criteria": {
+      "has_bed": "2021-09-01 14:29:27 -0400"
+    },
+    "done": true
+  },
+  "minecraft:story/form_obsidian": {
+    "criteria": {
+      "obsidian": "2021-09-01 14:21:47 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/light_gray_bed_from_white_bed": {
+    "criteria": {
+      "has_bed": "2021-09-01 14:29:27 -0400"
+    },
+    "done": true
+  },
+  "minecraft:recipes/brewing/brewing_stand": {
+    "criteria": {
+      "has_blaze_rod": "2021-09-01 14:25:41 -0400"
+    },
+    "done": true
+  },
+  "DataVersion": 2730
+}

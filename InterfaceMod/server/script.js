@@ -30,8 +30,9 @@ socket.addEventListener('message', function (event) {
 
     if (lastDimension != dimension) {
         lastDimension = dimension
-        if (dimension == "ov") { document.getElementById("icons").innerHTML = `<img class="icon village"/><img class="icon temple"/><img class="icon portal"/><img class="icon stronghold"/>` }
+        if (dimension == "ov") { document.getElementById("icons").innerHTML = `<img class="icon village"/><img class="icon temple"/><img class="icon portal"/><img class="icon stronghold"/><img class="icon shipwreck"/>` }
         if (dimension == "nt") { document.getElementById("icons").innerHTML = `<img class="icon fortress"/><img class="icon bastion"/><img class="icon portal"/><img class="icon stronghold"/>` }
+        if (dimension == "nd") { document.getElementById("icons").innerHTML = `` }
     }
     for (let i = 1; i < dat.length; i++) {
         let cee = document.getElementsByClassName(dat[i][0].toLowerCase())[0]
@@ -42,7 +43,7 @@ socket.addEventListener('message', function (event) {
         cee.style.top = y + "px"
         let b = cee.getBoundingClientRect()
         let f = 0
-        while (b.x < 0 || b.y < 0 || b.x > (window.innerWidth) - b.width || b.y > (window.innerHeight) - b.width) {
+        while (b.x < -5 || b.y < -5 || b.x > (window.innerWidth + 5) - b.width || b.y > (window.innerHeight + 5) - b.width) {
             x *= 0.92
             y *= 0.92
             f++

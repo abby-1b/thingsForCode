@@ -12,7 +12,7 @@ invertYMouse:false
 realmsNotifications:true
 reducedDebugInfo:false
 snooperEnabled:true
-showSubtitles:false
+showSubtitles:true
 touchscreen:false
 fullscreen:false
 bobView:true
@@ -27,7 +27,7 @@ gamma:1.0
 renderDistance:12
 entityDistanceScaling:1.0
 guiScale:0
-particles:0
+particles:2
 maxFps:60
 difficulty:2
 graphicsMode:1
@@ -65,7 +65,7 @@ rawMouseInput:true
 glDebugVerbosity:1
 skipMultiplayerWarning:false
 hideMatchedNames:true
-joinedFirstServer:false
+joinedFirstServer:true
 hideBundleTutorial:false
 syncChunkWrites:false
 key_key.attack:key.mouse.left
@@ -85,7 +85,7 @@ key_key.pickItem:key.mouse.middle
 key_key.command:key.keyboard.slash
 key_key.socialInteractions:key.keyboard.p
 key_key.screenshot:key.keyboard.f2
-key_key.togglePerspective:key.keyboard.f5
+key_key.togglePerspective:key.keyboard.r
 key_key.smoothCamera:key.keyboard.unknown
 key_key.fullscreen:key.keyboard.f11
 key_key.spectatorOutlines:key.keyboard.unknown
@@ -103,8 +103,8 @@ key_key.hotbar.7:key.keyboard.7
 key_key.hotbar.8:key.keyboard.8
 key_key.hotbar.9:key.keyboard.9
 key_key.interface_mod.toggle_output:key.keyboard.backslash
-soundCategory_master:0.22866437
-soundCategory_music:0.0
+soundCategory_master:0.7213779
+soundCategory_music:0.025338128
 soundCategory_record:1.0
 soundCategory_weather:1.0
 soundCategory_block:1.0
