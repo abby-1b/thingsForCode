@@ -26,9 +26,9 @@ public class InterfaceMod implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		System.out.println("Interface Mod client starting...");
+		System.out.println("Interface Mod server starting...");
         this.register();
-        System.out.println("Interface Mod client started!");
+        System.out.println("Interface Mod server started!");
 	}
 
 	private void register() {
