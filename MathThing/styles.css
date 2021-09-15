@@ -1,0 +1,38 @@
+
+* {
+    outline: none;
+    stroke: none;
+}
+
+body, html {
+    background-color: black;
+    color: white;
+    font-family:monospace;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+#edt {
+    width: calc(100vw - 20px);
+    min-height: calc(100vh - 20px);
+    padding: 10px;
+}
+
+#ov {
+    margin: 10px;
+    position: absolute;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+#cv {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    opacity: 0;
+    pointer-events: none;
+    background-color: white;
+    transition: opacity .1s;
+}
