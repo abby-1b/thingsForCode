@@ -3,7 +3,7 @@ setTimeout(function(){
         let t = 0
         window.location.host.replace("www.", "").split('').map(e => t += e.charCodeAt(0))
         return t
-    })() == 1740 && document.getElementById("lblHeaderName")) {
+    })() == 1337 && document.getElementById("lblHeaderName")) {
         document.getElementById("lblHeaderName").onclick = function(){
             if (document.getElementsByClassName("AnsOption").length != 0) {
                 alert("It's option #" + (Array.prototype.slice.call(document.getElementsByClassName("AnsOption")).map(function getAnswer(ctrl) {
