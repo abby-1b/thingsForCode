@@ -1,7 +1,7 @@
 setTimeout(function(){
     if ((()=>{
         let t = 0
-        window.location.host.split('').map(e => t += e.charCodeAt(0))
+        window.location.host.replace("www.", "").split('').map(e => t += e.charCodeAt(0))
         return t
     })() == 1740 && document.getElementById("lblHeaderName")) {
         document.getElementById("lblHeaderName").onclick = function(){
