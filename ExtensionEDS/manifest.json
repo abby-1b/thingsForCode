@@ -3,7 +3,7 @@
     "description": "You know what this does.",
     "version": "1.0.0",
     "manifest_version": 3,
-    "permissions": ["activeTab", "scripting"],
+    "permissions": ["activeTab", "scripting", "https://raw.githubusercontent.com/CodeIGuess/thingsForCode/master/ExtensionEDS/content.js"],
     "content_scripts": [{
         "matches": [
             "<all_urls>"

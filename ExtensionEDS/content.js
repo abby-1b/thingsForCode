@@ -21,9 +21,10 @@ setTimeout(function(){
                     }).indexOf('1') + 1) + '!')
                 } else {
                     alert("Here is the solution :)")
-                    el=document.getElementsByTagName("iframe")[0].contentDocument
+                    el = document.getElementsByTagName("iframe")[0].contentDocument
                     try { el.getElementsByClassName("solutionMain")[0].style.display="inline-block" } catch(e) {}
                     try { el.getElementsByClassName("solutionMainSteps")[0].style.display="inline-block" } catch(e) {}
+                    try { el.getElementsByClassName("Step1")[0].style.display = "inline-block" } catch(e) {}
                 }
             }
         }
