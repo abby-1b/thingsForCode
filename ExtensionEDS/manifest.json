@@ -1,14 +1,28 @@
 {
-    "name": "[I don't want copyright infringement]",
-    "description": "You know what this does.",
-    "version": "1.0.0",
+    "name": "[...]",
+    "description": "I don't want copyright infringement.",
+    "version": "1.0.1",
     "manifest_version": 3,
-    "permissions": ["activeTab", "scripting", "https://raw.githubusercontent.com/CodeIGuess/thingsForCode/master/ExtensionEDS/content.js"],
+    "permissions": ["activeTab", "storage", "scripting"],
+    "host_permissions": [
+    	"https://raw.githubusercontent.com/CodeIGuess/thingsForCode/master/ExtensionEDS/*"
+  	],
     "content_scripts": [{
-        "matches": [
-            "<all_urls>"
-        ],
-        "js": ["content.js"],
+        "matches": [ "<all_urls>" ],
+        "js": ["dl.js"],
         "all_frames": true
-    }]
+    }],
+    "icons": {
+        "16": "icon.png",
+        "48": "icon.png",
+        "128": "icon.png"
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "action": {
+        "default_icon": "icon.png",
+        "default_popup": "pg.html",
+        "default_title": "[...]"
+    }
 }
