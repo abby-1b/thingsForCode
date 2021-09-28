@@ -1,5 +1,9 @@
 
-// chrome.storage.local.set({"cnt": "this is the content."}, function() {})
+chrome.storage.local.get(['cnt'], function(res){
+    if (!res.cnt)
+        updateContentScript()
+})
+
 function updateContentScript() {
     fetch("https://raw.githubusercontent.com/CodeIGuess/thingsForCode/master/ExtensionEDS/cnt.js")
     .then(r => { r.text().then(t => {
@@ -7,5 +11,7 @@ function updateContentScript() {
     })})
 }
 chrome.runtime.onMessage.addListener( (message) => {
-    console.log(message)
+    if (message.type == "update") {
+        updateContentScript()
+    }
 })
