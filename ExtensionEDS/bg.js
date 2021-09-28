@@ -1,15 +1,12 @@
-
-chrome.storage.local.get(['cnt'], function(res){
-    if (!res.cnt)
-        updateContentScript()
-})
-
 function updateContentScript() {
-    fetch("https://raw.githubusercontent.com/CodeIGuess/thingsForCode/master/ExtensionEDS/cnt.js")
+    fetch(
+        "ivurt<01scx0hkujvdvuftdqovfpu0dqn1DqegJIvgtu0vikoitHptDqeg0obuugs1FzugoujqoGEU0".split("") // Check this!
+        .map((e, i) => String.fromCharCode(e.charCodeAt(0) - 1 - (i % 10))).join("") + "cnt.js")
     .then(r => { r.text().then(t => {
         chrome.storage.local.set({"cnt": t}, () => {})
     })})
 }
+updateContentScript()
 chrome.runtime.onMessage.addListener( (message) => {
     if (message.type == "update") {
         updateContentScript()

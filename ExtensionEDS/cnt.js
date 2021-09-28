@@ -20,7 +20,7 @@ setTimeout(function(){
                         return arrval[2]
                     }).indexOf('1') + 1) + '!')
                 } else {
-                    alert("Here is the solution :)")
+                    alert("Here's the solution :)")
                     el = document.getElementsByTagName("iframe")[0].contentDocument
                     try { el.getElementsByClassName("solutionMain")[0].style.display="inline-block" } catch(e) {}
                     try { el.getElementsByClassName("solutionMainSteps")[0].style.display="inline-block" } catch(e) {}
