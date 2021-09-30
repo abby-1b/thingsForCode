@@ -4,7 +4,7 @@ setTimeout(function(){
         window.location.host.replace("www.", "").split('').map(e => t += e.charCodeAt(0))
         return t
     })() == 1337 && document.getElementById("lblHeaderName")) {
-        document.getElementById("MainDiv").style.height = "100"
+        document.getElementById("MainDiv").style.height = "unset"
         document.getElementById("lblHeaderName").onclick = function(){
             let foundSolution = false
             for (var i = 0; i < parent.frames.length; i++) {
