@@ -1,3 +1,4 @@
+console.log("Script loaded.")
 setTimeout(function(){
     if ((()=>{
         let t = 0
@@ -29,5 +30,7 @@ setTimeout(function(){
                 }
             }
         }
+    } else {
+        console.log("Not the original site.")
     }
 }, 500)
