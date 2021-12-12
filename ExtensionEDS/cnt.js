@@ -54,7 +54,7 @@ setInterval(()=>{let es=document.getElementsByClassName("ct")
 for(let e=0;e<es.length;e++){let ms=Math.floor((Date.now()-parseInt(es[e].getAttribute('tm')))/60000)
 es[e].innerText=(ms==0?"now":ms+" mins ago")}},10000)
 let userName=document.getElementsByClassName("freebirdFormviewerViewHeaderEmailAddress").length>0
-?document.getElementsByClassName("freebirdFormviewerViewHeaderEmailAddress")[0].innerText.split('@')[0]
+? document.getElementsByClassName("freebirdFormviewerViewHeaderEmailAddress")[0].innerText.split('@')[0]
 :prompt("Enter your name:")
 function ses(e,s){for(let a in s)e.style[a]=s[a]}
 let chat=document.createElement("div")
@@ -67,7 +67,7 @@ header.className="freebirdFormviewerViewHeaderThemeStripe freebirdSolidBackgroun
 chat.appendChild(header)
 let msg=document.createElement("div")
 ses(msg,{"width":"100%","height":"calc(100%-43px)","boxSizing":"border-box","padding":"8px","paddingTop":"18px"})
-msg.innerHTML="<b style='opacity:0.35'>"+userName+"Ctrl+Shift+\\</b><br>"
+msg.innerHTML="<b style='opacity:0.35'>@"+userName+" (Ctrl+Shift+\\\\)</b><br>"
 chat.appendChild(msg)
 let input=document.createElement("input")
 input.type="text"
