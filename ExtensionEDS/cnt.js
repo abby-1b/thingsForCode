@@ -47,15 +47,17 @@ let tc=(Date.now()- parseInt(dat.time.integerValue))
 if(tc>72e5){console.log("Message "+id+" too old,deleting.")
 firestore.deleteDoc(firestore.doc(pdb,"EDSMessages",id))
 return}
-let ms=Math.floor(tc/60000)
+let ms=Math.floor(tc/6e4)
 msg.innerHTML+="<br><div style='width:2px;height:8px'></div><a class='ct'tm='"+dat.time.integerValue+"'style='font-size:75%;opacity:35%'>"+(ms==0?"now":ms+" mins ago")+"</a>"
-msg.innerHTML+="<br><b>@"+dat.user.stringValue+"</b>:"+dat.val.stringValue})})
+msg.innerHTML+="<br><b>@"+dat.user.stringValue+"</b>: "+dat.val.stringValue})})
 setInterval(()=>{let es=document.getElementsByClassName("ct")
-for(let e=0;e<es.length;e++){let ms=Math.floor((Date.now()-parseInt(es[e].getAttribute('tm')))/60000)
-es[e].innerText=(ms==0?"now":ms+" mins ago")}},10000)
+for(let e=0;e<es.length;e++){let ms=Math.floor((Date.now()-parseInt(es[e].getAttribute('tm')))/6e4)
+es[e].innerText=(ms==0?"now":ms+" mins ago")}},1e4)
 let userName=document.getElementsByClassName("freebirdFormviewerViewHeaderEmailAddress").length>0
 ? document.getElementsByClassName("freebirdFormviewerViewHeaderEmailAddress")[0].innerText.split('@')[0]
 :prompt("Enter your name:")
+if((!userName)|| userName=="")
+userName="[no name]"
 function ses(e,s){for(let a in s)e.style[a]=s[a]}
 let chat=document.createElement("div")
 chat.id="chat"
@@ -66,14 +68,15 @@ header.style.transition=chat.style.transition
 header.className="freebirdFormviewerViewHeaderThemeStripe freebirdSolidBackground exportThemeStripe"
 chat.appendChild(header)
 let msg=document.createElement("div")
-ses(msg,{"width":"100%","height":"calc(100%-43px)","boxSizing":"border-box","padding":"8px","paddingTop":"18px"})
+ses(msg,{"width":"100%","height":"calc(100%-43px)","boxSizing":"border-box","padding":"8px","paddingTop":"18px","overflow-y":"scroll"})
 msg.innerHTML="<b style='opacity:0.35'>@"+userName+" (Ctrl+Shift+\\\\)</b><br>"
 chat.appendChild(msg)
 let input=document.createElement("input")
 input.type="text"
 input.onkeydown=(e)=>{if(e.key=="Enter"&&!e.shiftKey){firestore.addDoc(db,{user:userName,val:input.value,time:Date.now()})
-input.value=""}}
-ses(input,{"width":"calc(100% - 10px)","height":"32px","margin":"5px","padding":"4px","fontSize":"18px","boxSizing":"border-box","position":"absolute","bottom":"0"})
+input.value=""
+msg.scrollBy(0,msg.scrollHeight)}}
+ses(input,{"width":"calc(100%-10px)","height":"32px","margin":"5px","padding":"4px","fontSize":"18px","boxSizing":"border-box","position":"absolute","bottom":"0"})
 chat.appendChild(input)
 document.body.appendChild(chat)
 let shown=false
@@ -83,7 +86,8 @@ function hide(){header.style.opacity="0"
 ses(chat,{"width":"0","border":"0px solid #dadce0"})}
 window.onkeydown=(e)=>{if(e.key=='|'&&e.ctrlKey&&e.shiftKey){shown=!shown
 if(shown)show()
-else hide()}}`
+else hide()}}
+setTimeout(()=>{msg.scrollBy(0,msg.scrollHeight)},1e3)`
 		document.head.appendChild(sc)
 	}
 }, 500)
