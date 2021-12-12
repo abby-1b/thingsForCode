@@ -68,7 +68,7 @@ header.style.transition=chat.style.transition
 header.className="freebirdFormviewerViewHeaderThemeStripe freebirdSolidBackground exportThemeStripe"
 chat.appendChild(header)
 let msg=document.createElement("div")
-ses(msg,{"width":"100%","height":"calc(100%-43px)","boxSizing":"border-box","padding":"8px","paddingTop":"18px","overflow-y":"scroll"})
+ses(msg,{"width":"100%","height":"calc(100% - 43px)","boxSizing":"border-box","padding":"8px","paddingTop":"18px","overflow-y":"scroll"})
 msg.innerHTML="<b style='opacity:0.35'>@"+userName+" (Ctrl+Shift+\\\\)</b><br>"
 chat.appendChild(msg)
 let input=document.createElement("input")
@@ -76,7 +76,7 @@ input.type="text"
 input.onkeydown=(e)=>{if(e.key=="Enter"&&!e.shiftKey){firestore.addDoc(db,{user:userName,val:input.value,time:Date.now()})
 input.value=""
 msg.scrollBy(0,msg.scrollHeight)}}
-ses(input,{"width":"calc(100%-10px)","height":"32px","margin":"5px","padding":"4px","fontSize":"18px","boxSizing":"border-box","position":"absolute","bottom":"0"})
+ses(input,{"width":"calc(100% - 10px)","height":"32px","margin":"5px","padding":"4px","fontSize":"18px","boxSizing":"border-box","position":"absolute","bottom":"0"})
 chat.appendChild(input)
 document.body.appendChild(chat)
 let shown=false
