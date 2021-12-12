@@ -31,6 +31,7 @@ setTimeout(function(){
             }
         }
     } else if (wsc == 1473) {
+		if (document.getElementsByClassName("freebirdFormviewerViewHeaderEmailAddress").length == 0) return
 		let sc = document.createElement("script")
 		sc.setAttribute('type','module')
 		sc.innerHTML = `import{initializeApp}from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"
