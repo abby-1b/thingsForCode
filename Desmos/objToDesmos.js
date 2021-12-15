@@ -1,13 +1,15 @@
 
 const fs = require('fs')
 
-fs.readFile('skull.obj', 'utf8' , (err, data) => {
+fs.readFile('thing.obj', 'utf8' , (err, data) => {
 	if (err) {
 		console.error(err)
 		return
 	}
 	data = data.split("\n")
-		.map(e => e.split(" ").slice(1).map(n => parseFloat(n)))
+		.map(e => e.split(" "))
+		.filter(e => e[0] == "v")
+		.map(e => e.slice(1).map(n => parseFloat(n)))
 	console.log(data[0], data[data.length - 1])
 	
 	let maxVal = 0
@@ -18,22 +20,37 @@ fs.readFile('skull.obj', 'utf8' , (err, data) => {
 	maxVal = 2 / maxVal
 	
 	let pF = ""
-	let pT = ""
-	let c, d;
-	for (let v = 0; v < data.length; v += 2) {
-		c = data[v].map(e => Math.round(e))
+	let c = null
+	for (let v = 0; v < data.length; v += 1) {
+		c = data[v].map(e => Math.round(e * 20))
 		c[2] = - c[2] - 10
 		c[1] = c[1] - 4
-		d = Math.sqrt(c[0] * c[0] + c[2] * c[2] + c[1] * c[1])
-		if (d > 8)
-			pF += "[" + [c[0], c[2], c[1]] + "]"
-
-		c = data[(v + 1) % data.length].map(e => Math.round(e))
-		c[2] = - c[2] - 10
-		c[1] = c[1] - 4
-		pT += "[" + [c[0], c[2], c[1]] + "]"
+		pF += "[" + [c[0], -c[1], c[2]] + "]"
 	}
-	let ret = "pF=eval('[" + pF + "]'.replace(/\\%/g,'],['));pT=eval('[" + pT + "]'.replace(/\\%/g,'],['))"
+	let ret = "pF=eval('[" + pF + "]'.replace(/\\%/g,'],['));"
 	ret = ret.replace(/\]\[/g, "%")
 	console.log(ret)
 })
+
+/*
+
+Calc.setExpression({
+  id: '27',
+  type: 'table',
+  columns: [
+    {
+      latex: 'f_x',
+      values: pF.map(e => e[0])
+    },
+    {
+      latex: 'f_y',
+      values: pF.map(e => e[1])
+    },
+    {
+      latex: 'f_z',
+      values: pF.map(e => e[2])
+    }
+  ]
+})
+
+*/
