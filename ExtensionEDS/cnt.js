@@ -53,11 +53,8 @@ msg.innerHTML+="<br><b>@"+dat.user.stringValue+"</b>: "+dat.val.stringValue})})
 setInterval(()=>{let es=document.getElementsByClassName("ct")
 for(let e=0;e<es.length;e++){let ms=Math.floor((Date.now()-parseInt(es[e].getAttribute('tm')))/6e4)
 es[e].innerText=(ms==0?"now":ms+" mins ago")}},1e4)
-let userName=document.getElementsByClassName("freebirdFormviewerViewHeaderEmailAddress").length>0
-? document.getElementsByClassName("freebirdFormviewerViewHeaderEmailAddress")[0].innerText.split('@')[0]
-:prompt("Enter your name:")
-if((!userName)|| userName=="")
-userName="[no name]"
+let userName=document.getElementsByClassName("freebirdFormviewerViewHeaderEmailAddress").length>0?document.getElementsByClassName("freebirdFormviewerViewHeaderEmailAddress")[0].innerText.split('@')[0]:prompt("Enter your name:")
+if((!userName)|| userName=="")userName="[no name]"
 function ses(e,s){for(let a in s)e.style[a]=s[a]}
 let chat=document.createElement("div")
 chat.id="chat"
