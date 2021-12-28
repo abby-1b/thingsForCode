@@ -84,8 +84,12 @@ bot.on('messageCreate', message => {
 			arg = Object.keys(lines)
 			arg = lines[arg[Math.floor((Math.random() * 100)) % arg.length]]
 		}
-		isReady = false
 		let channel = message.member.voice.channel
+		if (!channel) {
+			message.reply("You're... not in a voice channel.")
+			return
+		}
+		isReady = false
 		connection = joinVoiceChannel({
 			channelId: channel.id,
 			guildId: channel.guild.id,
@@ -106,4 +110,4 @@ bot.on('messageCreate', message => {
 	}
 })
 
-bot.login("OTIyMzE4OTg1NDEwNzc3MTM4.Yb_ufQ.hrkv4JR8oxNyGRVHEWKVngOSZSU")
+bot.login("OTIyMzE4OTg1NDEwNzc3MTM4.Yb_ufQ.fZizF_rITRaZJn4Ts3VOsi6FxKo")
