@@ -110,4 +110,4 @@ bot.on('messageCreate', message => {
 	}
 })
 
-bot.login("OTIyMzE4OTg1NDEwNzc3MTM4.Yb_ufQ.fZizF_rITRaZJn4Ts3VOsi6FxKo")
+bot.login(require("fs").readFileSync("TOKEN", "utf8"))
