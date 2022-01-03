@@ -1,0 +1,12 @@
+5 // Push 5 onto the stack
+@a // Assign the top value of the stack to `a`
+? // If
+( // Test
+	5 // Push 5 onto the stack
+	a // Push the value of `a` onto the stack
+	== // Retrieves both values, checks if they're equal and puts the result onto the stack.
+)
+( // If test is true
+	#p // Calls the `p` command
+	(a) // with the first argument being `a`
+)
