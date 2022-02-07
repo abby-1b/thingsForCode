@@ -54,17 +54,34 @@ player.addListener('stateChange', (e) => {
 })
 
 var bot = new Client({intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, "GUILD_VOICE_STATES"]})
-
 var connection = null
-
 var isReady = true
 
+let postMsgFrom = null
+let postMsgTo = null
+
 bot.on('ready', () => {
-	console.log("Ready.")
+    console.log(`${bot.user.username} ready`)
+	
+	bot.user.setActivity('with ur mom')
+    let guilds = bot.guilds.cache.map(guild => guild.id)
+	// let guilds = bot.guilds.map(guild => guild.id)
+	for (let g = 0; g < guilds.length; g++) {
+		let guild = bot.guilds.cache.get(guilds[g])
+		if (guild.name == "The Council") postMsgFrom = guild.channels.cache.find(e => e.name == "the-to-do-list")
+		if (guild.name == "~{ Abeyance }~") postMsgTo = guild.channels.cache.find(e => e.name == "homework")
+	}
+	// console.log(postMsgFrom, postMsgTo)
+
+	// postMsgFrom.send('Your mom lol')
+	// postMsgTo.send('your mom lmao')
 })
 
 bot.on('messageCreate', message => {
 	if (message.author == bot.user) return
+	if (message.channelId == postMsgFrom.id) {
+		postMsgTo.send(message.content)
+	}
 	if (isReady && message.content.startsWith('-cc')) {
 		let arg = message.content.split(" ")
 		if (arg.length > 1) {
