@@ -1,0 +1,1 @@
+execute as @a[tag=spread] at @s if block ~ ~-0.1 ~ minecraft:purpur_block run spreadplayers ~ ~ 20 20 false @s
