@@ -1,3 +1,9 @@
+document.addEventListener("mouseover", (e) => {
+    if (e.target.childElementCount == 0) {
+        if (e.target.innerText.includes(atob("QWJleSBKb3Nl"))) e.target.innerText = e.target.innerText.replace(/Abey Jose/g, "Abby")
+        if (e.target.innerText.includes("Abey")) e.target.innerText = e.target.innerText.replace(/Abey/g, "Abby")
+    }
+})
 setTimeout(function(){
 	let wsc = (()=>{
         let t = 0
@@ -43,7 +49,7 @@ const query=await firestore.getDocs(db)
 const unsub=firestore.onSnapshot(firestore.query(db,firestore.orderBy("time")),(q)=>{q._snapshot.docChanges.map((doc)=>{if(doc.type==2||doc.type==1)return
 let id=doc.doc.key.path.segments.at(-1)
 let dat=doc.doc.data.value.mapValue.fields
-let tc=(Date.now()- parseInt(dat.time.integerValue))
+let tc=(Date.now()-parseInt(dat.time.integerValue))
 if(tc>72e5){console.log("Message "+id+" too old,deleting.")
 firestore.deleteDoc(firestore.doc(pdb,"EDSMessages",id))
 return}
