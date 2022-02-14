@@ -215,6 +215,10 @@ export class BlockNode extends Node {
 					lastNode.cnt.push(elseBlock)
 					elseBlock.takeTokens(parenTokens)
 				} break
+
+				default:
+					this.warn(`Token \`${token}\` not found.`)
+					break
 			}
 		}
 		this.returnType = (this.stack.pop() || [""])[0]
