@@ -1,5 +1,4 @@
 
-import { ByteTypes } from "./TSUtil/ByteTypes.ts"
 import { CharStream } from "./TSUtil/CharStream.ts"
 import { ParseStates } from "./TSUtil/ParseStates.ts"
 import { InsNode, BlockNode, FnNode, Tokens } from "./TSUtil/TreeNodes.ts"
