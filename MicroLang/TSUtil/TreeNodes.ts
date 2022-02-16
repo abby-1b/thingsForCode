@@ -1,7 +1,7 @@
 import { ParseStates } from "./ParseStates.ts"
 
 const SUPRESS_WARNINGS = false
-const NO_BLOCKS = true
+const NO_BLOCKS = false
 
 const restrictedFnNames = [
 	"if",
@@ -214,6 +214,7 @@ export class BlockNode extends Node {
 				case ParseStates.IF: {
 					tokens.shift()
 					let parenTokens = getParen(tokens)
+					if ((this.stack.pop() || " ")[0] != "i32") this.err("Attempted to use [f32] for if statement.")
 					let ifBlock = new BlockNode(this, "if")
 					let thenBlock = new BlockNode(ifBlock, "then")
 					ifBlock.cnt.push(thenBlock)
@@ -258,8 +259,8 @@ export class BlockNode extends Node {
 					break
 			}
 		}
-		// console.log(this.name, this.stack.map(e => e[0]))
 		this.returnType = this.stack.map(e => e[0]).join(" ")
+		console.log(this.name, this.returnType)
 		return this
 	}
 
