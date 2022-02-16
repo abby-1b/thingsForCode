@@ -1,10 +1,22 @@
 (module
-  (import "import_fns" "console_log" (func $FN_console_log (param f32)))
+  (import "import_fns" "yeet" (func $FN_yeet (param f32)))
   (func $main
+    (local $a f32)
     f32.const 5
-    call $FN_console_log
-    f32.const 10
-    call $FN_console_log
+    local.set $a
+    (block (result i32)
+      f32.const 5
+      local.get $a
+      f32.eq
+    )
+    (if
+      (then
+        (block (result f32)
+          local.get $a
+        )
+        call $FN_yeet
+      )
+    )
   )
   (export "main" (func $main))
 )
