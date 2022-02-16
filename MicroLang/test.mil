@@ -7,11 +7,11 @@
 )
 ? // If
 ( // If test is true
-	#p // Calls the `p` command
+	#yeet // Calls the `p` command
 	(a) // with the first argument being `a`
 )
 
 // 5 @a
 // ? (5 a =) (
-// 	#p(a)
+// 	#console.log(a)
 // )

@@ -8,6 +8,7 @@ export class ParseStates {
 	
 	static PAR_O = 4
 	static PAR_C = 5
+	static CMA = 11
 	
 	static OPS = 6
 	

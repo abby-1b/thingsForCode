@@ -63,7 +63,7 @@ function tokenize(code: string): Tokens {
 		if (state == 0 && CharStream.c == '#') state = ParseStates.CALL
 		if (state == ParseStates.CALL) {
 			if (CharStream.c) hold += CharStream.c
-			if (!("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789".includes(CharStream.n))) {
+			if (!("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789.".includes(CharStream.n))) {
 				tokens.push([state, hold])
 				state = -1
 			}
@@ -72,6 +72,8 @@ function tokenize(code: string): Tokens {
 		// Parenthesis
 		if (state == 0 && CharStream.c == '(') tokens.push([ParseStates.PAR_O, '('])
 		if (state == 0 && CharStream.c == ')') tokens.push([ParseStates.PAR_C, ')'])
+
+		if (state == 0 && CharStream.c == ',') tokens.push([ParseStates.CMA, ','])
 
 		// Operations
 		if (state == 0 && "+-*/=!~%&|".includes(CharStream.c)) state = ParseStates.OPS
@@ -93,7 +95,8 @@ function tokenize(code: string): Tokens {
 
 function compile(code: string): string {
 	let tree = new BlockNode(undefined, "module", [new FnNode(undefined, "main")])
-	tree.takeTokens(tokenize(code))
+	let tokens = tokenize(code)
+	tree.takeTokens(tokens)
 	tree.cnt.push(new InsNode(`(export "main" (func $main))`))
 	return tree.make()
 }
@@ -106,5 +109,5 @@ function processFile(inName: string, outName: string): void { Deno.readTextFile(
 
 // Deno.readTextFile(fileName)
 // compile("0 @a (5 6 =) ? (69 ~a) : (34.5 ~a) a 2 * ~a #p(a,a)")
-// compileAndSave("./out.wat", "5 @a (5 a =) ? (69) : (69)") // 0 @a (5 6 =) ? (69 ~a)
-processFile("./test.mil", "./out.wat")
+compileAndSave("./out.wat", "#console.log(5) #console.log(10)") // 0 @a (5 6 =) ? (69 ~a)
+// processFile("./test.mil", "./out.wat")

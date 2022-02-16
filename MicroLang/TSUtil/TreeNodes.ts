@@ -8,7 +8,7 @@ const restrictedFnNames = [
 	"module"
 ]
 
-export type Tokens = Array<[number, string]>
+export type Tokens = [number, string][]
 
 function indent(str: string, amount = 1): string {
 	return str.split('\n').filter(e => e != '').map(e => "  ".repeat(amount) + e).join("\n")
@@ -28,6 +28,25 @@ function getParen(tokens: Tokens): Tokens {
 	}
 	parenTokens.pop()
 	return parenTokens
+}
+
+function tokenCommas(tokens: Tokens): Tokens[] {
+	let splitTokens: Tokens[] = []
+	let commaTokens: Tokens = []
+	let level = 0
+	while (tokens.length > 0) {
+		let t = tokens.shift() || [0, ""]
+		if (t[0] == ParseStates.CMA && level == 0) {
+			splitTokens.push([...commaTokens])
+			commaTokens = []
+			continue
+		}
+		if (t[0] == ParseStates.PAR_O) level++
+		if (t[0] == ParseStates.PAR_C) level--
+		commaTokens.push(t)
+	}
+	splitTokens.push(commaTokens)
+	return splitTokens
 }
 
 class Node {
@@ -54,6 +73,19 @@ class Node {
 	}
 }
 
+export class InsNode extends Node {
+	ins = ""
+	constructor(ins: string) {
+		super()
+		this.ins = ins
+	}
+
+	make() {
+		return this.ins + this.after
+	}
+	takeTokens(...args: any): this { return this }
+}
+
 export class ConstNode extends Node {
 	type = ""
 	value = ""
@@ -74,29 +106,19 @@ export class ConstNode extends Node {
 	}
 }
 
-export class InsNode extends Node {
-	ins = ""
-	constructor(ins: string) {
-		super()
-		this.ins = ins
-	}
-
-	make() {
-		return this.ins + this.after
-	}
-	takeTokens(...args: any): this { return this }
-}
-
 export class BlockNode extends Node {
 	isFn = false
 	name = ""
 	returnType = ""
-	locals: Array<[string, string]> = [] // "${name} ${type}"
-	cnt: Array<Node> = []
 
-	stack: Array<[string, Node]> = []
+	imports: [string[], string][] = [] // 
 
-	constructor(parent: BlockNode | undefined, name: string, cnt: Array<Node> = []) {
+	locals: [string, string][] = [] // "${name} ${type}"
+	cnt: Node[] = []
+
+	stack: [string, Node][] = []
+
+	constructor(parent: BlockNode | undefined, name: string, cnt: Node[] = []) {
 		super()
 		this.parent = parent
 		this.name = name
@@ -116,9 +138,9 @@ export class BlockNode extends Node {
 			for (let n = 0; n < this.cnt.length; n++)
 				(this.cnt[n] as BlockNode).returnType = ""
 		}
-		// console.log(this.stack)
 		return (this.isFn ? `(func $${this.name}` : `(${this.name}`)
 			+ `${this.returnType == "" ? "" : " (result " + this.returnType + ")"}\n`
+			+ indent(this.imports.map(i => `(import ${i[0].map(e => '"' + e + '"').join(' ')} (func $FN_${i[0][1]} (param ${i[1]})))`).join('\n')) + (this.imports.length == 0 ? "" : "\n")
 			+ indent(this.locals.map(l => `(local $${l[0]} ${l[1]})`).join('\n')) + (this.locals.length == 0 ? "" : "\n")
 			+ indent(this.cnt.map(n => n.make()).join('\n'))
 			+ '\n)' + this.after
@@ -136,7 +158,7 @@ export class BlockNode extends Node {
 		}
 	}
 
-	takeTokens(tokens: Tokens): Node {
+	takeTokens(tokens: Tokens, commasAllowed = false): Node {
 		if (this.name == "module" && !(this instanceof FnNode)) return this.cnt[0].takeTokens(tokens)
 		while (tokens.length > 0) {
 			let token = tokens.shift() || [-1, ""]
@@ -148,7 +170,6 @@ export class BlockNode extends Node {
 					if (this.stack.length == 0) this.err("No values on the stack!")
 					// if (this.stack[this.stack.length - 1][0] != "f32")
 					// 	this.stack[this.stack.length - 1][1].after += " f32.convert_s/i32"
-					// this.stack.pop()
 					this.setLocal(token[1], this.stack.pop() || ["", this])
 					this.cnt.push(new InsNode(`local.set $${token[1]}`))
 					break
@@ -161,7 +182,6 @@ export class BlockNode extends Node {
 					let opType = "f32"
 					if ("&|".includes(token[1])) {
 						opType = "i32"
-						// console.log("Stack:", this.stack)
 						this.stack[this.stack.length - 1][1].changeType("i32")
 						this.stack[this.stack.length - 2][1].changeType("i32")
 					}
@@ -180,7 +200,7 @@ export class BlockNode extends Node {
 				case ParseStates.PAR_O: {
 					let parenTokens = getParen(tokens)
 					if (NO_BLOCKS) {
-						this.takeTokens(parenTokens)
+						this.takeTokens(parenTokens, true)
 					} else {
 						this.cnt.push(new BlockNode(this, "block").takeTokens(parenTokens))
 						let n = this.cnt[this.cnt.length - 1]
@@ -188,13 +208,12 @@ export class BlockNode extends Node {
 					}
 				} break
 				case ParseStates.PAR_C:
-					this.err("Parenthesis found for some reason.")
+					this.err("Parenthesis found, for some reason.")
 					break
 
 				case ParseStates.IF: {
 					tokens.shift()
 					let parenTokens = getParen(tokens)
-
 					let ifBlock = new BlockNode(this, "if")
 					let thenBlock = new BlockNode(ifBlock, "then")
 					ifBlock.cnt.push(thenBlock)
@@ -203,7 +222,21 @@ export class BlockNode extends Node {
 					this.stack.push([ifBlock.returnType, ifBlock])
 					this.cnt.push(ifBlock)
 				} break
+				case ParseStates.CALL: {
+					tokens.shift()
+					let parenTokens = getParen(tokens)
+					let commaBlocks = tokenCommas([...parenTokens]).map(pt => new BlockNode(this, "block").takeTokens(pt)) as BlockNode[]
+					if (NO_BLOCKS) {
+						this.cnt.push(...(new BlockNode(undefined, "block").takeTokens(parenTokens, true) as BlockNode).cnt)
+					} else {
+						this.cnt.push(...commaBlocks)
+						// let v = commaBlocks.map((b): [string, BlockNode] => [b.returnType, b])
+						// this.stack.push(...v)
+						// console.log(this.stack)
+					}
 
+					this.cnt.push(new CallNode(this, token[1], commaBlocks.map(b => b.returnType)))
+				} break
 				case ParseStates.ELSE: {
 					tokens.shift()
 					let parenTokens = getParen(tokens)
@@ -216,18 +249,52 @@ export class BlockNode extends Node {
 					elseBlock.takeTokens(parenTokens)
 				} break
 
+				case ParseStates.CMA:
+					if (!commasAllowed) this.err("Found comma for some reason.")
+					break
+
 				default:
 					this.warn(`Token \`${token}\` not found.`)
 					break
 			}
 		}
-		this.returnType = (this.stack.pop() || [""])[0]
+		// console.log(this.name, this.stack.map(e => e[0]))
+		this.returnType = this.stack.map(e => e[0]).join(" ")
 		return this
+	}
+
+	importFn(fnPath: [string, string], fnParams: string): void {
+		if (this.name != "module") return this.parent?.importFn(fnPath, fnParams)
+		this.imports.push([fnPath, fnParams])
+	}
+
+	hasFn(fnPath: [string, string]): boolean {
+		if (this.name != "module") return this.parent?.hasFn(fnPath) || false
+		for (let i = 0; i < this.imports.length; i++)
+			if (this.imports[i][0][0] == fnPath[0] && this.imports[i][0][1] == fnPath[1])
+				return true
+		return false
+	}
+}
+
+export class CallNode extends BlockNode {
+	callFn: [string, string] = ["", ""]
+	paramTypes: string[] = []
+	constructor(parent: BlockNode | undefined, path: string, params: string[]) {
+		super(parent, "call")
+		this.callFn = ["import_fns", path.slice(1).split(".").join("_")]
+		this.paramTypes = params
+		if (!this.hasFn(this.callFn))
+			this.importFn(this.callFn, this.paramTypes.join(" "))
+	}
+
+	make() {
+		return `call $FN_${this.callFn[1]}`
 	}
 }
 
 export class FnNode extends BlockNode {
-	constructor(parent: BlockNode | undefined, name: string, cnt: Array<Node> = []) {
+	constructor(parent: BlockNode | undefined, name: string, cnt: Node[] = []) {
 		super(parent, name, cnt)
 		if (restrictedFnNames.includes(name))
 			this.err(`A function can't be named \`${name}\``)
