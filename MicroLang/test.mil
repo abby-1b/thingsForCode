@@ -15,3 +15,6 @@
 // ? (5 a =) (
 // 	#console.log(a)
 // )
+
+// Function type 1:
+// (a1, a2, a3) @fn ( ... ) 
