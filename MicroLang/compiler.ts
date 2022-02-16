@@ -109,5 +109,5 @@ function processFile(inName: string, outName: string): void { Deno.readTextFile(
 
 // Deno.readTextFile(fileName)
 // compile("0 @a (5 6 =) ? (69 ~a) : (34.5 ~a) a 2 * ~a #p(a,a)")
-compileAndSave("./out.wat", "#console.log(5) #console.log(10)") // 0 @a (5 6 =) ? (69 ~a)
-// processFile("./test.mil", "./out.wat")
+// compileAndSave("./out.wat", "#console.log(5) #console.log(10)") // 0 @a (5 6 =) ? (69 ~a)
+processFile("./test.mil", "./out.wat")
