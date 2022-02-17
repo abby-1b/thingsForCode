@@ -30,7 +30,8 @@ const lines = {
 	"moon": "Voice_Moonstruck.ogg",
 	"sugar crush": "Voice_sugar_crush.ogg",
 	"sweet": "Voice_sweet.ogg",
-	"tasty": "Voice_tasty.ogg"
+	"tasty": "Voice_tasty.ogg",
+	"ni": "JJ_ohno.ogg"
 }
 
 const replyLines = [
