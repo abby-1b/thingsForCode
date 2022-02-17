@@ -80,9 +80,12 @@ bot.on('ready', () => {
 bot.on('messageCreate', message => {
 	if (message.author == bot.user) return
 	if (message.channelId == postMsgFrom.id) {
+		console.log("Homework from:", message.author.username)
 		postMsgTo.send(message.content)
+		return
 	}
 	if (isReady && message.content.startsWith('-cc')) {
+		console.log("Candy Crush from:", message.author.username)
 		let arg = message.content.split(" ")
 		if (arg.length > 1) {
 			arg = arg.slice(1).join(" ")
