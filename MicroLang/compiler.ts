@@ -94,10 +94,10 @@ function tokenize(code: string): Tokens {
 }
 
 function compile(code: string): string {
-	let tree = new BlockNode(undefined, "module", [new FnNode(undefined, "main")])
+	let tree = new BlockNode(undefined, "module", [new FnNode(undefined, "main", true)])
 	let tokens = tokenize(code)
 	tree.takeTokens(tokens)
-	tree.cnt.push(new InsNode(`(export "main" (func $main))`))
+	tree.cnt.push(new InsNode(tree, `(export "main" (func $main))`))
 	return tree.make()
 }
 
@@ -111,3 +111,4 @@ function processFile(inName: string, outName: string): void { Deno.readTextFile(
 // compile("0 @a (5 6 =) ? (69 ~a) : (34.5 ~a) a 2 * ~a #p(a,a)")
 // compileAndSave("./out.wat", "#console.log(5) #console.log(10)") // 0 @a (5 6 =) ? (69 ~a)
 processFile("./test.mil", "./out.wat")
+// tokenize(`"hello!"`)
