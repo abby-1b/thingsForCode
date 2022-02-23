@@ -11,9 +11,11 @@
 // 	(a) // with the first argument being `a`
 // )
 
-// (a,b):(a b+)@sum#sum(3,5)10=?(#console.log(80085)):(#console.log(12345))
-// sum=(a,b)=>{return a+b};sum(3,5)==10?console.log(80085):console.log(12345)
+//     (a,b): (a b+)@sum   #sum(3,5)10=?#console.log(80085):#console.log(12345)
+// sum=(a,b)=>{return a+b};sum(3,5)==10?console.log(80085) :console.log(12345)
 
+0@a 1@b
+(a b+@c b@a c@b #console.log(i, c))[;10]@i
 
 // Function:
 // (a1, a2, a3) : ( ... ) @fn
