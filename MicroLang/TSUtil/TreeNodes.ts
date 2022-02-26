@@ -1,7 +1,7 @@
 import { ParseStates } from "./ParseStates.ts"
 
 const SUPRESS_WARNINGS = false
-const NO_BLOCKS = true
+const NO_BLOCKS = false
 
 export type Tokens = [number, string][]
 
@@ -179,13 +179,16 @@ export class BlockNode extends Node {
 		}
 	}
 
-	takeTokens(tokens: Tokens, commasAllowed = false): Node {
+	takeTokens(tokens: Tokens, commasAllowed = false, takeOne = false): Node {
 		if (this.name == "module" && !(this instanceof FnNode)) return this.cnt[0].takeTokens(tokens)
+		let breakWhile = false
 		while (tokens.length > 0) {
+			if (breakWhile) break
 			let token = tokens.shift() || [-1, ""]
 			switch (token[0]) {
 				case ParseStates.NUM:
 					this.stack.push(["f32", this.cnt[ this.cnt.push(new ConstNode(this, "f32", token[1])) - 1 ]])
+					if (takeOne) breakWhile = true
 					break
 				case ParseStates.VAR: {
 					let lastNode = this.cnt[this.cnt.length - 1]
@@ -234,14 +237,27 @@ export class BlockNode extends Node {
 					break
 
 				case ParseStates.IF: {
-					tokens.shift()
-					let parenTokens = getParen(tokens)
-					if ((this.stack.pop() || " ")[0] != "i32") this.err("Attempted to use [f32] for if statement.")
+					// Check stack before anything.
+					let lastStack = this.stack.pop()
+					if (lastStack == undefined) {
+						this.err("No values on stack for if statement.")
+						break
+					}
+					if (lastStack[0] != "i32") lastStack[1].changeType("i32")
+
+					// Make blocks
 					let ifBlock = new IfNode(this)
 					let thenBlock = new BlockNode(ifBlock, "then")
-					ifBlock.cnt.push(thenBlock)
-					thenBlock.takeTokens(parenTokens)
+
+					ifBlock.cnt.push(thenBlock) // Push `then` block into `if` block
+					if (tokens[0][0] == ParseStates.PAR_O) {
+						tokens.shift()
+						thenBlock.takeTokens(getParen(tokens), false, true)
+					} else {
+						thenBlock.takeTokens(tokens, false, true)
+					}
 					ifBlock.returnType = thenBlock.returnType
+
 					this.stack.push([ifBlock.returnType, ifBlock])
 					this.cnt.push(ifBlock)
 				} break
@@ -275,6 +291,7 @@ export class BlockNode extends Node {
 					// console.log(this.stack)
 
 					this.cnt.push(new CallNode(this, token[1], commaBlocks.map(b => b.returnType)))
+					if (takeOne) breakWhile = true
 				} break
 
 				case ParseStates.CMA:
@@ -325,6 +342,13 @@ export class BlockNode extends Node {
 
 	returnStackVal(): [string, Node] {
 		return [this.returnType, this]
+	}
+
+	changeType(t: string) {
+		if (this.cnt.length == 0)
+			this.cnt.push(new ConstNode(this, "f32", "0"))
+		this.cnt[this.cnt.length - 1].changeType(t)
+		this.returnType = t
 	}
 }
 
