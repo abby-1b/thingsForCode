@@ -34,7 +34,10 @@ const lines = {
 	"moon": "Voice_Moonstruck.ogg",
 	"sugar crush": "Voice_sugar_crush.ogg",
 	"sweet": "Voice_sweet.ogg",
-	"tasty": "Voice_tasty.ogg"
+	"tasty": "Voice_tasty.ogg",
+	"honey": "Voice_honey.ogg",
+	"juicy": "Voice_juicy.ogg",
+	"sodalicious": "Voice_sodalicious.ogg"
 }
 
 const replyLines = [
@@ -44,7 +47,10 @@ const replyLines = [
 	"Sugar Crush",
 	"Tasty",
 	"Frogtastic",
-	"Moonstruck"
+	"Moonstruck",
+	"Juicy",
+	"Sodalicious",
+	"Honey"
 ]
 
 const player = createAudioPlayer()
