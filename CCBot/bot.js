@@ -1,5 +1,9 @@
+// [CCBot]
 
 // npm install @discordjs/voice
+
+const console = require('./../server/log')
+module.exports = console
 
 const {Client, Intents} = require('discord.js')
 const {joinVoiceChannel, createAudioPlayer, createAudioResource, VoiceConnectionStatus} = require("@discordjs/voice")
@@ -61,7 +65,7 @@ let postMsgFrom = null
 let postMsgTo = null
 
 bot.on('ready', () => {
-    console.log(`${bot.user.username} ready`)
+    console.log(`${bot.user.username} ready.`)
 	
 	bot.user.setActivity('with ur mom')
     let guilds = bot.guilds.cache.map(guild => guild.id)
@@ -116,7 +120,7 @@ bot.on('messageCreate', message => {
 			adapterCreator: channel.guild.voiceAdapterCreator,
 		})
 		connection.on(VoiceConnectionStatus.Ready, () => {
-			let resource = createAudioResource("lines/" + arg)
+			let resource = createAudioResource(__dirname + "/lines/" + arg)
 			player.play(resource)
 			connection.subscribe(player)
 		})
@@ -130,4 +134,9 @@ bot.on('messageCreate', message => {
 	}
 })
 
-bot.login(require("fs").readFileSync("TOKEN", "utf8"))
+setTimeout(() => {
+	console.log("Reading token...")
+	const TOKEN = require("fs").readFileSync(__dirname + "/TOKEN", "utf8")
+	console.log("Read token.\nStarting...")
+	bot.login(TOKEN)
+}, 10)
