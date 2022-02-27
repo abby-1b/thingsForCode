@@ -1,19 +1,29 @@
 
-export class ParseStates {
-	static NUM = 1
-	static VAR = 2
-	static NAM = 3
+export const ParseStates: {[key: string]: number} = {
+	NUM: 0, // .0123456789
+	VAR: 0, // a-z A-Z _
+	NAM: 0, // 
 
-	static CALL = 10
+	CALL: 0, // #
 	
-	static PAR_O = 4
-	static PAR_C = 5
-	static CMA = 11
+	PAR_O: 0, // (
+	PAR_C: 0, // )
+	CMA: 0, // ,
 	
-	static OPS = 6
+	OPS: 0, // +-*/=!~%&|
 	
-	static IF = 7
-	static ELSE = 8
+	IF: 0, // ?
+	ELSE: 0, // :
 
-	static REM = 9
+	REM: 0, // //
+
+	RNG_O: 0, // [
+	RNG_M: 0, // ;
+	RNG_C: 0, // ]
+}
+
+let v = 0
+let p: string
+for (p in ParseStates) {
+	ParseStates[p] = ++v
 }

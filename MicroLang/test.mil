@@ -1,20 +1,24 @@
-5 // Push 5 onto the stack
-@a // Assign the top value of the stack to `a`
-( // Test
-	5 // Push 5 onto the stack
-	a // Push the value of `a` onto the stack
-	= // Retrieves both values, checks if they're equal and puts the result onto the stack.
-)
-? // If
-( // If test is true
-	#yeet // Calls the `p` command
-	(a) // with the first argument being `a`
-)
-
-// 5 @a
-// ? (5 a =) (
-// 	#console.log(a)
+// 5 // Push 5 onto the stack
+// @a // Assign the top value of the stack to `a`
+// ( // Test
+// 	5 // Push 5 onto the stack
+// 	a // Push the value of `a` onto the stack
+// 	= // Retrieves both values, checks if they're equal and puts the result onto the stack.
+// )
+// ? // If
+// ( // If test is true
+// 	#yeet // Calls the `p` command
+// 	(a) // with the first argument being `a`
 // )
 
-// Function type 1:
-// (a1, a2, a3) @fn ( ... ) 
+//     (a,b): (a b+)@sum   #sum(3,5)10=?#console.log(80085):#console.log(12345)
+// sum=(a,b)=>{return a+b};sum(3,5)==10?console.log(80085) :console.log(12345)
+
+0@a 1@b
+(a b+@c b@a c@b #console.log(i, c))[;10]@i
+
+// Function:
+// (a1, a2, a3) : ( ... ) @fn
+
+// 5@a(a 8=)?(#p("yeet"))
+// a=5;if(a==8){p("yeet")}
