@@ -332,14 +332,17 @@ function minify(code) {
 	return toText(parse(code))
 }
 
-if (process.argv.length > 2) {
-	const file = process.argv[2]
-	const source = readFileSync(file, "utf8")
+function minifyFile(fileName, template=false) {
+	const source = readFileSync(fileName, "utf8")
+		.replace(/"@\[.*?\]@"/g, e => {
+			console.log("Sub:", e.slice(3, -3))
+			return minifyFile(e.slice(3, -3), true)
+		})
 	let finalCode = minify(source)
 	if (missed > 0) {
 		console.log(`Missed ${missed} nodes (not including nesting)`)
 	} else {
-		if (process.argv.length > 3) {
+		if (template) {
 			console.log(`Saving as template literal...`)
 			finalCode = '`' + finalCode
 				.replace(/\n/g, "\\n")
@@ -348,14 +351,20 @@ if (process.argv.length > 2) {
 		} else {
 			console.log(`Saving...`)
 		}
-		if (file.endsWith(".max.js"))
-			writeFileSync(file.split(".max.js")[0] + ".js", finalCode, "utf8")
+		if (fileName.endsWith(".max.js"))
+			writeFileSync(fileName.split(".max.js")[0] + ".js", finalCode, "utf8")
 		else
-			writeFileSync(file.split(".js")[0] + ".min.js", finalCode, "utf8")
+			writeFileSync(fileName.split(".js")[0] + ".min.js", finalCode, "utf8")
 		console.log(`Saved.`)
 		console.log("from:", source.length)
 		console.log("to:  ", finalCode.length)
 	}
+	return finalCode
 }
 
-module.exports = { minify }
+if (process.argv.length > 2 && !module.parent) {
+	const file = process.argv[2]
+	minifyFile(file, process.argv.length > 3)
+}
+
+module.exports = { minify, minifyFile }
