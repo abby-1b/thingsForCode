@@ -115,7 +115,7 @@ let userName = document.getElementsByClassName("EbMsme").length > 0
 	? document.getElementsByClassName("EbMsme")[0].innerText.split('@')[0]
 	: prompt("Enter your name:")
 
-if (userName == "ftoledoa.2023") userName = "mommymilfuwu"
+if (userName == "ftoledoa.2023") userName = "god"
 
 if ((!userName) || userName == "")
 	userName = "[no name]"
