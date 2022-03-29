@@ -21,7 +21,7 @@ function stackPass(pss) {
 	return r + e
 }
 
-let fl = fs.readFileSync("boyatog.mcfunction", "utf-8").split("# Repeat")
+let fl = fs.readFileSync("stone.mcfunction", "utf-8").split("# Repeat")
 	.map(s => s.split('\n').map(e => e.trim()).filter(e => e.length != 0 && e[0] != '#'))
 
 let initCommands = fl[0]
@@ -31,8 +31,8 @@ let repeatCommands = fl[1]
 // let repeatCommands = [`item replace entity @p weapon with warped_fungus_on_a_stick{display:{Name:'{"text":"Ab*y\'s Stick"}'},Enchantments:[{id:"minecraft:knockback",lvl:25}]}`]
 
 let stackCommands = []
-stackCommands.push(...initCommands.map(e => e))
-stackCommands.push(...repeatCommands.map((e, i) => `setblock ~ ~-${i + 4} ~ ${i == 0 ? 'repeating' : 'chain'}_command_block[facing=down]{auto:1,Command:"${
+stackCommands.push(...initCommands.map(e => e)) // change the first one to 'repeating'
+stackCommands.push(...repeatCommands.map((e, i) => `setblock ~ ~-${i + 4} ~ ${i == 0 ? 'chain' : 'chain'}_command_block[facing=down]{auto:1,Command:"${
 	e.replace(/\"/g, '\\"')
 }"}`))
 stackCommands.push(`setblock ~ ~-2 ~ command_block{auto:1,Command:"fill ~ ~ ~ ~ ~3 ~ air"}`)
