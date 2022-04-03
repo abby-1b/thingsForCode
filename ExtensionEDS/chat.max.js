@@ -116,6 +116,7 @@ let userName = document.getElementsByClassName("EbMsme").length > 0
 	: prompt("Enter your name:")
 
 if (userName == "ftoledoa.2023") userName = "god"
+if (userName == "agotaya.2023") userName = "god's daughter"
 
 if ((!userName) || userName == "")
 	userName = "[no name]"
