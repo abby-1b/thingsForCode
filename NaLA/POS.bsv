@@ -1,0 +1,1 @@
+turn|v|the|d|lights|n|off|m|how|j|are|v|you|p|?|?|please|x|help|v|me|p|can|v|speak|v|what|m|is|v|your|p|name|n|i|p|love|v|this|d|class|n|!|!|lower|v|volume|n|by|b|10%|%|'ve|v|fallen|v|and|c|'t|j|get|v|up|m|'m|v|pretty|j|sure|a|he|p|'s|v|falling|v|in|b|hole|n|{b}love|n|place|n|.|.|lowly|a|do|v|think|v|of|b

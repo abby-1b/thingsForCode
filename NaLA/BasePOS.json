@@ -1,0 +1,50 @@
+[
+	{
+		"words":  "turn the lights off",
+		"types": ["v", "d","n",   "m"]
+	},
+	{
+		"words":  "how are you ?",
+		"types": ["j","v","p","?"]
+	},
+	{
+		"words":  "please help me",
+		"types": ["x",   "v", "p"]
+	},
+	{
+		"words":  "can you speak ?",
+		"types": ["v","p","v",  "?"]
+	},
+	{
+		"words":  "what is your name ?",
+		"types": ["m", "v","p","n", "?"]
+	},
+	{
+		"words":  "i love this class !",
+		"types": ["p","v","d","n",  "!"]
+	},
+	{
+		"words":  "lower the volume by 10%",
+		"types": ["v",  "d","n",   "b","%"]
+	},
+	{
+		"words":  "help me  !   i   've fallen and i   can't   get up  !",
+		"types": ["v", "p","!","p","v","v",   "c","p","v","j","v","m","!"]
+	},
+	{
+		"words":  "i   'm      pretty sure he   's  falling in  the hole",
+		"types": ["p","v",    "j",   "a", "p", "v","v",    "b","d","n"]
+	},
+	{
+		"words":  "i   'm  falling in  love",
+		"types": ["p","v","v",    "b","n"]
+	},
+	{
+		"words":  "i   love this place.",
+		"types": ["p","v", "d", "n", "."]
+	},
+	{
+		"words":  "how lowly do  you think of  me  ?",
+		"types": ["j","a",  "v","p","v",  "b","p","?"]
+	}
+]
