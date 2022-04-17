@@ -1,4 +1,4 @@
-// fetch("cnt.js").then(r => r.text().then(t => { chrome.storage.local.set({"cnt": t}, () => {}) }))
+// fetch("cnt.js").then(r => r.text().then(t => { console.log("Gottem."); chrome.storage.local.set({"cnt": t}, () => {}) }))
 
 chrome.alarms.onAlarm.addListener(function(alarm) {
     if (alarm.name === "updtFull") {
