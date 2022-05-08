@@ -1,4 +1,4 @@
-WAIT = 200
+WAIT = 33
 
 // Simple utilities
 efn = (el, fn, once=1) => {
@@ -19,6 +19,12 @@ document.onkeydown = (k) => {
     }
 }
 ddd = 1
+
+// Editor
+async function stdZoom() {
+	for (let i = 0; i < 50; i++) await cel(document.querySelectorAll(".blocklyZoom")[0].children[1])
+	for (let i = 0; i < 15; i++) await cel(document.querySelectorAll(".blocklyZoom")[0].children[3])
+}
 
 // Clicking on elements (default button 0, meaning left. 1 means right.)
 async function cel(el, button=0) {
@@ -94,3 +100,52 @@ async function addBlock(category, id) {
 
 // Setting block values
 // document.querySelector(".blocklyHtmlInput").value = "Hello"
+
+// Add editor
+let b = document.querySelectorAll(".ode-Box-body")[5]
+if (b.children.length > 1) b.removeChild(b.children[1])
+let sec = document.createElement("textarea")
+sec.style.width = "calc(100% - 14px)"
+sec.style.height = "calc(100% - 7px)"
+sec.style.resize = "none"
+sec.style.fontSize = "1.5em"
+b.appendChild(sec)
+
+// Convert blocks to text
+function htToStr(hr) {
+    let e = document.createElement("p")
+    e.innerHTML = hr
+    return e.innerText
+		.split(String.fromCharCode(160)).join(" ")
+		.split('“').join('"')
+		.split('”').join('"')
+}
+
+function bToText(b) {
+    let ret = [...b.children].map(e => {
+        if (e.tagName == "g") return bToText(e)
+        if (e.tagName == "text") return htToStr(e.innerHTML)
+        if (["path", "rect", "circle"].includes(e.tagName)) return ""
+        return "[" + e.tagName + "]"
+    }).filter(e => e != "")
+    if (ret[0] == "initialize global") {
+        ret[0] = "var"
+        ret[2] = "="
+    } else if (ret[0] == "if" && ret[1] == "then") {
+        ret[1] = ret[3] // TODO: if, then, else
+    } else if (ret[0] == "set") {
+        ret[0] = ret[1]
+        ret[1] = "="
+        ret[2] = ret[3]
+    }
+    return ret
+}
+
+function asCode() {
+    let bs = [...document.querySelector(".blocklyBlockCanvas").children]
+        .sort((a, b) => a.getBoundingClientRect().y < b.getBoundingClientRect().y ? -1 : 1)
+        .map(b => bToText(b))
+    return bs
+}
+
+
