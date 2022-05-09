@@ -69,7 +69,7 @@ function solve(m) {
 	// if (!m[1][1].res()) swap(m, 1, 2)
 	// if (!m[0][0].res()) swap(m, 0, 1)
 
-	m.map(e => e.logTuple())
+	// m.map(e => e.logTuple())
 	
 	m[0] = dvv(m[0], m[0][0])
 	
@@ -84,6 +84,8 @@ function solve(m) {
 	// console.log(m[1].map(e => e.res()))
 	// console.log(m[2].map(e => e.res()))
 	
+	m.map(e => e.logTuple())
+
 	let z = m[2].slice(-1)[0]
 	let y = m[1][3].sub(z.mlv(m[1][2]))
 	let x = m[0][3].sub(y.mlv(m[0][1])).sub(z.mlv(m[0][2]))
@@ -106,10 +108,10 @@ function solved(s) {
 	return m
 }
 
-// solve([
-//   [3, 1, -1, 9],
-//   [2, -2, 1, -3],
-//   [1, 1, 1, 7]
-// ]).logTuple()
+solve([
+  [4, -3, 1, -8],
+  [-2, 1, -3, -4],
+  [1, -1, 2, 3]
+]).logTuple()
 
-solve(solved([7, 3, 8]))
+// solve(solved([7, 3, 8]))
