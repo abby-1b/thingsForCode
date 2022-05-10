@@ -15,7 +15,7 @@ document.onkeydown = (k) => {
     ae = document.activeElement
 	av = ae.value
     if (ae.tagName == "INPUT" 
-        && !isNaN(av) && !isNaN(parseFloat(av))) {
+        && isNum(av)) {
         ae.value = Math.trunc(parseFloat(av)) + (k.key == "ArrowUp" ? 1 : k.key == "ArrowDown" ? - 1 : 0) + (av.match(/\..*/)||[""])[0]
     }
 }
@@ -23,7 +23,9 @@ ddd = 1
 
 let w = Blockly.allWorkspaces[Object.keys(Blockly.allWorkspaces)[0]]
 
-function delAll() { w.getTopBlocks().map(e => e.dispose()) }
+function isNum(n) {
+	return !isNaN(n) && !isNaN(parseFloat(n))
+}
 
 let savedSelect = [], plch = 0
 function typeBlock(t) {
@@ -31,8 +33,8 @@ function typeBlock(t) {
 		let r = selectedTop().getBoundingRectangle()
 		console.log(r.bottomRight.y - r.topLeft.y)
 		plch += r.bottomRight.y - r.topLeft.y
-		noSelect()
-	} else if (t[0] == "~") selectParent() // Select parent
+		Blockly.selected.unselect()
+	} else if (t[0] == "~") Blockly.selected.getParent().select() // Select parent
 	else if (t[0] == ".") { // Setting values
 		if (t[1] == 'v') getSelected().setFieldValue(t.slice(2), "NAME")
 		else if (t[1] == 's') savedSelect.push(getSelected())
@@ -54,13 +56,11 @@ function selectedTop() {
 	return c
 }
 function getSelected() { return Blockly.selected }
-function selectParent() { Blockly.selected.getParent().select() }
-function noSelect() { Blockly.selected.unselect() }
 
 function build() {
 	plch = 0
 	savedSelect = []
-	delAll()
+	w.getTopBlocks().map(e => e.dispose())
 	sec.value.split("\n").slice(0, -1).map(e => e.trim()).filter(e => e != "").map(s => {
 		typeBlock(s)
 	})
@@ -69,26 +69,78 @@ function build() {
 }
 
 var sec = null
-var currEdtShow = 0
-var editorShow = 0
 var intr = null
-function initEditor() {
+var ctx = null
+var currEdtShow = 0
+var editorShow = 1
+var drawParams = {
+	cw: 10, // Char width
+	ch: 17, // Char height
+	lo: 3, // Line offset
+	sx: 6, // Start X
+	sy: 10 // Start Y
+}
+;{
 	let b = document.querySelectorAll(".ode-Box-body")[5]
 	b.style.display = "grid"
 	b.style.gridTemplateColumns = "1fr 0fr"
-	if (b.children.length > 1) b.removeChild(b.children[1])
+	while (b.children.length > 1) b.removeChild(b.children[1])
+
+	let d = document.createElement("div")
+	d.id = "d"
+	d.style.cssText = "font-family:monospace;font-size:1.3em"
+	d.innerText = "Hello, World!"
+	d.style.position = "fixed"
+	b.appendChild(d)
+	let r = d.getBoundingClientRect()
+	drawParams.cw = r.width / d.innerText.length
+	drawParams.ch = r.height
+	console.log(drawParams.cw, drawParams.ch)
+	d.innerText += "\nhi"
+	r = d.getBoundingClientRect()
+	drawParams.lo = r.height - 2 * drawParams.ch
+	b.removeChild(d)
+
 	sec = document.createElement("textarea")
 	sec.id = "edt"
-	sec.style.width = "calc(100% - 14px)"
-	sec.style.height = "calc(100% - 7px)"
-	sec.style.resize = "none"
-	sec.style.fontSize = "1.5em"
+	sec.style.cssText = "tab-size:4;font-family:monospace;font-size:1.3em;width:calc(100% - 14px);height:calc(100% - 7px);resize:none;white-space:pre;overflow-wrap:normal;overflow-x:scroll"
+	sec.onscroll = redraw
+	sec.onkeydown = function(e) {
+		if (e.key == "Tab") {
+			e.preventDefault()
+			let start = this.selectionStart
+			let end = this.selectionEnd
+			this.value = this.value.substring(0, start) + "\t" + this.value.substring(end)
+			this.selectionStart = this.selectionEnd = start + 1
+		}
+	}
+	sec.oninput  = redraw
 	b.appendChild(sec)
+
+	cnv = document.createElement("canvas")
+	ctx = cnv.getContext("2d")
+	cnv.id = "cnv"
+	cnv.style.cssText = "position:absolute;width:50%;height:100%;right:0;opacity:0.8;pointer-events:none;mix-blend-mode:lighten" // Final config
+	// cnv.style.cssText = "position:absolute;width:50%;height:100%;right:0;opacity:0.5;pointer-events:none" // Test config
+	b.appendChild(cnv)
+
 	if (intr) clearInterval(intr)
+	console.log(intr)
 	intr = setInterval(() => {
 		currEdtShow = currEdtShow * 0.8 + editorShow * 0.2
+		if (Math.abs(currEdtShow - editorShow) < 0.05) currEdtShow = editorShow
 		b.style.gridTemplateColumns = `1fr ${currEdtShow}fr`
+		ctx.canvas.style.width = (50 * currEdtShow) + "%"
+		let rct = ctx.canvas.getBoundingClientRect()
+		let w = Math.round(rct.width)
+		let h = Math.round(rct.height)
+		if (ctx.canvas.width != w) {
+			ctx.canvas.width = w
+			ctx.canvas.height = h
+			redraw()
+		}
 	}, 16)
+	console.log(intr)
 
 	document.onkeydown = (k) => {
 		if ("sr".includes(k.key) && k.metaKey) {
@@ -96,5 +148,36 @@ function initEditor() {
 			k.preventDefault()
 		}
 	}
+
+	let btn = document.querySelectorAll(".ode-Box-content>table>tbody>tr>td")[5]
+	btn.onclick = () => { editorShow = editorShow == 1 ? 0 : 1 }
+	btn.children[0].children[0].innerText = "Toggle"
 }
-initEditor()
+
+function redraw() {
+	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+	ctx.translate(-sec.scrollLeft, sec.scrollTop)
+	// ctx.fillStyle = "green"
+	sec.value.replace(/\t/g, "    ").split("\n").map(e => splitLine(e)).forEach((l, y) => l.forEach(t => {
+		if (t.txt[0] == '"' || ["join"].includes(t.txt)) ctx.fillStyle = "#B32D5E"
+		else if (["if", "while", "else"].includes(t.txt)) ctx.fillStyle = "#B18E35"
+		else if (isNum(t.txt) || "+-*/".includes(t.txt)) ctx.fillStyle = "#3F71B5"
+		else if (["true", "false"].includes(t.txt)) ctx.fillStyle = "#77AB41"
+		else if (["global", "="].includes(t.txt)) ctx.fillStyle = "#D05F2D"
+		else if ("()".includes(t.txt)) ctx.fillStyle = "#4f0041"
+		else if ("{}".includes(t.txt)) ctx.fillStyle = "#424f00"
+		else return
+		ctx.fillRect(drawParams.sx + drawParams.cw * t.x, drawParams.sy + (drawParams.ch + drawParams.lo) * y,
+			drawParams.cw * t.w, drawParams.ch)
+	}))
+	
+	ctx.translate(sec.scrollLeft, -sec.scrollTop)
+}
+
+function splitLine(code) {
+	let tokens = []
+	let patt = /('|"|'''|""").*?\1|-[0-9.]{1,}|[+\-*\/!<>=]=|[{}()\[\]+\-*\/=,|&^!?]|[a-zA-Z_][a-zA-Z_0-9]*|[0-9.]{1,}/gm
+	// while (match = patt.exec(code)) tokens.push({txt: match[0], s: match.index, e: patt.lastIndex})
+	while (match = patt.exec(code)) tokens.push({txt: match[0], x: match.index, w: patt.lastIndex - match.index})
+	return tokens
+}
