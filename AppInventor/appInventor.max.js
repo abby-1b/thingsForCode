@@ -1,4 +1,4 @@
-// fetch("http://localhost:8000/appInventor.max.js").then(r => r.text()).then(t => (1, eval)(t))
+// fetch("http://localhost:8000/appInventor.js").then(r => r.text()).then(t => (1, eval)(t))
 
 // Simple utilities
 efn = (el, fn, once=1) => {
@@ -31,12 +31,13 @@ let savedSelect = [], plch = 0
 function typeBlock(t) {
 	if (t[0] == "_") { // Deselect everything
 		let r = selectedTop().getBoundingRectangle()
-		console.log(r.bottomRight.y - r.topLeft.y)
 		plch += r.bottomRight.y - r.topLeft.y
 		Blockly.selected.unselect()
 	} else if (t[0] == "~") Blockly.selected.getParent().select() // Select parent
 	else if (t[0] == ".") { // Setting values
 		if (t[1] == 'v') getSelected().setFieldValue(t.slice(2), "NAME")
+		// else if (t[1] == 'd') getSelected().fieldVar_.setValue("global " + t.slice(2)) // used to set dropdown values 
+		else if (t[1] == 'n') getSelected().setFieldValue(t.slice(2), "VAR0")
 		else if (t[1] == 's') savedSelect.push(getSelected())
 		else if (t[1] == 'l' && savedSelect.length > 0) savedSelect.pop().select()
 	} else {
@@ -57,13 +58,11 @@ function selectedTop() {
 }
 function getSelected() { return Blockly.selected }
 
-function build() {
+function build(code) {
 	plch = 0
 	savedSelect = []
 	w.getTopBlocks().map(e => e.dispose())
-	sec.value.split("\n").slice(0, -1).map(e => e.trim()).filter(e => e != "").map(s => {
-		typeBlock(s)
-	})
+	parse(code).map(typeBlock)
 	w.scrollCenter()
 	setTimeout(() => sec.focus(), 1)
 }
@@ -95,7 +94,6 @@ var drawParams = {
 	let r = d.getBoundingClientRect()
 	drawParams.cw = r.width / d.innerText.length
 	drawParams.ch = r.height
-	console.log(drawParams.cw, drawParams.ch)
 	d.innerText += "\nhi"
 	r = d.getBoundingClientRect()
 	drawParams.lo = r.height - 2 * drawParams.ch
@@ -120,12 +118,11 @@ var drawParams = {
 	cnv = document.createElement("canvas")
 	ctx = cnv.getContext("2d")
 	cnv.id = "cnv"
-	cnv.style.cssText = "position:absolute;width:50%;height:100%;right:0;opacity:0.8;pointer-events:none;mix-blend-mode:lighten" // Final config
+	cnv.style.cssText = "position:absolute;width:50%;height:100%;right:0;opacity:0.8;pointer-events:none;mix-blend-mode:color-dodge" // Final config
 	// cnv.style.cssText = "position:absolute;width:50%;height:100%;right:0;opacity:0.5;pointer-events:none" // Test config
 	b.appendChild(cnv)
 
 	if (intr) clearInterval(intr)
-	console.log(intr)
 	intr = setInterval(() => {
 		currEdtShow = currEdtShow * 0.8 + editorShow * 0.2
 		if (Math.abs(currEdtShow - editorShow) < 0.05) currEdtShow = editorShow
@@ -140,11 +137,10 @@ var drawParams = {
 			redraw()
 		}
 	}, 16)
-	console.log(intr)
 
 	document.onkeydown = (k) => {
 		if ("sr".includes(k.key) && k.metaKey) {
-			build()
+			build(sec.value)
 			k.preventDefault()
 		}
 	}
@@ -161,9 +157,9 @@ function redraw() {
 	sec.value.replace(/\t/g, "    ").split("\n").map(e => splitLine(e)).forEach((l, y) => l.forEach(t => {
 		if (t.txt[0] == '"' || ["join"].includes(t.txt)) ctx.fillStyle = "#B32D5E"
 		else if (["if", "while", "else"].includes(t.txt)) ctx.fillStyle = "#B18E35"
-		else if (isNum(t.txt) || "+-*/".includes(t.txt)) ctx.fillStyle = "#3F71B5"
+		else if (isNum(t.txt) || ["+", "-", "*", "/", "==", "!=", "<=", ">="].includes(t.txt)) ctx.fillStyle = "#3F71B5"
 		else if (["true", "false"].includes(t.txt)) ctx.fillStyle = "#77AB41"
-		else if (["global", "="].includes(t.txt)) ctx.fillStyle = "#D05F2D"
+		else if (["global", "local", "=", "+=", "-=", "*=", "/="].includes(t.txt)) ctx.fillStyle = "#D05F2D"
 		else if ("()".includes(t.txt)) ctx.fillStyle = "#4f0041"
 		else if ("{}".includes(t.txt)) ctx.fillStyle = "#424f00"
 		else return
@@ -177,7 +173,6 @@ function redraw() {
 function splitLine(code) {
 	let tokens = []
 	let patt = /('|"|'''|""").*?\1|-[0-9.]{1,}|[+\-*\/!<>=]=|[{}()\[\]+\-*\/=,|&^!?]|[a-zA-Z_][a-zA-Z_0-9]*|[0-9.]{1,}/gm
-	// while (match = patt.exec(code)) tokens.push({txt: match[0], s: match.index, e: patt.lastIndex})
 	while (match = patt.exec(code)) tokens.push({txt: match[0], x: match.index, w: patt.lastIndex - match.index})
 	return tokens
 }
