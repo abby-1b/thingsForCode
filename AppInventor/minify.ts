@@ -26,4 +26,16 @@ async function minify(code: string) {
 	})).code
 }
 
-Deno.writeTextFileSync("appInventor.js", await minify(Deno.readTextFileSync("appInventor.max.js")))
+async function buildTS(ts: string): Promise<string> {
+	return (await Deno.emit("/mod.ts", {
+		sources: { "/mod.ts": ts },
+	})).files["file:///mod.ts.js"].replace(/\s*export {}(;|)\s*/g, "").replace("\"use strict\";", "")
+}
+
+// Deno.writeTextFileSync("appInventor.js", await minify(Deno.readTextFileSync("appInventor.max.js")))
+
+// This is more of a build script than a minify script but idc
+Deno.writeTextFileSync("appInventor.js", ([
+	Deno.readTextFileSync("appInventor.max.js"),
+	await buildTS(Deno.readTextFileSync("appInventorParser.ts").split("// Test")[0])
+].join("\n")))
