@@ -13,26 +13,26 @@ const gcd = (a, b) => {
 }
 
 class Fraction {
-  constructor(a, b = 1) {
-    this.top = a
-    this.bottom = b
+	constructor(a, b = 1) {
+		this.top = a
+		this.bottom = b
 		this.simp()
-  }
-  
-  add(f) {
+	}
+
+	add(f) {
 		return new Fraction(f.top * this.bottom + this.top * f.bottom, f.bottom * this.bottom)
-  }
+	}
 	
 	sub(f) {
 		return new Fraction(this.top * f.bottom - f.top * this.bottom, f.bottom * this.bottom)
-  }
+	}
 	
 	dvv(v) { return new Fraction(this.top * v.bottom, this.bottom * v.top) }
 	
 	mlv(v) { return new Fraction(this.top * v.top, this.bottom * v.bottom) }
 
 	simp() {
-		if (Number.isNaN(this.top) || Number.isNaN(this.bottom)) 
+		if (Number.isNaN(this.top) || Number.isNaN(this.bottom))
 			return this
 		const d = gcd(this.top, this.bottom)
 		this.top = this.top / d
@@ -78,7 +78,7 @@ function solve(m) {
 	
 	m[2] = sub(m[2], mlv(m[0], m[2][0]))
 	m[2] = sub(m[2], mlv(m[1], m[2][1]))
-	m[2] = dvv(m[2], m[2][2])
+	// m[2] = dvv(m[2], m[2][2])
 
 	// console.log(m[0].map(e => e.res()))
 	// console.log(m[1].map(e => e.res()))
@@ -109,9 +109,9 @@ function solved(s) {
 }
 
 solve([
-  [4, -3, 1, -8],
-  [-2, 1, -3, -4],
-  [1, -1, 2, 3]
-]).logTuple()
+  [2, -3, 5, 14],
+  [4, 1, -2, -17],
+  [-1, -1, 1, 3]
+]) //.logTuple()
 
 // solve(solved([7, 3, 8]))
