@@ -25,10 +25,17 @@ function parse(code: string) {
 		return ret
 	}
 
+	function isFn(nam: string) {
+		return ["join"].includes(nam)
+	}
+
 	function valFromTokens(tk: (string | string[])[]): (string | string[])[] {
 		// Deal with parentheses
 		for (let p = 0; p < tk.length; p++) {
 			if (tk[p] == '(') {
+				// if (p != 0 && typeof tk[p - 1] === "string" && isFn(tk[p - 1] as string)) {
+				// 	console.log("Function call:", tk[p - 1], tk[p])
+				// }
 				tk[p++] = []
 				let n = 1
 				while (n > 0) {
@@ -40,12 +47,8 @@ function parse(code: string) {
 				valFromTokens(tk[p] as string[])
 			}
 		}
-		// Simple use cases
-		if (tk.length == 3) {
-			[tk[0], tk[1]] = [tk[1], tk[0]]
-			return tk
-		}
-		["^", "*/", "+-"].forEach(currSymbols => {
+		// Deal with operations
+		["^", "*/", "+-", ["=="]].forEach(currSymbols => {
 			for (let i = 0; i < tk.length; i++) {
 				if (typeof tk[i] !== "string") continue
 				if (currSymbols.includes(tk[i] as string)) {
@@ -57,33 +60,24 @@ function parse(code: string) {
 		return tk
 	}
 
+	function translateVal(tk: string[]): string[] {
+		console.log(tk)
+		let ret = valFromTokens(tk)
+			.flat(Infinity)
+			.filter(e => e != ",")
+			.map(e => {
+				if (e[0] == '"') return e.slice(0, -1)
+				if (e == "==") return "="
+				return e
+			})
+		return ret as string[]
+	}
+
 	function getVar(varName: string): SVar | undefined {
-		for (let v = vars.length - 1; v > 0; v--) {
+		for (let v = vars.length - 1; v >= 0; v--) {
 			if (vars[v].name == varName) return vars[v]
 		}
 		return undefined
-	}
-
-	function translateVal(tk: string[]): string[] {
-		let ret = (valFromTokens(tk).flat(Infinity) as string[])
-		for (let e = 0; e < ret.length; e++) {
-			if (ret[e] == "==") ret[e] = "="
-			else if (ret[e][0] == '"') ret[e] = ret[e].slice(0, -1)
-			else if (ret[e][0].match(/[a-zA-Z_]/)) {
-				let v = getVar(ret[e])
-				if (!v) { // Variable doesn't exist, assume it's a function!
-					ret.splice(e + 1, 1)
-					console.log("L", ret[e])
-					// let cc = captureClause(tk)
-					// return [...translateVal(cc), ret[e]]
-				} else {
-					ret[e] = "get " + (v.level == 0 ? "global " : "") + ret[e]
-				}
-			}
-			ret[e] = ret[e]
-		}
-		// }).flat()
-		return ret.flat(Infinity)
 	}
 
 	let varLevel = 0
@@ -138,7 +132,10 @@ function parse(code: string) {
 // Test
 export {}
 parse(`
-local a = (join("Hello", "World!"))
+local a = 10
+if (a == 10) {
+	a = (a + 5)
+}
 `)
 // global a = "Hello,"
 // if (a == "Hello,") {
