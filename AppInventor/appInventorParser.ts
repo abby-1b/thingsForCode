@@ -25,17 +25,10 @@ function parse(code: string) {
 		return ret
 	}
 
-	function isFn(nam: string) {
-		return ["join"].includes(nam)
-	}
-
 	function valFromTokens(tk: (string | string[])[]): (string | string[])[] {
 		// Deal with parentheses
 		for (let p = 0; p < tk.length; p++) {
 			if (tk[p] == '(') {
-				// if (p != 0 && typeof tk[p - 1] === "string" && isFn(tk[p - 1] as string)) {
-				// 	console.log("Function call:", tk[p - 1], tk[p])
-				// }
 				tk[p++] = []
 				let n = 1
 				while (n > 0) {
@@ -68,6 +61,8 @@ function parse(code: string) {
 			.map(e => {
 				if (e[0] == '"') return e.slice(0, -1)
 				if (e == "==") return "="
+				if ((e as string).match(/[a-zA-Z_]/) && vars.map(v => v.name).includes(e as string))
+					return "get " + ((getVar(e as string) as SVar).level == 0 ? "global " : "") + e
 				return e
 			})
 		return ret as string[]
@@ -93,7 +88,7 @@ function parse(code: string) {
 			ret.push("_")
 		} else if (tk == "local") {
 			let n = tokens.shift() as string
-			vars.push({name: n, level: ++varLevel})
+			vars.push({name: n, level: varLevel})
 			ret.push("initialize local in do", ".s", ".n" + n)
 			if (tokens.shift() != "=") error("Expected `=`")
 			else {
@@ -104,6 +99,7 @@ function parse(code: string) {
 		} else if (tk == "if") {
 			ret.push("if", ".s")
 			ret.push(...translateVal(captureClause(tokens)), ".l", ".s")
+			varLevel++
 			tokens.shift()
 		} else if (tokens.length > 0 && tokens[0] == '=') {
 			ret.push("set " + ((getVar(tk) as SVar).level == 0 ? "global " : "") + tk, ".s")
@@ -120,11 +116,12 @@ function parse(code: string) {
 			ret.push(...h.map(translateVal).flat())
 		} else if (tk == "}") {
 			ret.push(".l")
+			varLevel--
+			vars = vars.filter(v => v.level <= varLevel)
 		} else {
 			console.log("Didn't find:", tk, tokens[0])
 		}
 	}
-	// console.log(vars)
 	console.log(ret)
 	return ret
 }
@@ -132,8 +129,8 @@ function parse(code: string) {
 // Test
 export {}
 parse(`
-local a = 10
-if (a == 10) {
+if (10 == 10) {
+	local a = 10
 	a = (a + 5)
 }
 `)
