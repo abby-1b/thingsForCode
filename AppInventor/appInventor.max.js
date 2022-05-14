@@ -108,8 +108,38 @@ var drawParams = {
 			e.preventDefault()
 			let start = this.selectionStart
 			let end = this.selectionEnd
-			this.value = this.value.substring(0, start) + "\t" + this.value.substring(end)
-			this.selectionStart = this.selectionEnd = start + 1
+			let isSingle = start == end
+			if (isSingle && !e.shiftKey)
+				return document.execCommand("insertText", false, "\t")
+			while (this.value[start] != "\n" && start > 0) start--
+			if (start != 0) start++
+			if (isSingle) {
+				if (this.value[start] != "\t") return
+				this.selectionStart = start
+				this.selectionEnd = start + 1
+				if (end == start) end++
+				document.execCommand("insertText", false, "")
+				this.selectionStart = this.selectionEnd = end - 1
+				return
+			}
+			while (this.value[end] != "\n" && end < this.value.length - 1) end++
+			if (end != this.value.length - 1) end--
+
+			if (e.shiftKey) {
+				console.log("Multiple shift!")
+			} else {
+				let tabPositions = [start]
+				let spl = this.value.substring(start, end).split("\n")
+				spl.slice(0, -1).forEach((l, i) => {
+					tabPositions.push(tabPositions[tabPositions.length - 1] + l.length + 2)
+				})
+				tabPositions.forEach(p => {
+					this.selectionStart = this.selectionEnd = p
+					document.execCommand("insertText", false, "\t")
+				})
+				this.selectionStart = start
+				this.selectionEnd = tabPositions[tabPositions.length - 1] + spl[spl.length - 1].length + 2
+			}
 		}
 	}
 	sec.oninput  = redraw
