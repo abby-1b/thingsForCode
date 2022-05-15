@@ -75,7 +75,7 @@ function parse(code: string) {
 		return undefined
 	}
 
-	let varLevel = 0
+	let varLevel = 1
 	let vars: SVar[] = []
 	while (tokens.length > 0) {
 		let tk = tokens.shift() as string
@@ -129,8 +129,8 @@ function parse(code: string) {
 // Test
 export {}
 parse(`
-if (10 == 10) {
-	local a = 10
+local a = 10
+if (a == 10) {
 	a = (a + 5)
 }
 `)
