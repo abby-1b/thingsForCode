@@ -27,7 +27,7 @@ function isNum(n) {
 	return !isNaN(n) && !isNaN(parseFloat(n))
 }
 
-let savedSelect = [], plch = 0
+let savedSelect = [], plch = 0, bn = 0
 function typeBlock(t) {
 	if (t[0] == "_") { // Deselect everything
 		let r = selectedTop().getBoundingRectangle()
@@ -52,30 +52,39 @@ function typeBlock(t) {
 	}
 }
 function selectedTop() {
-	let c = getSelected()
-	while (c.parentBlock_) c = c.parentBlock_
-	return c
+	k = getSelected()
+	while (k.parentBlock_) k = k.parentBlock_
+	return k
 }
 function getSelected() { return Blockly.selected }
 
+var lastBuild = []
 function build(code) {
-	plch = 0
-	savedSelect = []
-	w.getTopBlocks().map(e => e.dispose())
-	parse(code).map(typeBlock)
+	let c = parse(code)
+	if (bn++ != 0 && c.length > lastBuild.length && c.slice(0, lastBuild.length).filter((e, i) => e != lastBuild[i]).length == 0) {
+		let tmp = c
+		c = c.slice(lastBuild.length)
+		lastBuild = tmp
+	} else {
+		lastBuild = c
+		plch = 0
+		savedSelect = []
+		w.getTopBlocks().map(e => e.dispose())
+	}
+	c.forEach(typeBlock)
 	w.scrollCenter()
 	setTimeout(() => sec.focus(), 1)
 }
 
-var sec = null
+var sec  = null
 var intr = null
-var ctx = null
+var ctx  = null
 var currEdtShow = 0
 var editorShow = 1
 var drawParams = {
 	cw: 10, // Char width
 	ch: 17, // Char height
-	lo: 3, // Line offset
+	lo: 1, // Line offset
 	sx: 6, // Start X
 	sy: 10 // Start Y
 }
@@ -96,7 +105,7 @@ var drawParams = {
 	drawParams.ch = r.height
 	d.innerText += "\nhi"
 	r = d.getBoundingClientRect()
-	drawParams.lo = r.height - 2 * drawParams.ch
+	drawParams.lo = (r.height - 2 * drawParams.ch) + 1
 	b.removeChild(d)
 
 	sec = document.createElement("textarea")
@@ -182,9 +191,12 @@ var drawParams = {
 
 function redraw() {
 	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-	ctx.translate(-sec.scrollLeft, sec.scrollTop)
-	// ctx.fillStyle = "green"
-	sec.value.replace(/\t/g, "    ").split("\n").map(e => splitLine(e)).forEach((l, y) => l.forEach(t => {
+	ctx.translate(-sec.scrollLeft, -sec.scrollTop)
+	let scr = Math.floor(sec.scrollTop / (drawParams.ch + drawParams.lo))
+	sec.value.replace(/\t/g, "    ").split("\n").map((e, i) => {
+		if (scr > i) return []
+		return splitLine(e)
+	}).forEach((l, y) => l.forEach(t => {
 		if (t.txt[0] == '"' || ["join"].includes(t.txt)) ctx.fillStyle = "#B32D5E"
 		else if (["if", "while", "else"].includes(t.txt)) ctx.fillStyle = "#B18E35"
 		else if (isNum(t.txt) || ["+", "-", "*", "/", "==", "!=", "<=", ">="].includes(t.txt)) ctx.fillStyle = "#3F71B5"
@@ -197,7 +209,7 @@ function redraw() {
 			drawParams.cw * t.w, drawParams.ch)
 	}))
 	
-	ctx.translate(sec.scrollLeft, -sec.scrollTop)
+	ctx.translate(sec.scrollLeft, sec.scrollTop)
 }
 
 function splitLine(code) {
