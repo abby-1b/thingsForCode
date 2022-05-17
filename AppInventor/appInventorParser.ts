@@ -122,7 +122,7 @@ function parse(code: string) {
 			console.log("Didn't find:", tk, tokens[0])
 		}
 	}
-	console.log(ret)
+	// console.log(ret)
 	return ret
 }
 
