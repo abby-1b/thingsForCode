@@ -4,14 +4,15 @@ type SVar = {name: string, level: number}
 function error(e: string) { console.log(e) }
 
 function parse(code: string) {
-	let tokens = code.match(/('|"|'''|""").*?\1|-[0-9.]{1,}|[+\-*\/!<>=]=|[{}()\[\]+\-*\/=,|&^!?]|[a-zA-Z_][a-zA-Z_0-9]*|[0-9.]{1,}/gm) as string[]
+	let tokens = code.match(/('|"|'''|""").*?\1|-[0-9.]{1,}|[+\-*\/!<>=]=|[{}()\[\]+\-*\/=,|&^!?]|[a-zA-Z_][a-zA-Z_0-9]*|[0-9.]{1,}|\n/gm) as string[]
+	// console.log(tokens)
 	let ret: string[] = []
 
 	function captureClause(tokens: string[]): string[] {
 		let ret: string[] = []
 		if (!"([{".includes(tokens[0])) {
-			// while (tokens.length > 0 && !["if", "global", ",", "{", "}"].includes(tokens[0])) ret.push(tokens.shift() as string)
-			return [tokens.shift() as string]
+			while (tokens.length > 0 && tokens[0] != "\n") ret.push(tokens.shift() as string)
+			return ret
 		}
 		let tk0 = tokens.shift() as string
 		let ot = ")]}"["([{".indexOf(tk0)], n = 1
@@ -19,7 +20,7 @@ function parse(code: string) {
 			if (tokens[0] == tk0) n++
 			if (tokens[0] == ot) n--
 			if (n == 0) break
-			ret.push(tokens.shift() as string)
+			if (tokens[0] != "\n") ret.push(tokens.shift() as string)
 		}
 		tokens.shift()
 		return ret
@@ -54,7 +55,7 @@ function parse(code: string) {
 	}
 
 	function translateVal(tk: string[]): string[] {
-		console.log(tk)
+		// console.log(tk)
 		let ret = valFromTokens(tk)
 			.flat(Infinity)
 			.filter(e => e != ",")
@@ -118,22 +119,21 @@ function parse(code: string) {
 			ret.push(".l")
 			varLevel--
 			vars = vars.filter(v => v.level <= varLevel)
-		} else {
+		} else if (tk != "\n") {
 			console.log("Didn't find:", tk, tokens[0])
 		}
 	}
-	// console.log(ret)
 	return ret
 }
 
 // Test
 export {}
-parse(`
+console.log(parse(`
 local a = 10
 if (a == 10) {
-	a = (a + 5)
+	a = a + 5
 }
-`)
+`))
 // global a = "Hello,"
 // if (a == "Hello,") {
 // 	local b = (join(a, "World!"))
