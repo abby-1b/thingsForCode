@@ -183,6 +183,7 @@ var drawParams = {
 
 	if (intr) clearInterval(intr)
 	intr = setInterval(() => {
+		sec.style.padding = (editorShow == 0) ? "0px" : ""
 		currEdtShow = currEdtShow * 0.7 + editorShow * 0.3
 		if (Math.abs(currEdtShow - editorShow) < 0.05) currEdtShow = editorShow
 		b.style.gridTemplateColumns = `1fr ${currEdtShow}fr`
