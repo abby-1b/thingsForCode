@@ -113,7 +113,22 @@ var drawParams = {
 	sec.style.cssText = "tab-size:4;font-family:monospace;font-size:1.3em;width:calc(100% - 14px);height:calc(100% - 7px);resize:none;white-space:pre;overflow-wrap:normal;overflow-x:scroll"
 	sec.onscroll = redraw
 	sec.onkeydown = function(e) {
-		if (e.key == "Tab") {
+		if (e.key == "Enter") {
+			let n = 0
+			let doNl = false
+			let pos = this.selectionStart - 1
+			if ("[({".includes(this.value[pos])) n++
+			if ("])}".includes(this.value[pos + 1])) doNl = true
+			while (this.value[pos] != "\n" && pos >= 0) pos--
+			while (this.value[++pos] == "\t" && pos < this.value.length) n++
+			setTimeout(() => {
+				document.execCommand("insertText", false, "\t".repeat(n))
+				if (doNl) {
+					document.execCommand("insertText", false, "\n" + ("\t".repeat(n - 1)))
+					this.selectionEnd = this.selectionStart = this.selectionStart - n
+				}
+			}, 1)
+		} else if (e.key == "Tab") {
 			e.preventDefault()
 			let start = this.selectionStart
 			let end = this.selectionEnd
@@ -149,6 +164,11 @@ var drawParams = {
 				this.selectionStart = start
 				this.selectionEnd = tabPositions[tabPositions.length - 1] + spl[spl.length - 1].length + 2
 			}
+		} else if ("([{".includes(e.key)) {
+			setTimeout(() => {
+				document.execCommand("insertText", false, ")]}"["([{".indexOf(e.key)])
+				this.selectionEnd = --this.selectionStart
+			}, 0)
 		}
 	}
 	sec.oninput  = redraw
@@ -222,12 +242,14 @@ function splitLine(code) {
 
 function error(e) { console.log(e); }
 function parse(code) {
-    let tokens = code.match(/('|"|'''|""").*?\1|-[0-9.]{1,}|[+\-*\/!<>=]=|[{}()\[\]+\-*\/=,|&^!?]|[a-zA-Z_][a-zA-Z_0-9]*|[0-9.]{1,}/gm);
+    let tokens = code.match(/('|"|'''|""").*?\1|-[0-9.]{1,}|[+\-*\/!<>=]=|[{}()\[\]+\-*\/=,|&^!?]|[a-zA-Z_][a-zA-Z_0-9]*|[0-9.]{1,}|\n/gm);
     let ret = [];
     function captureClause(tokens) {
         let ret = [];
         if (!"([{".includes(tokens[0])) {
-            return [tokens.shift()];
+            while (tokens.length > 0 && tokens[0] != "\n")
+                ret.push(tokens.shift());
+            return ret;
         }
         let tk0 = tokens.shift();
         let ot = ")]}"["([{".indexOf(tk0)], n = 1;
@@ -238,7 +260,8 @@ function parse(code) {
                 n--;
             if (n == 0)
                 break;
-            ret.push(tokens.shift());
+            if (tokens[0] != "\n")
+                ret.push(tokens.shift());
         }
         tokens.shift();
         return ret;
@@ -272,7 +295,6 @@ function parse(code) {
         return tk;
     }
     function translateVal(tk) {
-        console.log(tk);
         let ret = valFromTokens(tk)
             .flat(Infinity)
             .filter(e => e != ",")
@@ -346,7 +368,7 @@ function parse(code) {
             varLevel--;
             vars = vars.filter(v => v.level <= varLevel);
         }
-        else {
+        else if (tk != "\n") {
             console.log("Didn't find:", tk, tokens[0]);
         }
     }
