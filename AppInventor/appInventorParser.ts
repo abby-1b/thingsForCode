@@ -134,10 +134,13 @@ if (a == 10) {
 	a = a + 5
 }
 `))
-// global a = "Hello,"
-// if (a == "Hello,") {
-// 	local b = (join(a, "World!"))
-// 	if (a == "Hello,World!") {
-// 		a = join(a, "Yeet!")
-// 	}
-// }
+
+/*
+TO-DO:
+ - Explicitly written instructions
+ - "When" instructions
+ - Dot functions (Switch1.BackgroundColor = 'red')
+ - Comments
+ - Ternary operations
+*/
+

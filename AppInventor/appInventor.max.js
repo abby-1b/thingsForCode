@@ -169,6 +169,9 @@ var drawParams = {
 				document.execCommand("insertText", false, ")]}"["([{".indexOf(e.key)])
 				this.selectionEnd = --this.selectionStart
 			}, 0)
+		} else if (")]}".includes(e.key) && this.value[this.selectionStart] == e.key) {
+			e.preventDefault()
+			this.selectionEnd = ++this.selectionStart
 		}
 	}
 	sec.oninput  = redraw
