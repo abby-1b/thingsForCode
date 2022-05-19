@@ -113,7 +113,22 @@ var drawParams = {
 	sec.style.cssText = "tab-size:4;font-family:monospace;font-size:1.3em;width:calc(100% - 14px);height:calc(100% - 7px);resize:none;white-space:pre;overflow-wrap:normal;overflow-x:scroll"
 	sec.onscroll = redraw
 	sec.onkeydown = function(e) {
-		if (e.key == "Tab") {
+		if (e.key == "Enter") {
+			let n = 0
+			let doNl = false
+			let pos = this.selectionStart - 1
+			if ("[({".includes(this.value[pos])) n++
+			if ("])}".includes(this.value[pos + 1])) doNl = true
+			while (this.value[pos] != "\n" && pos >= 0) pos--
+			while (this.value[++pos] == "\t" && pos < this.value.length) n++
+			setTimeout(() => {
+				document.execCommand("insertText", false, "\t".repeat(n))
+				if (doNl) {
+					document.execCommand("insertText", false, "\n" + ("\t".repeat(n - 1)))
+					this.selectionEnd = this.selectionStart = this.selectionStart - n
+				}
+			}, 1)
+		} else if (e.key == "Tab") {
 			e.preventDefault()
 			let start = this.selectionStart
 			let end = this.selectionEnd
@@ -149,6 +164,11 @@ var drawParams = {
 				this.selectionStart = start
 				this.selectionEnd = tabPositions[tabPositions.length - 1] + spl[spl.length - 1].length + 2
 			}
+		} else if ("([{".includes(e.key)) {
+			setTimeout(() => {
+				document.execCommand("insertText", false, ")]}"["([{".indexOf(e.key)])
+				this.selectionEnd = --this.selectionStart
+			}, 0)
 		}
 	}
 	sec.oninput  = redraw
@@ -163,7 +183,7 @@ var drawParams = {
 
 	if (intr) clearInterval(intr)
 	intr = setInterval(() => {
-		currEdtShow = currEdtShow * 0.8 + editorShow * 0.2
+		currEdtShow = currEdtShow * 0.7 + editorShow * 0.3
 		if (Math.abs(currEdtShow - editorShow) < 0.05) currEdtShow = editorShow
 		b.style.gridTemplateColumns = `1fr ${currEdtShow}fr`
 		ctx.canvas.style.width = (50 * currEdtShow) + "%"
