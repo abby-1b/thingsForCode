@@ -169,6 +169,9 @@ var drawParams = {
 				document.execCommand("insertText", false, ")]}"["([{".indexOf(e.key)])
 				this.selectionEnd = --this.selectionStart
 			}, 0)
+		} else if (")]}".includes(e.key) && this.value[this.selectionStart] == e.key) {
+			e.preventDefault()
+			this.selectionEnd = ++this.selectionStart
 		}
 	}
 	sec.oninput  = redraw
@@ -183,7 +186,8 @@ var drawParams = {
 
 	if (intr) clearInterval(intr)
 	intr = setInterval(() => {
-		currEdtShow = currEdtShow * 0.8 + editorShow * 0.2
+		sec.style.padding = (editorShow == 0) ? "0px" : ""
+		currEdtShow = currEdtShow * 0.7 + editorShow * 0.3
 		if (Math.abs(currEdtShow - editorShow) < 0.05) currEdtShow = editorShow
 		b.style.gridTemplateColumns = `1fr ${currEdtShow}fr`
 		ctx.canvas.style.width = (50 * currEdtShow) + "%"
