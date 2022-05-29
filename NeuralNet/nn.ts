@@ -1,28 +1,22 @@
 
 function plot(n: number) {
-	let a = new Array(128).fill('.')
-	a[Math.round(-Math.log(n) * 5)] = '#'
+	let a = new Array(140).fill('.')
+	a[Math.round(-Math.log(n) * 4)] = '#'
 	console.log(a.join(""), n)
 }
 
-function bin(n: number, b: number): string {
-	let r = n.toString(2)
-	while (r.length < b) r = "0" + r
-	return r
-}
-const letts = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
+const letts = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`1234567890-=~!@#$%^&*()_+[]\\{}|;':\",./<>?",
 	buffer = new ArrayBuffer(8), intArr = new Uint32Array(buffer), fltArr = new Float64Array(buffer)
-export function floatToBase64(n: number) {
+export function floatToBase(n: number) {
 	fltArr[0] = n
-	let val = bin(intArr[0], 32) + bin(intArr[1], 32), ret = ""
-	for (let i = 0; i < 11; ret += letts[parseInt(val.slice(-6), 2)], val = val.slice(0, -6), i++);
-	return ret
+	let r1 = "", r2 = "", v1 = intArr[0], v2 = intArr[1]
+	for (let i = 0; i < 5; i++, r1 += letts[v1 % 94], v1 = Math.floor(v1 / 94), r2 += letts[v2 % 94], v2 = Math.floor(v2 / 94));
+	return r1 + r2
 }
-export function base64ToFloat(b: string) {
-	let val = ""
-	for (let i = 10; i >= 0; val += bin(letts.indexOf(b[i--]), 6));
-	intArr[0] = parseInt(val.slice(-64, -32), 2)
-	intArr[1] = parseInt(val.slice(-32), 2)
+export function baseToFloat(b: string) {
+	let ns = b.split("").reverse()
+	intArr[0] = 0, intArr[1] = 0
+	ns.map((l, i) => intArr[+(i<5)] = intArr[+(i<5)] * 94 + letts.indexOf(l))
 	return fltArr[0]
 }
 
@@ -37,6 +31,21 @@ export class NN {
 		this.size = size
 		this.ws = size.slice(1).map((e, i) => new Array(e).fill(0).map(n => new Array(size[i]).fill(0).map(m => Math.random())))
 		this.bs = size.slice(1).map((e, i) => new Array(e).fill(0).map(m => Math.random()))
+	}
+
+	serialize(): string {
+		return this.size.map(e => letts[e]).join("") + " "
+			+ this.ws.map(a => a.map(b => b.map(c => floatToBase(c)))).flat(3).join("")
+			+ this.bs.map(a => a.map(b => floatToBase(b))).flat(2).join("")
+	}
+
+	static from(f: string): NN {
+		let sz = f.split(" ")[0].split("").map(e => letts.indexOf(e))
+		let ns = f.split(" ")[1].match(/.{10}/g)?.map(e => baseToFloat(e)) as number[]
+		let ret = new NN(...sz)
+		ret.ws = ret.ws.map(a => a.map(b => b.map(c => ns.shift() as number)))
+		ret.bs = ret.bs.map(a => a.map(b => ns.shift() as number))
+		return ret
 	}
 
 	// activate(n: number): number { return 1 / (1 + Math.exp(-n)) } // Sigmoid
@@ -73,22 +82,28 @@ export class NN {
 					brnd.map((b, bi) => this.bs[l][bi] -= b)
 				else this.currentLoss = bla
 			}
-			this.amt = this.currentLoss * 2
+			this.amt = this.currentLoss * 5
 		}
 		if (log) console.log("Loss:", this.currentLoss)
 		return this.currentLoss
 	}
 
 	trainTo(toLoss: number, dat: number[][], lab: number[][], log = true): number {
+		let t = performance.now()
 		if (this.currentLoss == -1) this.currentLoss = this.loss(dat, lab)
-		while (this.currentLoss > toLoss) plot(this.train(10000, dat, lab, false))
-		if (log) console.log("Loss:", this.currentLoss)
+		while (this.currentLoss > toLoss) {
+			plot(this.train(10000, dat, lab, false))
+			Deno.writeTextFileSync("char.nn", this.serialize())
+		}
+		if (log) {
+			console.log("Loss:", this.currentLoss)		
+			t = performance.now() - t
+			console.log("Millis:", t)
+			console.log("Minutes:", t / 60000)
+		}
 		return this.currentLoss
 	}
+}
 
-	serialize(): string {
-		return this.size.map(e => letts[e]).join("") + " "
-			+ this.ws.map(a => a.map(b => b.map(c => floatToBase64(c)))).flat(3).join("")
-			+ this.bs.map(a => a.map(b => floatToBase64(b))).flat(2).join("")
 	}
 }
