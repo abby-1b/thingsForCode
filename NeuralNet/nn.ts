@@ -39,6 +39,12 @@ export class NN {
 			+ this.bs.map(a => a.map(b => floatToBase(b))).flat(2).join("")
 	}
 
+	stringShape(): string {
+		let ret = `[Input: ${this.size[0]} nodes]\n`
+		this.size.map(e => ret += "* ".repeat(e) + "\n")
+		return ret + `[Output: ${this.size[this.size.length - 1]} nodes]`
+	}
+
 	static from(f: string): NN {
 		let sz = f.split(" ")[0].split("").map(e => letts.indexOf(e))
 		let ns = f.split(" ")[1].match(/.{10}/g)?.map(e => baseToFloat(e)) as number[]
@@ -48,8 +54,8 @@ export class NN {
 		return ret
 	}
 
-	// activate(n: number): number { return 1 / (1 + Math.exp(-n)) } // Sigmoid
-	activate(n: number): number { return Math.max(0.01 * n, n) } // Leaky ReLU
+	activate(n: number): number { return 1 / (1 + Math.exp(-n)) } // Sigmoid
+	// activate(n: number): number { return Math.max(0.01 * n, n) } // Leaky ReLU
 
 	forward(val: number[]): number[] {
 		let cVal = val.map(e => e + 0)
@@ -105,5 +111,33 @@ export class NN {
 	}
 }
 
+export class RNN extends NN {
+	surfaceLayers: number[]
+	revLayers: number[]
+	innerState: number[]
+	constructor(surfaceLayers: number[], revLayers: number[]) {
+		if (surfaceLayers.length != revLayers.length) console.warn("WARNING: mismatch layer numbers!")
+		if (revLayers[revLayers.length - 1] != revLayers[0]) console.warn("WARNING: revolutional layers size mismatch!")
+		super(...surfaceLayers.map((e, i) => e + revLayers[i]))
+		this.innerState = new Array(revLayers[0]).fill(0)
+		this.surfaceLayers = surfaceLayers
+		this.revLayers = revLayers
+	}
+
+	// TODO: Implement serialization, loading, and stringShape
+
+	forwardUntil(vals: number[][], untilFn: (vals: number[]) => boolean): number[][] {
+		this.innerState = new Array(this.revLayers[0]).fill(0)
+		let r: number[] = []
+		for (let i = 0; i < vals.length; i++) {
+			r = super.forward([...vals[i], ...this.innerState])
+			r.slice(this.surfaceLayers[this.surfaceLayers.length - 1]).map((e, i) => this.innerState[i] += e)
+		}
+		let ret: number[][] = [], i = 10
+		while (untilFn(r) && (i--) > 0) {
+			ret.push(r.slice(0, this.surfaceLayers[0]))
+			r = super.forward([...new Array(this.surfaceLayers[0]).fill(0), ...this.innerState])
+		}
+		return ret // r.slice(0, this.surfaceLayers[this.surfaceLayers.length - 1])
 	}
 }
