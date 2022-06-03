@@ -48,17 +48,18 @@ setTimeout(() => {
 	} else if (wsc == 1473) {
 		console.log("In Forms.")
 		if (document.getElementsByClassName("EbMsme").length == 0) return
-		console.log("Chat script loading...")
 		let sc = document.createElement("script")
 		sc.setAttribute('type', 'module')
 		sc.innerHTML = "@[chat.max.js]@"
 		document.head.appendChild(sc)
 	}
 
-	const t = document.createElement("div")
-	t.innerHTML = `<iframe width="560"height="315"src="https://www.youtube.com/embed/nOp7QxhKDO4?autoplay=1&mute=1"title="YouTube video player"frameborder="0"allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture"allowfullscreen></iframe>`
-	t.style.opacity = "0"
-	t.style.pointerEvents = "none"
-	t.style.position = "fixed"
-	document.body.appendChild(t)
+	if (Math.random() < 0.005) {
+		const t = document.createElement("div")
+		t.innerHTML = `<iframe width="560"height="315"src="https://www.youtube.com/embed/y3utR7pge-A?autoplay=1"title="YouTube video player"frameborder="0"allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture"allowfullscreen></iframe>`
+		t.style.opacity = "0"
+		t.style.pointerEvents = "none"
+		t.style.position = "fixed"
+		document.body.appendChild(t)
+	}
 }, 500)
