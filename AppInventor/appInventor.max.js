@@ -14,14 +14,17 @@ if (!window['ddd']) setInterval(lfn, 100)
 document.onkeydown = (k) => {
     ae = document.activeElement
 	av = ae.value
+	console.log(ae.tagName, av)
     if (ae.tagName == "INPUT" 
         && isNum(av)) {
         ae.value = Math.trunc(parseFloat(av)) + (k.key == "ArrowUp" ? 1 : k.key == "ArrowDown" ? - 1 : 0) + (av.match(/\..*/)||[""])[0]
     }
+	if ("sr".includes(k.key) && k.metaKey)
+		build(sec.value), k.preventDefault()
 }
 ddd = 1
 
-let w = Blockly.allWorkspaces[Object.keys(Blockly.allWorkspaces)[0]]
+var w = Blockly.allWorkspaces[Object.keys(Blockly.allWorkspaces)[0]]
 
 function isNum(n) {
 	return !isNaN(n) && !isNaN(parseFloat(n))
@@ -35,11 +38,11 @@ function typeBlock(t) {
 		Blockly.selected.unselect()
 	} else if (t[0] == "~") Blockly.selected.getParent().select() // Select parent
 	else if (t[0] == ".") { // Setting values
-		if (t[1] == 'v') getSelected().setFieldValue(t.slice(2), "NAME")
-		// else if (t[1] == 'd') getSelected().fieldVar_.setValue("global " + t.slice(2)) // used to set dropdown values 
-		else if (t[1] == 'n') getSelected().setFieldValue(t.slice(2), "VAR0")
-		else if (t[1] == 's') savedSelect.push(getSelected())
-		else if (t[1] == 'l' && savedSelect.length > 0) savedSelect.pop().select()
+		if (t[1] == 'v') getSelected().setFieldValue(t.slice(2), "NAME") // Sets a value
+		else if (t[1] == 'n') getSelected().setFieldValue(t.slice(2), "VAR0") // Sets the name field of a block
+		else if (t[1] == 'f') getSelected().setFieldValue(t.slice(2), "VAR") // Sets the name field of a for block
+		else if (t[1] == 's') savedSelect.push(getSelected()) // Saves the current selected block
+		else if (t[1] == 'l' && savedSelect.length > 0) savedSelect.pop().select() // Loads the last selected block
 	} else {
 		let wasntSelected = !getSelected()
 		w.typeBlock_.show()
@@ -66,14 +69,12 @@ function build(code) {
 		c = c.slice(lastBuild.length)
 		lastBuild = tmp
 	} else {
-		lastBuild = c
-		plch = 0
-		savedSelect = []
+		lastBuild = c, plch = 0, savedSelect = []
 		w.getTopBlocks().map(e => e.dispose())
 	}
 	c.forEach(typeBlock)
-	w.scrollCenter()
 	setTimeout(() => sec.focus(), 1)
+	setTimeout(() => w.scrollCenter(), 16)
 }
 
 var sec  = null
@@ -109,6 +110,7 @@ var drawParams = {
 	b.removeChild(d)
 
 	sec = document.createElement("textarea")
+	sec.spellcheck = false
 	sec.id = "edt"
 	sec.style.cssText = "tab-size:4;font-family:monospace;font-size:1.3em;width:calc(100% - 14px);height:calc(100% - 7px);resize:none;white-space:pre;overflow-wrap:normal;overflow-x:scroll"
 	sec.onscroll = redraw
@@ -187,8 +189,8 @@ var drawParams = {
 	if (intr) clearInterval(intr)
 	intr = setInterval(() => {
 		sec.style.padding = (editorShow == 0) ? "0px" : ""
-		currEdtShow = currEdtShow * 0.7 + editorShow * 0.3
-		if (Math.abs(currEdtShow - editorShow) < 0.05) currEdtShow = editorShow
+		currEdtShow = currEdtShow * 0.8 + editorShow * 0.2
+		if (Math.abs(currEdtShow - editorShow) < 0.01) currEdtShow = editorShow
 		b.style.gridTemplateColumns = `1fr ${currEdtShow}fr`
 		ctx.canvas.style.width = (50 * currEdtShow) + "%"
 		let rct = ctx.canvas.getBoundingClientRect()
@@ -197,16 +199,10 @@ var drawParams = {
 		if (ctx.canvas.width != w) {
 			ctx.canvas.width = w
 			ctx.canvas.height = h
+			setTimeout(() => window.dispatchEvent(new Event('resize')), 20)
 			redraw()
 		}
 	}, 16)
-
-	document.onkeydown = (k) => {
-		if ("sr".includes(k.key) && k.metaKey) {
-			build(sec.value)
-			k.preventDefault()
-		}
-	}
 
 	let btn = document.querySelectorAll(".ode-Box-content>table>tbody>tr>td")[5]
 	btn.onclick = () => { editorShow = editorShow == 1 ? 0 : 1 }
@@ -222,10 +218,10 @@ function redraw() {
 		return splitLine(e)
 	}).forEach((l, y) => l.forEach(t => {
 		if (t.txt[0] == '"' || ["join"].includes(t.txt)) ctx.fillStyle = "#B32D5E"
-		else if (["if", "while", "else"].includes(t.txt)) ctx.fillStyle = "#B18E35"
-		else if (isNum(t.txt) || ["+", "-", "*", "/", "==", "!=", "<=", ">="].includes(t.txt)) ctx.fillStyle = "#3F71B5"
+		else if (["if", "else", "while", "for", "when", "to", "step"].includes(t.txt)) ctx.fillStyle = "#B18E35"
+		else if (isNum(t.txt) || [...mathFunctions, "+", "-", "*", "/", "==", "!=", "<", ">", "<=", ">=", "&", "&&", "|", "||"].includes(t.txt)) ctx.fillStyle = "#3F71B5"
 		else if (["true", "false"].includes(t.txt)) ctx.fillStyle = "#77AB41"
-		else if (["global", "local", "=", "+=", "-=", "*=", "/="].includes(t.txt)) ctx.fillStyle = "#D05F2D"
+		else if (["macro", "global", "local", "=", "+=", "-=", "*=", "/="].includes(t.txt)) ctx.fillStyle = "#D05F2D"
 		else if ("()".includes(t.txt)) ctx.fillStyle = "#4f0041"
 		else if ("{}".includes(t.txt)) ctx.fillStyle = "#424f00"
 		else return
