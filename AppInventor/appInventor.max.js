@@ -221,7 +221,7 @@ function redraw() {
 		else if (["if", "else", "while", "for", "when", "to", "step"].includes(t.txt)) ctx.fillStyle = "#B18E35"
 		else if (isNum(t.txt) || [...mathFunctions, "+", "-", "*", "/", "==", "!=", "<", ">", "<=", ">=", "&", "&&", "|", "||"].includes(t.txt)) ctx.fillStyle = "#3F71B5"
 		else if (["true", "false"].includes(t.txt)) ctx.fillStyle = "#77AB41"
-		else if (["macro", "global", "local", "=", "+=", "-=", "*=", "/="].includes(t.txt)) ctx.fillStyle = "#D05F2D"
+		else if (["macro", "global", "local", "=", "+=", "-=", "*=", "/=", "++", "--", "&=", "|=", "^="].includes(t.txt)) ctx.fillStyle = "#D05F2D"
 		else if ("()".includes(t.txt)) ctx.fillStyle = "#4f0041"
 		else if ("{}".includes(t.txt)) ctx.fillStyle = "#424f00"
 		else return
@@ -234,7 +234,7 @@ function redraw() {
 
 function splitLine(code) {
 	let tokens = []
-	let patt = /('|"|'''|""").*?\1|-[0-9.]{1,}|[+\-*\/!<>=]=|[{}()\[\]+\-*\/=,|&^!?]|[a-zA-Z_][a-zA-Z_0-9]*|[0-9.]{1,}/gm
+	let patt = /('|"|'''|""").*?\1|-[0-9.]{1,}|[+\-*\/!<>=&|^]=|\+\+|\-\-|&&|\|\||[{}()\[\]+\-*\/=,<>|&^!?]|[a-zA-Z_][a-zA-Z_0-9]*|[0-9.]{1,}|\n/gm
 	while (match = patt.exec(code)) tokens.push({txt: match[0], x: match.index, w: patt.lastIndex - match.index})
 	return tokens
 }
