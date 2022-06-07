@@ -165,10 +165,21 @@ function parse(code: string) {
 			varLevel++
 			tokens.shift()
 		} else if (tokens.length > 0 && tokens[0] == '=') {
-			ret.push("set" + ((getVar(tk) as SVar).level == 0 ? " global" : "") + tk, ".s")
+			ret.push("set " + ((getVar(tk) as SVar).level == 0 ? "global " : "") + tk, ".s")
 			tokens.shift()
 			ret.push(...translateVal(captureClause(tokens)), ".l")
-		} else if (tokens.length > 0 && tokens[0] == '(') {
+		} else if (tokens.length > 0 && ["+=", "-=", "*=", "/=", "&=", "|=", "^="].includes(tokens[0])) {
+			ret.push("set " + ((getVar(tk) as SVar).level == 0 ? "global " : "") + tk, ".s")
+			let op = (tokens.shift() as string)[0]
+			let cls = captureClause(tokens)
+			cls.unshift(tk, op, "(")
+			cls.push(")")
+			ret.push(...translateVal(cls), ".l")
+		} else if (tokens.length > 0 && ["++", "--"].includes(tokens[0])) {
+			ret.push("set " + ((getVar(tk) as SVar).level == 0 ? "global " : "") + tk, ".s")
+			let op = (tokens.shift() as string)[0]
+			ret.push(...translateVal([tk, op, "1"]), ".l")
+		} else if (tokens.length > 0 && tokens[0] == '(') { // What the fuck?
 			ret.push(tk)
 			let c = captureClause(tokens)
 			let h: string[][] = []
@@ -192,7 +203,8 @@ function parse(code: string) {
 // Test
 export {}
 parse(`
-while (Screen1.Initialize) {}
+local a = 10
+a += sin(10)
 `)
 
 
@@ -201,14 +213,18 @@ while (Screen1.Initialize) {}
 // for (item in list) { }
 
 /*
-TODO:
+DONE:
+ - For
  - "When" instructions
  - while
+ - += -= *= /= ^= &= |= ++ --
+
+TODO:
  - Test variable removal scopes
  - Explicitly written instructions
  - Dot functions (Switch1.BackgroundColor = 'red')
- - Comments
  - Ternary operations
  - Functions
+ - Comments
 */
 
