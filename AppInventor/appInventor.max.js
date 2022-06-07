@@ -14,7 +14,6 @@ if (!window['ddd']) setInterval(lfn, 100)
 document.onkeydown = (k) => {
     ae = document.activeElement
 	av = ae.value
-	console.log(ae.tagName, av)
     if (ae.tagName == "INPUT" 
         && isNum(av)) {
         ae.value = Math.trunc(parseFloat(av)) + (k.key == "ArrowUp" ? 1 : k.key == "ArrowDown" ? - 1 : 0) + (av.match(/\..*/)||[""])[0]
@@ -234,7 +233,7 @@ function redraw() {
 
 function splitLine(code) {
 	let tokens = []
-	let patt = /('|"|'''|""").*?\1|-[0-9.]{1,}|[+\-*\/!<>=&|^]=|\+\+|\-\-|&&|\|\||[{}()\[\]+\-*\/=,<>|&^!?]|[a-zA-Z_][a-zA-Z_0-9]*|[0-9.]{1,}|\n/gm
+	let patt = /('|"|'''|""").*?\1|-[0-9.]{1,}|[+\-*\/!<>=&|^]=|\+\+|\-\-|&&|\|\||[~{}()\[\]+\-*\/=,<>|&^!?]|[a-zA-Z_][a-zA-Z_0-9]*|[0-9.]{1,}|\n/gm
 	while (match = patt.exec(code)) tokens.push({txt: match[0], x: match.index, w: patt.lastIndex - match.index})
 	return tokens
 }
