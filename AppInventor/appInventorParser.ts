@@ -2,6 +2,7 @@
 const MAX_ITER = 999
 
 type SVar = {name: string, level: number, macro?: string[]}
+type Func = {name: string}
 
 const mathFunctions = ["rand", "randi", "min", "max", "sqrt", "abs", "neg", "round", "ceil", "floor", "mod", "sin", "cos", "tan", "asin", "acos", "atan", "atan2"]
 const mathFunctionMap: {[key: string]: string} = {
@@ -9,13 +10,14 @@ const mathFunctionMap: {[key: string]: string} = {
 	"randi": "random integer",
 	"sqrt": "square root",
 	"ceil": "ceiling",
-	"abs": "absolute"
+	"abs": "absolute",
+	"mod": "modulo of"
 }
 
 function error(e: string, ret: any = undefined) { console.log(e); return ret }
 
 function parse(code: string) {
-	let tokens = code.match(/('|"|'''|""").*?\1|-[0-9.]{1,}|[+\-*\/!<>=&|^]=|\+\+|\-\-|&&|\|\||[{}()\[\]+\-*\/=,<>|&^!?]|[a-zA-Z_][a-zA-Z_0-9]*|[0-9.]{1,}|\n/gm) as string[]
+	let tokens = code.match(/('|"|'''|""").*?\1|-[0-9.]{1,}|[+\-*\/!<>=&|^]=|\+\+|\-\-|&&|\|\||[~{}()\[\]+\-*\/=,<>|&^!?]|[a-zA-Z_][a-zA-Z_0-9]*|[0-9.]{1,}|\n/gm) as string[]
 	// console.log(tokens)
 	let ret: string[] = []
 
@@ -117,6 +119,7 @@ function parse(code: string) {
 
 	let varLevel = 1
 	let vars: SVar[] = []
+	let fns: Func[] = []
 	while (tokens.length > 0) {
 		let tk = tokens.shift() as string
 		if (tk == "global") {
@@ -179,7 +182,10 @@ function parse(code: string) {
 			ret.push("set " + ((getVar(tk) as SVar).level == 0 ? "global " : "") + tk, ".s")
 			let op = (tokens.shift() as string)[0]
 			ret.push(...translateVal([tk, op, "1"]), ".l")
-		} else if (tokens.length > 0 && tokens[0] == '(') { // What the fuck?
+		} else if (tk == "~" && tokens.length > 0 && tokens[0] == '(') {
+			ret.push(...captureClause(tokens).filter(e => e[0] == '"').map(e => e.slice(1, -1)))
+			// ret.push(...h.map(translateVal).flat())
+		} else if (tokens.length > 0 && tokens[0] == '(') {
 			ret.push(tk)
 			let c = captureClause(tokens)
 			let h: string[][] = []
@@ -191,7 +197,7 @@ function parse(code: string) {
 		} else if (tk == "}") {
 			ret.push(".l")
 			varLevel--
-			vars = vars.filter(v => v.level <= varLevel)
+			vars = vars.filter(v => v.level <= varLevel) // Remove variables out of scope
 		} else if (tk != "\n") {
 			console.log("Didn't find:", tk, tokens[0])
 		}
@@ -203,8 +209,7 @@ function parse(code: string) {
 // Test
 export {}
 parse(`
-local a = 10
-a += sin(10)
+~("set Button1.FontBold", "true")
 `)
 
 
@@ -218,11 +223,12 @@ DONE:
  - "When" instructions
  - while
  - += -= *= /= ^= &= |= ++ --
+ - Test variable removal scopes
 
 TODO:
- - Test variable removal scopes
  - Explicitly written instructions
  - Dot functions (Switch1.BackgroundColor = 'red')
+ - Make them work for any component
  - Ternary operations
  - Functions
  - Comments
