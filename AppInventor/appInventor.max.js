@@ -237,3 +237,12 @@ function splitLine(code) {
 	while (match = patt.exec(code)) tokens.push({txt: match[0], x: match.index, w: patt.lastIndex - match.index})
 	return tokens
 }
+
+/*
+function realPos(block) {
+	let bg = w.svgBackground_.getBoundingClientRect()
+	let b = block.svgGroup_.getBoundingClientRect()
+	return [(b.x + b.width / 2) - (bg.x + bg.width / 2), (b.y + b.height / 2) - (bg.y + bg.height / 2)]
+}
+realPos(getSelected())
+*/
