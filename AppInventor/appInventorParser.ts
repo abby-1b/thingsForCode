@@ -170,11 +170,11 @@ function parse(code: string) {
 		} else if (tokens.length > 0 && tokens[0] == '=') {
 			ret.push("set " + ((getVar(tk) as SVar).level == 0 ? "global " : "") + tk, ".s")
 			tokens.shift()
-			ret.push(...translateVal(captureClause(tokens)), ".l")
+			ret.push(...translateVal(captureClause(tokens, true)), ".l")
 		} else if (tokens.length > 0 && ["+=", "-=", "*=", "/=", "&=", "|=", "^="].includes(tokens[0])) {
 			ret.push("set " + ((getVar(tk) as SVar).level == 0 ? "global " : "") + tk, ".s")
 			let op = (tokens.shift() as string)[0]
-			let cls = captureClause(tokens)
+			let cls = captureClause(tokens, true)
 			cls.unshift(tk, op, "(")
 			cls.push(")")
 			ret.push(...translateVal(cls), ".l")
@@ -209,7 +209,7 @@ function parse(code: string) {
 // Test
 export {}
 parse(`
-~("set Button1.FontBold", "true")
+local a = (5 * 7) + 10
 `)
 
 
@@ -224,9 +224,9 @@ DONE:
  - while
  - += -= *= /= ^= &= |= ++ --
  - Test variable removal scopes
+ - Explicitly written instructions
 
 TODO:
- - Explicitly written instructions
  - Dot functions (Switch1.BackgroundColor = 'red')
  - Make them work for any component
  - Ternary operations
