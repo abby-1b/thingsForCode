@@ -2,8 +2,12 @@
 const MAX_ITER = 999
 
 type SVar = {name: string, level: number, macro?: string[]}
-type Func = {name: string}
+type Func = {translate?: boolean, transName?: string}
+type Funcs = {[key: string]: Func}
 
+const libFns: Funcs = {
+	"rgb": {translate: true, transName: "make color"}
+}
 const mathFunctions = ["rand", "randi", "min", "max", "sqrt", "abs", "neg", "round", "ceil", "floor", "mod", "sin", "cos", "tan", "asin", "acos", "atan", "atan2"]
 const mathFunctionMap: {[key: string]: string} = {
 	"rand": "random fraction",
@@ -51,7 +55,7 @@ function parse(code: string) {
 	}
 
 	function valFromTokens(tk: (string | string[])[]): (string | string[])[] {
-		// Deal with parentheses
+		// Parentheses
 		for (let p = 0; p < tk.length; p++) {
 			if (tk[p] == '(') {
 				tk[p++] = []
@@ -65,11 +69,19 @@ function parse(code: string) {
 				(tk[--p] as string[]).splice(-1)
 				valFromTokens(tk[p] as string[])
 			}
-			if (p > 0 && mathFunctions.includes(tk[p - 1] as string)) {
+			if (p > 0 && mathFunctions.includes(tk[p - 1] as string)) { // (function)
 				(tk[p--] as string[]).unshift(tk.splice(p, 1)[0] as string)
 			}
+			if (p > 0 && (tk[p - 1] as string) in fns) { // (function)
+				let n = tk.splice(p - 1, 1)[0] as string
+				if (fns[n].translate) n = (fns[n].transName as string)
+				;(tk[p - 1] as string[]).unshift(n)
+				console.log(tk)
+			}
+			if (tk[p] == ".") tk[p - 1] += "." + tk[p + 1], tk.splice(p--, 2) // Dot access (value)
 		}
-		// Deal with operations
+
+		// Operations (yes, this is how I did OOP. Stop me. Bet you won't.)
 		;["^", "*/", "+-", ["==", "<", ">"], ["&", "|", "&&", "||"]].forEach(currSymbols => {
 			for (let i = 0; i < tk.length; i++) {
 				if (typeof tk[i] !== "string") continue
@@ -83,9 +95,12 @@ function parse(code: string) {
 	}
 
 	function flattenTransVal(val: (string | string[])[]) {
-		return val.flat(Infinity)
-			.filter(e => e != ",")
+		let ret = val.flat(Infinity)
+		return ret
+			.filter(e => e != ",") // Removes commas!
 			.map(e => {
+				if (e == "[") return [".e" + (1 + ret.filter(e => e == ",").length), ".s"]
+				if (e == "]") return ".l"
 				if (e[0] == '"') return e.slice(0, -1)
 				if (e == "==") return "="
 				if (e == "&") return "bitwise and"
@@ -111,15 +126,21 @@ function parse(code: string) {
 	}
 
 	function getVar(varName: string): SVar | undefined {
-		for (let v = vars.length - 1; v >= 0; v--) {
+		for (let v = vars.length - 1; v >= 0; v--)
 			if (vars[v].name == varName) return vars[v]
-		}
 		return undefined
 	}
 
+	
 	let varLevel = 1
 	let vars: SVar[] = []
-	let fns: Func[] = []
+	let fns: Funcs = {}
+	Object.assign(fns, libFns)
+	let nestExits: string[] = []
+
+	console.log(valFromTokens("rand ( 0 , 1 )".split(" ")))
+	return
+
 	while (tokens.length > 0) {
 		let tk = tokens.shift() as string
 		if (tk == "global") {
@@ -145,11 +166,13 @@ function parse(code: string) {
 			ret.push("if", ".s")
 			ret.push(...translateVal(captureClause(tokens)), ".l", ".s")
 			varLevel++
+			nestExits.push(".l")
 			tokens.shift()
 		} else if (tk == "while") {
 			ret.push("while", ".s")
 			ret.push(...translateVal(captureClause(tokens)), ".l", ".s")
 			varLevel++
+			nestExits.push(".l")
 			tokens.shift()
 		} else if (tk == "for") {
 			let cls = valFromTokens(captureClause(tokens))
@@ -161,11 +184,13 @@ function parse(code: string) {
 			}
 			// TODO: implement list and dictionary for
 			varLevel++
+			nestExits.push(".l")
 			tokens.shift()
 		} else if (tk == "when") {
 			let cls = captureClause(tokens)
 			ret.push("when " + cls.join(""), ".s")
 			varLevel++
+			nestExits.push("_")
 			tokens.shift()
 		} else if (tokens.length > 0 && tokens[0] == '=') {
 			ret.push("set " + ((getVar(tk) as SVar).level == 0 ? "global " : "") + tk, ".s")
@@ -182,11 +207,17 @@ function parse(code: string) {
 			ret.push("set " + ((getVar(tk) as SVar).level == 0 ? "global " : "") + tk, ".s")
 			let op = (tokens.shift() as string)[0]
 			ret.push(...translateVal([tk, op, "1"]), ".l")
+		} else if (tokens.length > 3 && tokens[0] == '.' && tokens[2] == '=') {
+			ret.push("set " + tk + tokens.splice(0, 2).join(""))
+			tokens.shift()
+			ret.push(...translateVal(captureClause(tokens, true)))
+			// ret.push(...captureClause(tokens).filter(e => e[0] == '"').map(e => e.slice(1, -1)))
 		} else if (tk == "~" && tokens.length > 0 && tokens[0] == '(') {
 			ret.push(...captureClause(tokens).filter(e => e[0] == '"').map(e => e.slice(1, -1)))
-			// ret.push(...h.map(translateVal).flat())
 		} else if (tokens.length > 0 && tokens[0] == '(') {
-			ret.push(tk)
+			if ((tk in fns) && fns[tk].translate) {
+				ret.push(fns[tk].transName as string)
+			} else ret.push(tk)
 			let c = captureClause(tokens)
 			let h: string[][] = []
 			while (c.length > 0) {
@@ -195,7 +226,7 @@ function parse(code: string) {
 			}
 			ret.push(...h.map(translateVal).flat())
 		} else if (tk == "}") {
-			ret.push(".l")
+			ret.push(nestExits.pop() as string)
 			varLevel--
 			vars = vars.filter(v => v.level <= varLevel) // Remove variables out of scope
 		} else if (tk != "\n") {
@@ -209,7 +240,7 @@ function parse(code: string) {
 // Test
 export {}
 parse(`
-local a = (5 * 7) + 10
+global a = [rand(0, 1), 10]
 `)
 
 
@@ -225,12 +256,14 @@ DONE:
  - += -= *= /= ^= &= |= ++ --
  - Test variable removal scopes
  - Explicitly written instructions
-
-TODO:
  - Dot functions (Switch1.BackgroundColor = 'red')
- - Make them work for any component
- - Ternary operations
+
+TODO: (by priority)
+ - LISTS
+ - DICTIONARIES
  - Functions
+ - Make dot functions work for any X component
+ - Ternary operations
  - Comments
 */
 
