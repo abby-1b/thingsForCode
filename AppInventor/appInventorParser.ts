@@ -2,11 +2,31 @@
 const MAX_ITER = 999
 
 type SVar = {name: string, level: number, macro?: string[]}
-type Func = {translate?: boolean, transName?: string}
+type Func = {color: string, translate?: boolean, transName?: string}
 type Funcs = {[key: string]: Func}
 
+const fnc = {
+	"str": "#B32D5E",
+	"arr": "#49A6D4",
+	"var": "#D05F2D",
+	"col": "#333333",
+	"set": "#266643",
+}
 const libFns: Funcs = {
-	"rgb": {translate: true, transName: "make color"}
+	"rgb": {color: fnc.col, translate: true, transName: "make color"},
+	"len": {color: fnc.arr,translate: true, transName: "length of list"},
+	"strlen": {color: fnc.str, translate: true, transName: "length"},
+	"join": {color: fnc.str},
+	"trim": {color: fnc.str},
+	"empty": {color: fnc.str, translate: true, transName: "is empty"},
+	"uppercase": {color: fnc.str, translate: true, transName: "upcase"},
+	"lowercase": {color: fnc.str, translate: true, transName: "downcase"},
+	"includes": {color: fnc.str, translate: true, transName: "contains"},
+	"split": {color: fnc.str},
+	"replace": {color: fnc.str, translate: true, transName: "replace all"},
+	"reverse": {color: fnc.str},
+	"copy": {color: fnc.arr, translate: true, transName: "copy list"},
+	"set": {color: fnc.set},
 }
 const mathFunctions = ["rand", "randi", "min", "max", "sqrt", "abs", "neg", "round", "ceil", "floor", "mod", "sin", "cos", "tan", "asin", "acos", "atan", "atan2"]
 const mathFunctionMap: {[key: string]: string} = {
@@ -31,9 +51,10 @@ function parse(code: string) {
 			while (tokens[0] != "\n" && tokens.length > 0) ret.push(tokens.shift() as string)
 			return ret
 		}
-		let isFn = false
-		if (tokens.length > 1 && tokens[1] == '(')
-			isFn = true, ret.push(tokens.shift() as string, "(")
+
+		let isFn = tokens.length > 1 && tokens[1] == '('
+		if (isFn) ret.push(tokens.shift() as string, "(")
+
 		if (!"([{".includes(tokens[0])) {
 			while (tokens.length > 0 && tokens[0] != "\n") ret.push(tokens.shift() as string)
 			return ret
@@ -48,9 +69,7 @@ function parse(code: string) {
 			if (tokens[0] != "\n") ret.push(tokens.shift() as string)
 		}
 		tokens.shift()
-		if (isFn) {
-			ret.push(")")
-		}
+		if (isFn) ret.push(")")
 		return ret
 	}
 
@@ -67,7 +86,25 @@ function parse(code: string) {
 					;(tk[p - 1] as string[]).push(tk.splice(p, 1)[0] as string)
 				}
 				(tk[--p] as string[]).splice(-1)
-				valFromTokens(tk[p] as string[])
+				tk[p] = valFromTokens(tk[p] as string[]) as string[]
+			}
+			if (tk[p] == '[') {
+				let isVar = typeof tk[p - 1] === "string" && vars.map(e => e.name).includes(tk[p - 1] as string)
+				tk[p++] = []
+				let n = 1, i = MAX_ITER
+				while (n > 0) {
+					if (tk[p] == '[') n++
+					if (tk[p] == ']') n--
+					if (i-- < 0) return error("Couldn't find matching bracket!", [])
+					;(tk[p - 1] as string[]).push(tk.splice(p, 1)[0] as string)
+				}
+				;(tk[--p] as string[]).splice(-1)
+				tk[p] = valFromTokens(tk[p] as string[]) as string[]
+				tk[p] = ["[" + tk[p].length, ...tk[p]]
+				if (isVar) {
+					let vr = tk.splice(--p, 1)[0] as string
+					(tk[p] as string[])[0] = "$" + vr
+				}
 			}
 			if (p > 0 && mathFunctions.includes(tk[p - 1] as string)) { // (function)
 				(tk[p--] as string[]).unshift(tk.splice(p, 1)[0] as string)
@@ -91,7 +128,7 @@ function parse(code: string) {
 				}
 			}
 		})
-		return tk
+		return tk.filter(t => t != ",")
 	}
 
 	function flattenTransVal(val: (string | string[])[]) {
@@ -99,8 +136,8 @@ function parse(code: string) {
 		return ret
 			.filter(e => e != ",") // Removes commas!
 			.map(e => {
-				if (e == "[") return [".e" + (1 + ret.filter(e => e == ",").length), ".s"]
-				if (e == "]") return ".l"
+				if (e[0] == '$') return ["select list item", translateVal([e.slice(1) as string])]
+				if (e[0] == "[") return [".e" + e.slice(1)]
 				if (e[0] == '"') return e.slice(0, -1)
 				if (e == "==") return "="
 				if (e == "&") return "bitwise and"
@@ -138,9 +175,6 @@ function parse(code: string) {
 	Object.assign(fns, libFns)
 	let nestExits: string[] = []
 
-	console.log(valFromTokens("rand ( 0 , 1 )".split(" ")))
-	return
-
 	while (tokens.length > 0) {
 		let tk = tokens.shift() as string
 		if (tk == "global") {
@@ -176,14 +210,14 @@ function parse(code: string) {
 			tokens.shift()
 		} else if (tk == "for") {
 			let cls = valFromTokens(captureClause(tokens))
+			varLevel++
 			if (cls[3] == "to") {
 				ret.push("for each number from", ".s", ".f" + cls[0],
 					...flattenTransVal([cls[2]]), ".l", ".s", ...flattenTransVal([cls[4]]), ".l", ".s")
 				if (cls.length == 5) ret.push("1", ".l", ".s")
 				else ret.push(...flattenTransVal([cls[6]]), ".l", ".s")
+				vars.push({name: cls[0] as string, level: varLevel})
 			}
-			// TODO: implement list and dictionary for
-			varLevel++
 			nestExits.push(".l")
 			tokens.shift()
 		} else if (tk == "when") {
@@ -196,6 +230,14 @@ function parse(code: string) {
 			ret.push("set " + ((getVar(tk) as SVar).level == 0 ? "global " : "") + tk, ".s")
 			tokens.shift()
 			ret.push(...translateVal(captureClause(tokens, true)), ".l")
+		} else if (tokens.length > 0 && tokens[0] == '[') {
+			let list = translateVal([tk])
+			let idx = translateVal(captureClause(tokens))
+			ret.push("replace list item", ".s", ".s", ...list, ".l", ...idx, ".l")
+			let op = (tokens.shift() as string)[0]
+			let val = translateVal(captureClause(tokens, true))
+			if (op == '=') ret.push(...val)
+			else ret.push(op[0], "select list item", ...list, ...idx, ...val)
 		} else if (tokens.length > 0 && ["+=", "-=", "*=", "/=", "&=", "|=", "^="].includes(tokens[0])) {
 			ret.push("set " + ((getVar(tk) as SVar).level == 0 ? "global " : "") + tk, ".s")
 			let op = (tokens.shift() as string)[0]
@@ -214,6 +256,9 @@ function parse(code: string) {
 			// ret.push(...captureClause(tokens).filter(e => e[0] == '"').map(e => e.slice(1, -1)))
 		} else if (tk == "~" && tokens.length > 0 && tokens[0] == '(') {
 			ret.push(...captureClause(tokens).filter(e => e[0] == '"').map(e => e.slice(1, -1)))
+		} else if (tk == "set" && tokens.length > 0 && tokens[0] == '(') {
+			let cls = captureClause(tokens)
+			ret.push("set " + cls[0] + "." + cls[2], ...translateVal(cls.slice(4)))
 		} else if (tokens.length > 0 && tokens[0] == '(') {
 			if ((tk in fns) && fns[tk].translate) {
 				ret.push(fns[tk].transName as string)
@@ -235,12 +280,12 @@ function parse(code: string) {
 	}
 	console.log(ret)
 	return ret
-}
+} // 283
 
 // Test
 export {}
 parse(`
-global a = [rand(0, 1), 10]
+set(Slider.ThumbPosition, Slider1, 0.5)
 `)
 
 
@@ -257,13 +302,23 @@ DONE:
  - Test variable removal scopes
  - Explicitly written instructions
  - Dot functions (Switch1.BackgroundColor = 'red')
+ - LISTS
 
 TODO: (by priority)
- - LISTS
  - DICTIONARIES
+ - implement list and dictionary for
  - Functions
  - Make dot functions work for any X component
  - Ternary operations
  - Comments
+*/
+
+/*
+global sliders = [Slider1, Slider2, Slider3, Slider4, Slider5, Slider6, Slider7, Slider8, Slider9, Slider10]
+when (Clock1.Timer) {
+	for (sl = 1 to len(sliders)) {
+		sliders[sl].ColorLeft = red
+	}
+}
 */
 
