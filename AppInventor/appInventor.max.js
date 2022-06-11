@@ -6,11 +6,21 @@ efn = (el, fn, once=1) => {
         e.alr ? 0 : once && !fn(e) ? (e.alr = true) : 0
     })
 }
+changes = false
+lastScreen = ""
 lfn = () => {
     efn(".destructive-action", e => { e.click() })
     efn(".gwt-Button", e => e.innerText == "Save the empty screen now." ? [null,e.click()][0] : true)
+	if (currScreen() != lastScreen) {
+		w = Blockly.allWorkspaces[Object.keys(Blockly.allWorkspaces).filter(e => e.split("_").slice(1).join("_") == currScreen())[0]]
+		loadBlocks()
+		lastScreen = currScreen()
+		console.log(lastScreen)
+	}
+	if (currEditor() == "Designer") editorShow = 0
 }
-if (!window['ddd']) setInterval(lfn, 100)
+function loadBlocks() { try { sec.value = w.getTopBlocks().map(b => toText(b)).join("\n"), redraw() } catch (e) { console.log(e) } }
+if (!window['ddd']) setInterval(() => {lfn()}, 100)
 document.onkeydown = (k) => {
     ae = document.activeElement
 	av = ae.value
@@ -19,7 +29,7 @@ document.onkeydown = (k) => {
         ae.value = Math.trunc(parseFloat(av)) + (k.key == "ArrowUp" ? 1 : k.key == "ArrowDown" ? - 1 : 0) + (av.match(/\..*/)||[""])[0]
     }
 	if ("sr".includes(k.key) && k.metaKey) build(sec.value), k.preventDefault()
-	if (k.key == "k" && k.metaKey) sec.value = w.getTopBlocks().map(b => toText(b)).join("\n"), redraw()
+	if (k.key == "k" && k.metaKey) loadBlocks()
 }
 ddd = 1
 
@@ -46,7 +56,8 @@ function typeBlock(t) {
 			typeBlock("create empty list")
 			let to = parseInt(t.slice(2))
 			for (let i = 0; i < to; i++) getSelected().appendValueInput("ADD" + i), getSelected().itemCount_++
-		}
+		} else if (t[1] == 'i') // Adds an else or elseif
+			getSelected()[t[2] == "e" ? "elseCount_" : "elseifCount_"]++, getSelected().updateShape_()
 	} else {
 		let wasntSelected = !getSelected()
 		w.typeBlock_.show()
@@ -119,6 +130,7 @@ var drawParams = {
 	sec.style.cssText = "tab-size:4;font-family:monospace;font-size:1.3em;width:calc(100% - 14px);height:calc(100% - 7px);resize:none;white-space:pre;overflow-wrap:normal;overflow-x:scroll"
 	sec.onscroll = redraw
 	sec.onkeydown = function(e) {
+		changes = true
 		if (e.key == "Enter") {
 			let n = 0
 			let doNl = false
@@ -221,10 +233,13 @@ function redraw() {
 		if (scr > i) return []
 		return splitLine(e)
 	}).forEach((l, y) => {
+		let cmt = false
 		for (let ti = 0; ti < l.length; ti++) {
 			t = l[ti]
-			if (t.txt[0] == '"') ctx.fillStyle = "#B32D5E"
-			else if (["if", "else", "while", "for", "when", "to", "step"].includes(t.txt)) ctx.fillStyle = "#B18E35"
+			if (cmt) {}
+			else if (t.txt[0] == '"') ctx.fillStyle = "#B32D5E"
+			else if (["fn", "fnr", "return"].includes(t.txt)) ctx.fillStyle = "#7C5385"
+			else if (["if", "elif", "else", "while", "for", "when", "to", "step"].includes(t.txt)) ctx.fillStyle = "#B18E35"
 			else if (isNum(t.txt) || [...mathFunctions, "+", "-", "*", "/", "==", "!=", "<", ">", "<=", ">=", "&", "&&", "|", "||"].includes(t.txt)) ctx.fillStyle = "#3F71B5"
 			else if (t.txt == "." || (ti > 0 && l[ti - 1].txt == ".") || (ti + 1 < l.length && l[ti + 1].txt == ".")) ctx.fillStyle = "#266643"
 			else if (["true", "false"].includes(t.txt)) ctx.fillStyle = "#77AB41"
@@ -233,9 +248,12 @@ function redraw() {
 			else if ("{}".includes(t.txt)) ctx.fillStyle = "#424f00"
 			else if (t.txt in libFns) ctx.fillStyle = libFns[t.txt].color
 			else if (ti + 1 < l.length && l[ti + 1].txt == "(") ctx.fillStyle = "#BF4343"
-			else continue
-			ctx.fillRect(drawParams.sx + drawParams.cw * t.x, drawParams.sy + (drawParams.ch + drawParams.lo) * y,
-				drawParams.cw * t.w, drawParams.ch)
+			else if (t.txt == "//") {
+				ctx.fillStyle = "#999"
+				ctx.fillRect(drawParams.sx + drawParams.cw * t.x, drawParams.sy + (drawParams.ch + drawParams.lo) * y, 1e4, drawParams.ch)
+				return
+			} else continue
+			ctx.fillRect(drawParams.sx + drawParams.cw * t.x, drawParams.sy + (drawParams.ch + drawParams.lo) * y, drawParams.cw * t.w, drawParams.ch)
 		}
 	})
 	
@@ -244,7 +262,7 @@ function redraw() {
 
 function splitLine(code) {
 	let tokens = []
-	let patt = /('|"|'''|""").*?\1|-[0-9.]{1,}|[+\-*\/!<>=&|^]=|\+\+|\-\-|&&|\|\||[~{}()\[\]+\-*\/=,<>|&^!?]|[a-zA-Z_][a-zA-Z_0-9]*|[0-9.]{1,}|\n/gm
+	let patt = /('|"|'''|""").*?\1|-[0-9.]{1,}|\/\/|[+\-*\/!<>=&|^]=|\+\+|\-\-|&&|\|\||[~{}()\[\]+\-*\/=,<>|&^!?]|[a-zA-Z_][a-zA-Z_0-9]*|[0-9.]{1,}|\n/gm
 	while (match = patt.exec(code)) tokens.push({txt: match[0], x: match.index, w: patt.lastIndex - match.index})
 	return tokens
 }
@@ -259,17 +277,30 @@ function toText(b) {
 	switch (b.type) {
 		case "math_number":
 			return b.inputList[0].fieldRow[0].value_
+		case "local_declaration_expression":
 		case "local_declaration_statement":
 			return `local ${b.localNames_[0]} = ${toText(ch[0])}`
 				+ (ch.length == 1 ? "" : `\n` + toText(ch[1]))
 		case "global_declaration":
 			return `global ${b.getVars()[0]} = ${toText(ch[0])}`
 		case "controls_while":
-		case "controls_if":
-			return `${b.type.split("_")[1]} (${toText(ch[0])}) {\n${indent(toText(ch[1]))}\n}` + (ch.length == 2 ? "" : `\n` + toText(ch[2]))
+		case "controls_if": {
+			let ret = `${b.type.split("_")[1]} (${toText(ch[0])}) {\n${indent(toText(ch[1]))}\n}`
+			let on = 2
+			for (let i = 0; i < b.elseifCount_; i++) ret += ` elif (${toText(ch[on++])}) {\n${indent(toText(ch[on++]))}\n}`
+			if (b.elseCount_) ret += ` else {\n${indent(toText(ch[on++]))}\n}`
+			console.log(on, ch.length)
+			return ret //`${b.type.split("_")[1]} (${toText(ch[0])}) {\n${indent(toText(ch[1]))}\n}` + (ch.length == 2 ? "" : `\n` + toText(ch[2]))
+		} break
 		case "controls_forRange":
-			return `for (num = ${toText(ch[0])} to ${toText(ch[1])} step ${toText(ch[2])}) {\n${indent(toText(ch[3]))}\n}` + (ch.length == 4 ? "" : `\n` + toText(ch[4]))
-		case "math_compare": 
+			return `for (${b.getVars()[0]} = ${toText(ch[0])} to ${toText(ch[1])} step ${toText(ch[2])}) {\n${indent(toText(ch[3]))}\n}` + (ch.length == 4 ? "" : `\n` + toText(ch[4]))
+		case "controls_eval_but_ignore":
+			return ``
+
+		case "controls_do_then_return":
+			return toText(ch[0]) + "\nreturn " + toText(ch[1])
+
+		case "math_compare":
 			return `${toText(ch[0])} ${{"=":"==","not=":"!=","lt":"<","lte":"<=","gt":">","gte":">="}[b.helpUrl().split("#")[1]]} ${toText(ch[1])}`
 		case "math_add":
 		case "math_subtract":
@@ -279,16 +310,21 @@ function toText(b) {
 			return "(" + toText(ch[0]) + " " + {"add":"+","subtract":"-","multiply":"*","divide":"/","power":"^"}[b.type.split("_")[1]] + " " + toText(ch[1]) + ")"
 		case "math_random_int":
 			return `randi(${toText(ch[0])}, ${toText(ch[1])})`
+		case "math_random_float":
+			return `rand()`
 
 		case "lexical_variable_get":
 			return b.getVars()[0].split(" ").slice(-1)[0]
 		case "lexical_variable_set":
-			return `${b.getVars()[0]} = ${toText(ch[0])}` + (ch.length == 1 ? "" : `\n` + toText(ch[1]))
+			return `${b.getVars()[0].split(" ").slice(-1)[0]} = ${toText(ch[0])}` + (ch.length == 1 ? "" : `\n` + toText(ch[1]))
 
 		case "lists_create_with":
 			return `[${b.childBlocks_.map(c => toText(c)).join(", ")}]`
 		case "lists_select_item":
 			return `${toText(ch[0])}[${toText(ch[1])}]`
+
+		case "logic_boolean":
+			return b.inputList[0].fieldRow[0].value_ == "TRUE" ? "true" : "false"
 
 		case "component_component_block":
 			return b.instanceName
@@ -301,6 +337,9 @@ function toText(b) {
 		case "helpers_dropdown":
 			return `${b.key_}${b.inputList[0].fieldRow[1].value_}()`
 
+		case "procedures_defreturn":
+			return `fnr ${b.inputList[0].fieldRow[1].value_}() {\n${indent(toText(ch[0]))}\n}`
+
 		default: {
 			if (b.type in bFns)
 				return bFns[b.type] + "(" + b.childBlocks_.map(c => toText(c)).join(", ") + ")"
@@ -308,6 +347,13 @@ function toText(b) {
 	}
 	console.log(b.type, b)
 	return "..."
+}
+
+function currEditor() {
+	return document.querySelectorAll("td:nth-child(3)>table>tbody>tr>td>div.ode-TextButton-up-disabled")[0].innerText
+}
+function currScreen() {
+	return document.querySelector("body > table > tbody > tr:nth-child(2) > td > table > tbody > tr > td:nth-child(2) > div > div:nth-child(2) > table > tbody > tr:nth-child(1) > td > table > tbody > tr > td:nth-child(2) > table > tbody > tr > td:nth-child(2)").innerText.slice(0, -2)
 }
 
 /*

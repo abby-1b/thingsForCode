@@ -4,6 +4,7 @@ const MAX_ITER = 999
 type SVar = {name: string, level: number, macro?: string[]}
 type Func = {color: string, translate?: boolean, transName?: string}
 type Funcs = {[key: string]: Func}
+type IFP = {idx: number, level: number}
 
 const fnc = {
 	"str": "#B32D5E",
@@ -28,6 +29,7 @@ const libFns: Funcs = {
 	"copy": {color: fnc.arr, translate: true, transName: "copy list"},
 	"set": {color: fnc.set},
 	"get": {color: fnc.set},
+	"nop": {color: "", translate: true, transName: "evaluate but ignore result"}
 }
 const mathFunctions = ["rand", "randi", "min", "max", "sqrt", "abs", "neg", "round", "ceil", "floor", "mod", "sin", "cos", "tan", "asin", "acos", "atan", "atan2"]
 const mathFunctionMap: {[key: string]: string} = {
@@ -42,9 +44,16 @@ const mathFunctionMap: {[key: string]: string} = {
 function error(e: string, ret: any = undefined) { console.log(e); return ret }
 
 function parse(code: string) {
-	let tokens = code.match(/('|"|'''|""").*?\1|-[0-9.]{1,}|[+\-*\/!<>=&|^]=|\+\+|\-\-|&&|\|\||[~{}()\[\]+\-*\/=,<>|&^!?]|[a-zA-Z_][a-zA-Z_0-9]*|[0-9.]{1,}|\n/gm) as string[]
-	// console.log(tokens)
+	let tokens = code.match(/('|"|'''|""").*?\1|-[0-9.]{1,}|\/\/|[+\-*\/!<>=&|^]=|\+\+|\-\-|&&|\|\||[~{}()\[\]+\-*\/=,<>|&^!?]|[a-zA-Z_][a-zA-Z_0-9]*|[0-9.]{1,}|\n/gm) as string[]
+	if (tokens == null) tokens = []
 	let ret: string[] = []
+
+	// Preprocess (basically remove comments and put `nop()` in empty blocks.)
+	for (let t = 0; t < tokens.length; t++) {
+		// if (tokens[t] == "{" && tokens[t + 1] == "}") tokens.splice(t, 0, "nop", "(", ")")
+		if (tokens[t] == "//") while (tokens.length > t && tokens[t] != "\n") tokens.splice(t, 1)
+	}
+	console.log(tokens)
 
 	function captureClause(tokens: string[], removeFL = false): string[] {
 		let ret: string[] = []
@@ -167,6 +176,7 @@ function parse(code: string) {
 	let fns: Funcs = {}
 	Object.assign(fns, libFns)
 	let nestExits: string[] = []
+	let ifPos: IFP[] = []
 
 	while (tokens.length > 0) {
 		let tk = tokens.shift() as string
@@ -192,6 +202,20 @@ function parse(code: string) {
 		} else if (tk == "if") {
 			ret.push("if", ".s")
 			ret.push(...translateVal(captureClause(tokens, true)), ".l", ".s")
+			ifPos.push({idx: ret.length, level: varLevel})
+			varLevel++
+			nestExits.push(".l")
+			tokens.shift()
+		} else if (tk == "elif") {
+			ret.splice(ifPos[ifPos.length - 1].idx, 0, ".ii")
+			ret.push(".s")
+			ret.push(...translateVal(captureClause(tokens, true)), ".l", ".s")
+			varLevel++
+			nestExits.push(".l")
+			tokens.shift()
+		} else if (tk == "else") {
+			ret.splice(ifPos[ifPos.length - 1].idx, 0, ".ie")
+			ret.push(".s")
 			varLevel++
 			nestExits.push(".l")
 			tokens.shift()
@@ -271,6 +295,7 @@ function parse(code: string) {
 			ret.push(nestExits.pop() as string)
 			varLevel--
 			vars = vars.filter(v => v.level <= varLevel) // Remove variables out of scope
+			ifPos = ifPos.filter(v => v.level <= varLevel)
 		} else if (tk != "\n") {
 			console.log("Didn't find:", tk, tokens[0])
 		}
@@ -282,9 +307,10 @@ function parse(code: string) {
 // Test
 export {}
 parse(`
-global sliders = [10]
-set(Slider.ThumbPosition, sliders[1], 10)
-`)
+if (true) { // Comment
+
+}
+//`)
 
 
 // for (num = a to b) { }

@@ -30,10 +30,10 @@ Macros serve as compile-time constants that stay in the text editor. They're los
 Macros can't be changed after they're declared.
 
 ## If
-```js
-if (10 < 20) {
-	...
-}
+```py
+if (10 < 20) { ... }
+elif { ... }
+else { ... }
 ```
 Runs code inside a given block if a certain condition is met. Simple.
 
