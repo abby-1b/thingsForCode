@@ -27,6 +27,7 @@ const libFns: Funcs = {
 	"reverse": {color: fnc.str},
 	"copy": {color: fnc.arr, translate: true, transName: "copy list"},
 	"set": {color: fnc.set},
+	"get": {color: fnc.set},
 }
 const mathFunctions = ["rand", "randi", "min", "max", "sqrt", "abs", "neg", "round", "ceil", "floor", "mod", "sin", "cos", "tan", "asin", "acos", "atan", "atan2"]
 const mathFunctionMap: {[key: string]: string} = {
