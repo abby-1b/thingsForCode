@@ -45,31 +45,22 @@ function parse(code: string) {
 	// console.log(tokens)
 	let ret: string[] = []
 
-	function captureClause(tokens: string[], untilNewline = false): string[] {
+	function captureClause(tokens: string[], removeFL = false): string[] {
 		let ret: string[] = []
-		if (untilNewline) {
-			while (tokens[0] != "\n" && tokens.length > 0) ret.push(tokens.shift() as string)
-			return ret
-		}
-
-		let isFn = tokens.length > 1 && tokens[1] == '('
-		if (isFn) ret.push(tokens.shift() as string, "(")
-
-		if (!"([{".includes(tokens[0])) {
-			while (tokens.length > 0 && tokens[0] != "\n") ret.push(tokens.shift() as string)
-			return ret
-		}
-		let tk0 = tokens.shift() as string
-		let ot = ")]}"["([{".indexOf(tk0)], n = 1, i = MAX_ITER
+		let n = 0, i = MAX_ITER
 		while (tokens.length > 0) {
-			if (tokens[0] == tk0) n++
-			if (tokens[0] == ot) n--
-			if (n == 0) break
+			if ("([{".includes(tokens[0])) n++
+			if ("}])".includes(tokens[0])) n--
+			if (n < 0 || (n == 0 && "=".includes(tokens[0]))) break
+
+			if ("([{".includes(tokens[0]) && "}])".includes(ret[ret.length - 1])) break
 			if (i-- < 0) return error("Couldn't find matching parenthesis!", [])
+			if (n == 0 && (tokens[0] == "," || tokens[0] == "\n")) break
 			if (tokens[0] != "\n") ret.push(tokens.shift() as string)
+			else tokens.shift()
 		}
-		tokens.shift()
-		if (isFn) ret.push(")")
+		if (tokens[0] == ",") tokens.shift()
+		if (removeFL) return ret.slice(1, -1)
 		return ret
 	}
 
@@ -96,7 +87,8 @@ function parse(code: string) {
 					if (tk[p] == '[') n++
 					if (tk[p] == ']') n--
 					if (i-- < 0) return error("Couldn't find matching bracket!", [])
-					;(tk[p - 1] as string[]).push(tk.splice(p, 1)[0] as string)
+					let ct = tk.splice(p, 1)[0] as string
+					if (ct != "\n") (tk[p - 1] as string[]).push(ct)
 				}
 				;(tk[--p] as string[]).splice(-1)
 				tk[p] = valFromTokens(tk[p] as string[]) as string[]
@@ -182,34 +174,34 @@ function parse(code: string) {
 			vars.push({name: n, level: 0})
 			ret.push("initialize global", ".v" + n)
 			if (tokens.shift() != "=") error("Expected `=`")
-			else ret.push(...translateVal(captureClause(tokens, true)))
+			else ret.push(...translateVal(captureClause(tokens)))
 			ret.push("_")
 		} else if (tk == "local") {
 			let n = tokens.shift() as string
 			vars.push({name: n, level: varLevel})
 			ret.push("initialize local in do", ".s", ".n" + n)
 			if (tokens.shift() != "=") error("Expected `=`")
-			else ret.push(...translateVal(captureClause(tokens, true)))
+			else ret.push(...translateVal(captureClause(tokens)))
 			ret.push(".l")
 		} else if (tk == "macro") {
 			let n = tokens.shift() as string
 			vars.push({name: n, level: varLevel})
 			if (tokens.shift() != "=") error("Expected `=`")
-			else vars[vars.length - 1].macro = translateVal(captureClause(tokens, true))
+			else vars[vars.length - 1].macro = translateVal(captureClause(tokens))
 		} else if (tk == "if") {
 			ret.push("if", ".s")
-			ret.push(...translateVal(captureClause(tokens)), ".l", ".s")
+			ret.push(...translateVal(captureClause(tokens, true)), ".l", ".s")
 			varLevel++
 			nestExits.push(".l")
 			tokens.shift()
 		} else if (tk == "while") {
 			ret.push("while", ".s")
-			ret.push(...translateVal(captureClause(tokens)), ".l", ".s")
+			ret.push(...translateVal(captureClause(tokens, true)), ".l", ".s")
 			varLevel++
 			nestExits.push(".l")
 			tokens.shift()
 		} else if (tk == "for") {
-			let cls = valFromTokens(captureClause(tokens))
+			let cls = valFromTokens(captureClause(tokens, true))
 			varLevel++
 			if (cls[3] == "to") {
 				ret.push("for each number from", ".s", ".f" + cls[0],
@@ -221,7 +213,7 @@ function parse(code: string) {
 			nestExits.push(".l")
 			tokens.shift()
 		} else if (tk == "when") {
-			let cls = captureClause(tokens)
+			let cls = captureClause(tokens, true)
 			ret.push("when " + cls.join(""), ".s")
 			varLevel++
 			nestExits.push("_")
@@ -229,19 +221,19 @@ function parse(code: string) {
 		} else if (tokens.length > 0 && tokens[0] == '=') {
 			ret.push("set " + ((getVar(tk) as SVar).level == 0 ? "global " : "") + tk, ".s")
 			tokens.shift()
-			ret.push(...translateVal(captureClause(tokens, true)), ".l")
+			ret.push(...translateVal(captureClause(tokens)), ".l")
 		} else if (tokens.length > 0 && tokens[0] == '[') {
 			let list = translateVal([tk])
-			let idx = translateVal(captureClause(tokens))
-			ret.push("replace list item", ".s", ".s", ...list, ".l", ...idx, ".l")
+			let idx = translateVal(captureClause(tokens, true))
 			let op = (tokens.shift() as string)[0]
-			let val = translateVal(captureClause(tokens, true))
+			ret.push("replace list item", ".s", ".s", ...list, ".l", ...idx, ".l")
+			let val = translateVal(captureClause(tokens))
 			if (op == '=') ret.push(...val)
 			else ret.push(op[0], "select list item", ...list, ...idx, ...val)
 		} else if (tokens.length > 0 && ["+=", "-=", "*=", "/=", "&=", "|=", "^="].includes(tokens[0])) {
 			ret.push("set " + ((getVar(tk) as SVar).level == 0 ? "global " : "") + tk, ".s")
 			let op = (tokens.shift() as string)[0]
-			let cls = captureClause(tokens, true)
+			let cls = captureClause(tokens)
 			cls.unshift(tk, op, "(")
 			cls.push(")")
 			ret.push(...translateVal(cls), ".l")
@@ -252,18 +244,22 @@ function parse(code: string) {
 		} else if (tokens.length > 3 && tokens[0] == '.' && tokens[2] == '=') {
 			ret.push("set " + tk + tokens.splice(0, 2).join(""))
 			tokens.shift()
-			ret.push(...translateVal(captureClause(tokens, true)))
+			ret.push(...translateVal(captureClause(tokens)))
 			// ret.push(...captureClause(tokens).filter(e => e[0] == '"').map(e => e.slice(1, -1)))
 		} else if (tk == "~" && tokens.length > 0 && tokens[0] == '(') {
-			ret.push(...captureClause(tokens).filter(e => e[0] == '"').map(e => e.slice(1, -1)))
+			ret.push(...captureClause(tokens, true).filter(e => e[0] == '"').map(e => e.slice(1, -1)))
 		} else if (tk == "set" && tokens.length > 0 && tokens[0] == '(') {
-			let cls = captureClause(tokens)
-			ret.push("set " + cls[0] + "." + cls[2], ...translateVal(cls.slice(4)))
+			let cls = captureClause(tokens, true)
+			let p = captureClause(cls).join("")
+			let comp = translateVal(captureClause(cls))
+			let val = translateVal(captureClause(cls))
+			console.log(p, comp, val)
+			ret.push("set " + p, ".s", ...comp, ".l", ".s", ...val, ".l")
 		} else if (tokens.length > 0 && tokens[0] == '(') {
 			if ((tk in fns) && fns[tk].translate) {
 				ret.push(fns[tk].transName as string)
 			} else ret.push(tk)
-			let c = captureClause(tokens)
+			let c = captureClause(tokens, true)
 			let h: string[][] = []
 			while (c.length > 0) {
 				h.push(captureClause(c))
@@ -285,7 +281,8 @@ function parse(code: string) {
 // Test
 export {}
 parse(`
-set(Slider.ThumbPosition, Slider1, 0.5)
+global sliders = [10]
+set(Slider.ThumbPosition, sliders[1], 10)
 `)
 
 
@@ -314,10 +311,26 @@ TODO: (by priority)
 */
 
 /*
-global sliders = [Slider1, Slider2, Slider3, Slider4, Slider5, Slider6, Slider7, Slider8, Slider9, Slider10]
+global sliders = [
+	Slider1, Slider2,
+	Slider3, Slider4,
+	Slider5, Slider6,
+	Slider7, Slider8,
+	Slider9, Slider10
+]
 when (Clock1.Timer) {
-	for (sl = 1 to len(sliders)) {
-		sliders[sl].ColorLeft = red
+	for (sl = 2 to len(sliders)) {
+		local a = sliders[sl]
+		set(Slider.ColorLeft,
+			sliders[sl],
+			rgb([randi(0, 255),
+				randi(0, 255),
+				randi(0, 255)]))
+		set(Slider.ThumbPosition,
+			sliders[sl],
+			get(Slider.ThumbPosition, sliders[sl - 1]) * 0.1
+			+ get(Slider.ThumbPosition, sliders[sl]) * 0.9
+		)
 	}
 }
 */
