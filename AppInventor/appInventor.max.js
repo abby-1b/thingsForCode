@@ -18,8 +18,8 @@ document.onkeydown = (k) => {
         && isNum(av)) {
         ae.value = Math.trunc(parseFloat(av)) + (k.key == "ArrowUp" ? 1 : k.key == "ArrowDown" ? - 1 : 0) + (av.match(/\..*/)||[""])[0]
     }
-	if ("sr".includes(k.key) && k.metaKey)
-		build(sec.value), k.preventDefault()
+	if ("sr".includes(k.key) && k.metaKey) build(sec.value), k.preventDefault()
+	if (k.key == "k" && k.metaKey) sec.value = w.getTopBlocks().map(b => toText(b)).join("\n"), redraw()
 }
 ddd = 1
 
@@ -42,6 +42,11 @@ function typeBlock(t) {
 		else if (t[1] == 'f') getSelected().setFieldValue(t.slice(2), "VAR") // Sets the name field of a for block
 		else if (t[1] == 's') savedSelect.push(getSelected()) // Saves the current selected block
 		else if (t[1] == 'l' && savedSelect.length > 0) savedSelect.pop().select() // Loads the last selected block
+		else if (t[1] == 'e') { // Makes an empty list of a length
+			typeBlock("create empty list")
+			let to = parseInt(t.slice(2))
+			for (let i = 0; i < to; i++) getSelected().appendValueInput("ADD" + i), getSelected().itemCount_++
+		}
 	} else {
 		let wasntSelected = !getSelected()
 		w.typeBlock_.show()
@@ -190,7 +195,7 @@ var drawParams = {
 		sec.style.padding = (editorShow == 0) ? "0px" : ""
 		currEdtShow = currEdtShow * 0.8 + editorShow * 0.2
 		if (Math.abs(currEdtShow - editorShow) < 0.01) currEdtShow = editorShow
-		b.style.gridTemplateColumns = `1fr ${currEdtShow}fr`
+		b.style.gridTemplateColumns = "1fr " + currEdtShow + "fr"
 		ctx.canvas.style.width = (50 * currEdtShow) + "%"
 		let rct = ctx.canvas.getBoundingClientRect()
 		let w = Math.round(rct.width)
@@ -215,18 +220,24 @@ function redraw() {
 	sec.value.replace(/\t/g, "    ").split("\n").map((e, i) => {
 		if (scr > i) return []
 		return splitLine(e)
-	}).forEach((l, y) => l.forEach(t => {
-		if (t.txt[0] == '"' || ["join"].includes(t.txt)) ctx.fillStyle = "#B32D5E"
-		else if (["if", "else", "while", "for", "when", "to", "step"].includes(t.txt)) ctx.fillStyle = "#B18E35"
-		else if (isNum(t.txt) || [...mathFunctions, "+", "-", "*", "/", "==", "!=", "<", ">", "<=", ">=", "&", "&&", "|", "||"].includes(t.txt)) ctx.fillStyle = "#3F71B5"
-		else if (["true", "false"].includes(t.txt)) ctx.fillStyle = "#77AB41"
-		else if (["macro", "global", "local", "=", "+=", "-=", "*=", "/=", "++", "--", "&=", "|=", "^="].includes(t.txt)) ctx.fillStyle = "#D05F2D"
-		else if ("()".includes(t.txt)) ctx.fillStyle = "#4f0041"
-		else if ("{}".includes(t.txt)) ctx.fillStyle = "#424f00"
-		else return
-		ctx.fillRect(drawParams.sx + drawParams.cw * t.x, drawParams.sy + (drawParams.ch + drawParams.lo) * y,
-			drawParams.cw * t.w, drawParams.ch)
-	}))
+	}).forEach((l, y) => {
+		for (let ti = 0; ti < l.length; ti++) {
+			t = l[ti]
+			if (t.txt[0] == '"') ctx.fillStyle = "#B32D5E"
+			else if (["if", "else", "while", "for", "when", "to", "step"].includes(t.txt)) ctx.fillStyle = "#B18E35"
+			else if (isNum(t.txt) || [...mathFunctions, "+", "-", "*", "/", "==", "!=", "<", ">", "<=", ">=", "&", "&&", "|", "||"].includes(t.txt)) ctx.fillStyle = "#3F71B5"
+			else if (t.txt == "." || (ti > 0 && l[ti - 1].txt == ".") || (ti + 1 < l.length && l[ti + 1].txt == ".")) ctx.fillStyle = "#266643"
+			else if (["true", "false"].includes(t.txt)) ctx.fillStyle = "#77AB41"
+			else if (["macro", "global", "local", "=", "+=", "-=", "*=", "/=", "++", "--", "&=", "|=", "^="].includes(t.txt)) ctx.fillStyle = "#D05F2D"
+			else if ("()".includes(t.txt)) ctx.fillStyle = "#4f0041"
+			else if ("{}".includes(t.txt)) ctx.fillStyle = "#424f00"
+			else if (t.txt in libFns) ctx.fillStyle = libFns[t.txt].color
+			else if (ti + 1 < l.length && l[ti + 1].txt == "(") ctx.fillStyle = "#BF4343"
+			else continue
+			ctx.fillRect(drawParams.sx + drawParams.cw * t.x, drawParams.sy + (drawParams.ch + drawParams.lo) * y,
+				drawParams.cw * t.w, drawParams.ch)
+		}
+	})
 	
 	ctx.translate(sec.scrollLeft, sec.scrollTop)
 }
@@ -236,6 +247,67 @@ function splitLine(code) {
 	let patt = /('|"|'''|""").*?\1|-[0-9.]{1,}|[+\-*\/!<>=&|^]=|\+\+|\-\-|&&|\|\||[~{}()\[\]+\-*\/=,<>|&^!?]|[a-zA-Z_][a-zA-Z_0-9]*|[0-9.]{1,}|\n/gm
 	while (match = patt.exec(code)) tokens.push({txt: match[0], x: match.index, w: patt.lastIndex - match.index})
 	return tokens
+}
+
+let bFns = {
+	"lists_length": "len",
+	"color_make_color": "rgb"
+}
+function indent(str) { return str.split("\n").map(e => "\t" + e).join("\n") }
+function toText(b) {
+	let ch = b.childBlocks_
+	switch (b.type) {
+		case "math_number":
+			return b.inputList[0].fieldRow[0].value_
+		case "local_declaration_statement":
+			return `local ${b.localNames_[0]} = ${toText(ch[0])}`
+				+ (ch.length == 1 ? "" : `\n` + toText(ch[1]))
+		case "global_declaration":
+			return `global ${b.getVars()[0]} = ${toText(ch[0])}`
+		case "controls_while":
+		case "controls_if":
+			return `${b.type.split("_")[1]} (${toText(ch[0])}) {\n${indent(toText(ch[1]))}\n}` + (ch.length == 2 ? "" : `\n` + toText(ch[2]))
+		case "controls_forRange":
+			return `for (num = ${toText(ch[0])} to ${toText(ch[1])} step ${toText(ch[2])}) {\n${indent(toText(ch[3]))}\n}` + (ch.length == 4 ? "" : `\n` + toText(ch[4]))
+		case "math_compare": 
+			return `${toText(ch[0])} ${{"=":"==","not=":"!=","lt":"<","lte":"<=","gt":">","gte":">="}[b.helpUrl().split("#")[1]]} ${toText(ch[1])}`
+		case "math_add":
+		case "math_subtract":
+		case "math_multiply":
+		case "math_divide":
+		case "math_power":
+			return "(" + toText(ch[0]) + " " + {"add":"+","subtract":"-","multiply":"*","divide":"/","power":"^"}[b.type.split("_")[1]] + " " + toText(ch[1]) + ")"
+		case "math_random_int":
+			return `randi(${toText(ch[0])}, ${toText(ch[1])})`
+
+		case "lexical_variable_get":
+			return b.getVars()[0].split(" ").slice(-1)[0]
+		case "lexical_variable_set":
+			return `${b.getVars()[0]} = ${toText(ch[0])}` + (ch.length == 1 ? "" : `\n` + toText(ch[1]))
+
+		case "lists_create_with":
+			return `[${b.childBlocks_.map(c => toText(c)).join(", ")}]`
+		case "lists_select_item":
+			return `${toText(ch[0])}[${toText(ch[1])}]`
+
+		case "component_component_block":
+			return b.instanceName
+		case "component_event":
+			return `when (${b.instanceName}.${b.eventName}) {\n${indent(toText(ch[0]))}\n}`
+		case "component_set_get":
+			if (ch.length == 1) return `get(${b.typeName}.${b.propertyName}, ${toText(ch[0])})`
+			return `set(${b.typeName}.${b.propertyName}, ${toText(ch[0])}, ${toText(ch[1])})` + (ch.length == 2 ? "" : "\n" + toText(ch[2]))
+			
+		case "helpers_dropdown":
+			return `${b.key_}${b.inputList[0].fieldRow[1].value_}()`
+
+		default: {
+			if (b.type in bFns)
+				return bFns[b.type] + "(" + b.childBlocks_.map(c => toText(c)).join(", ") + ")"
+		} break
+	}
+	console.log(b.type, b)
+	return "..."
 }
 
 /*
