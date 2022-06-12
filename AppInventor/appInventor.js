@@ -375,8 +375,8 @@ document.onkeydown = (k) => {
         && isNum(av)) {
         ae.value = Math.trunc(parseFloat(av)) + (k.key == "ArrowUp" ? 1 : k.key == "ArrowDown" ? - 1 : 0) + (av.match(/\..*/)||[""])[0]
     }
-	if ("sr".includes(k.key) && k.metaKey) build(sec.value), k.preventDefault()
-	if (k.key == "k" && k.metaKey) loadBlocks()
+	if ("sr".includes(k.key) && k.ctrlKey) build(sec.value), k.preventDefault()
+	if (k.key == "k" && k.ctrlKey) loadBlocks()
 }
 ddd = 1
 
