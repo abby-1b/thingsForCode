@@ -468,7 +468,7 @@ var drawParams = {
 	drawParams.ch = r.height
 	d.innerText += "\nhi"
 	r = d.getBoundingClientRect()
-	drawParams.lo = (r.height - 2 * drawParams.ch) + 1
+	drawParams.lo = (r.height - 2 * drawParams.ch)// + 1
 	b.removeChild(d)
 
 	sec = document.createElement("textarea")
@@ -616,7 +616,11 @@ function splitLine(code) {
 
 let bFns = {
 	"lists_length": "len",
-	"color_make_color": "rgb"
+	"color_make_color": "rgb",
+    "text_segment": "segment",
+    "text_length": "strlen",
+    "text_join": "join",
+    "controls_openAnotherScreen": "openScreen"
 }
 function indent(str) { return str.split("\n").map(e => "\t" + e).join("\n") }
 function toText(b) {
@@ -647,6 +651,10 @@ function toText(b) {
 		case "controls_do_then_return":
 			return toText(ch[0]) + "\nreturn " + toText(ch[1])
 
+        case "logic_operation":
+            return `${toText(ch[0])} ${{"AND":"&&","OR":"||"}[b.inputList[1].fieldRow[0].value_]} ${toText(ch[1])}`
+            
+        case "logic_compare":
 		case "math_compare":
 			return `${toText(ch[0])} ${{"=":"==","not=":"!=","lt":"<","lte":"<=","gt":">","gte":">="}[b.helpUrl().split("#")[1]]} ${toText(ch[1])}`
 		case "math_add":
@@ -669,6 +677,8 @@ function toText(b) {
 			return `[${b.childBlocks_.map(c => toText(c)).join(", ")}]`
 		case "lists_select_item":
 			return `${toText(ch[0])}[${toText(ch[1])}]`
+        case "lists_replace_item":
+            return `${toText(ch[0])}[${toText(ch[1])}] = ${toText(ch[2])}` + (ch.length == 3 ? "" : `\n` + toText(ch[3]))
 
 		case "logic_boolean":
 			return b.inputList[0].fieldRow[0].value_ == "TRUE" ? "true" : "false"
@@ -683,10 +693,18 @@ function toText(b) {
 			
 		case "helpers_dropdown":
 			return `${b.key_}${b.inputList[0].fieldRow[1].value_}()`
-
+        case "helpers_screen_names":
+            return `${b.inputList[0].fieldRow[0].value_}`
+            
 		case "procedures_defreturn":
 			return `fnr ${b.inputList[0].fieldRow[1].value_}() {\n${indent(toText(ch[0]))}\n}`
 
+        case "procedures_callreturn":
+            return b.inputList[0].fieldRow[1].value_ + "(" + b.childBlocks_.map(c => toText(c)).join(", ") + ")"
+            
+        case "text":
+            return '"' + b.inputList[0].fieldRow[1].value_ + '"'
+            
 		default: {
 			if (b.type in bFns)
 				return bFns[b.type] + "(" + b.childBlocks_.map(c => toText(c)).join(", ") + ")"
