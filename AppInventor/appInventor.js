@@ -432,7 +432,7 @@ function build(code) {
 		lastBuild = tmp
 	} else {
 		lastBuild = c, plch = 0, savedSelect = []
-		w.getTopBlocks().map(e => e.dispose())
+		w.getTopBlocks().map(e => { if (!(["procedures_defreturn", "procedures_defnoreturn"].includes(e.type))) e.dispose() })
 	}
 	c.forEach(typeBlock)
 	setTimeout(() => sec.focus(), 1)
