@@ -6,6 +6,7 @@ const fnc = {
     "var": "#D05F2D",
     "col": "#333333",
     "set": "#266643",
+	"ctr": "#B18E35"
 };
 const libFns = {
     "rgb": { color: fnc.col, translate: true, transName: "make color" },
@@ -23,7 +24,9 @@ const libFns = {
     "copy": { color: fnc.arr, translate: true, transName: "copy list" },
     "set": { color: fnc.set },
     "get": { color: fnc.set },
-    "nop": { color: "", translate: true, transName: "evaluate but ignore result" }
+    "nop": { color: "", translate: true, transName: "evaluate but ignore result" },
+	"openScreen": { color: fnc.ctr, translate: true, transName: "open another screen", bIns: "Screen Name: " },
+	"openScreenVal": { color: fnc.ctr, translate: true, transName: "open another screen with start value", bIns: "Screen Name: " },
 };
 const mathFunctions = ["rand", "randi", "min", "max", "sqrt", "abs", "neg", "round", "ceil", "floor", "mod", "sin", "cos", "tan", "asin", "acos", "atan", "atan2"];
 const mathFunctionMap = {
@@ -272,6 +275,20 @@ function parse(code) {
             nestExits.push("_");
             tokens.shift();
         }
+		else if (tk == "fnr") {
+			varLevel++
+			ret.push("procedure result", ".v" + tokens.shift(), ".s")
+			captureClause(tokens, true).filter(e => e != ",").forEach(a => {
+				vars.push({ name: a, level: varLevel });
+				ret.push(".a" + a)
+			})
+			ret.push("initialize local in return", ".s", ".n__ret__", "0", ".l", "do result", ".s", "get __ret__", ".l")
+			nestExits.push("_")
+			tokens.shift()
+		}
+		else if (tk == "return") {
+			ret.push("set __ret__", ...translateVal(captureClause(tokens)))
+		}
         else if (tokens.length > 0 && tokens[0] == '=') {
             ret.push("set " + (getVar(tk).level == 0 ? "global " : "") + tk, ".s");
             tokens.shift();
@@ -329,7 +346,9 @@ function parse(code) {
                 h.push(captureClause(c));
                 c.splice(0, 1);
             }
+			let l = ret.length;
             ret.push(...h.map(translateVal).flat());
+			if ((tk in fns) && fns[tk].bIns) ret[l] = fns[tk].bIns + ret[l];
         }
         else if (tk == "}") {
             ret.push(nestExits.pop());
@@ -399,7 +418,10 @@ function typeBlock(t) {
 		else if (t[1] == 'f') getSelected().setFieldValue(t.slice(2), "VAR") // Sets the name field of a for block
 		else if (t[1] == 's') savedSelect.push(getSelected()) // Saves the current selected block
 		else if (t[1] == 'l' && savedSelect.length > 0) savedSelect.pop().select() // Loads the last selected block
-		else if (t[1] == 'e') { // Makes an empty list of a length
+		else if (t[1] == 'a') {
+			getSelected().arguments_.push(t.slice(2))
+			getSelected().updateParams_()
+		} else if (t[1] == 'e') { // Makes an empty list of a length
 			typeBlock("create empty list")
 			let to = parseInt(t.slice(2))
 			for (let i = 0; i < to; i++) getSelected().appendValueInput("ADD" + i), getSelected().itemCount_++
@@ -432,11 +454,11 @@ function build(code) {
 		lastBuild = tmp
 	} else {
 		lastBuild = c, plch = 0, savedSelect = []
-		w.getTopBlocks().map(e => { if (!(["procedures_defreturn", "procedures_defnoreturn"].includes(e.type))) e.dispose() })
+		w.getTopBlocks().map(e => { e.dispose() })
 	}
 	c.forEach(typeBlock)
 	setTimeout(() => sec.focus(), 1)
-	setTimeout(() => w.scrollCenter(), 16)
+	setTimeout(() => w.scrollCenter(), 500)
 }
 
 var sec  = null
@@ -620,10 +642,12 @@ let bFns = {
     "text_segment": "segment",
     "text_length": "strlen",
     "text_join": "join",
-    "controls_openAnotherScreen": "openScreen"
+    "controls_openAnotherScreen": "openScreen",
+	"math_divide": "mod"
 }
 function indent(str) { return str.split("\n").map(e => "\t" + e).join("\n") }
 function toText(b) {
+	if (!b) return ""
 	let ch = b.childBlocks_
 	switch (b.type) {
 		case "math_number":
@@ -641,7 +665,7 @@ function toText(b) {
 			for (let i = 0; i < b.elseifCount_; i++) ret += ` elif (${toText(ch[on++])}) {\n${indent(toText(ch[on++]))}\n}`
 			if (b.elseCount_) ret += ` else {\n${indent(toText(ch[on++]))}\n}`
 			console.log(on, ch.length)
-			return ret //`${b.type.split("_")[1]} (${toText(ch[0])}) {\n${indent(toText(ch[1]))}\n}` + (ch.length == 2 ? "" : `\n` + toText(ch[2]))
+			return ret + (ch.length == on ? "" : `\n` + toText(ch[on]))
 		} break
 		case "controls_forRange":
 			return `for (${b.getVars()[0]} = ${toText(ch[0])} to ${toText(ch[1])} step ${toText(ch[2])}) {\n${indent(toText(ch[3]))}\n}` + (ch.length == 4 ? "" : `\n` + toText(ch[4]))
@@ -660,9 +684,9 @@ function toText(b) {
 		case "math_add":
 		case "math_subtract":
 		case "math_multiply":
-		case "math_divide":
+		case "math_division":
 		case "math_power":
-			return "(" + toText(ch[0]) + " " + {"add":"+","subtract":"-","multiply":"*","divide":"/","power":"^"}[b.type.split("_")[1]] + " " + toText(ch[1]) + ")"
+			return "(" + toText(ch[0]) + " " + {"add":"+","subtract":"-","multiply":"*","divide":"%","division":"/","power":"^"}[b.type.split("_")[1]] + " " + toText(ch[1]) + ")"
 		case "math_random_int":
 			return `randi(${toText(ch[0])}, ${toText(ch[1])})`
 		case "math_random_float":
@@ -671,6 +695,7 @@ function toText(b) {
 		case "lexical_variable_get":
 			return b.getVars()[0].split(" ").slice(-1)[0]
 		case "lexical_variable_set":
+			if (b.getVars()[0] == "__ret__") return `return ${toText(ch[0])}` + (ch.length == 1 ? "" : `\n` + toText(ch[1]))
 			return `${b.getVars()[0].split(" ").slice(-1)[0]} = ${toText(ch[0])}` + (ch.length == 1 ? "" : `\n` + toText(ch[1]))
 
 		case "lists_create_with":
@@ -697,11 +722,16 @@ function toText(b) {
             return `${b.inputList[0].fieldRow[0].value_}`
             
 		case "procedures_defreturn":
-			return `fnr ${b.inputList[0].fieldRow[1].value_}() {\n${indent(toText(ch[0]))}\n}`
+			return `fnr ${b.inputList[0].fieldRow[1].value_}(${b.inputList[0].fieldRow.slice(3).map(f => f.value_).filter(e => e != undefined).join(", ")}) {\n${indent(toText(ch[0].childBlocks_[1].childBlocks_[1]))}\n}`
 
         case "procedures_callreturn":
             return b.inputList[0].fieldRow[1].value_ + "(" + b.childBlocks_.map(c => toText(c)).join(", ") + ")"
             
+		case "dictionaries_create_with":
+			return "{" + b.childBlocks_.map(e => toText(e)).join(", ") + "}"
+		case "pair":
+			return toText(ch[1]) + ": " + toText(ch[0])
+			
         case "text":
             return '"' + b.inputList[0].fieldRow[1].value_ + '"'
             
