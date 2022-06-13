@@ -111,6 +111,7 @@ function parse(code) {
                 ;
                 tk[--p].splice(-1);
                 tk[p] = valFromTokens(tk[p]);
+				console.log(tk[p])
                 tk[p] = ["[" + tk[p].length, ...tk[p]];
                 if (isVar) {
                     let vr = tk.splice(--p, 1)[0];
@@ -125,7 +126,6 @@ function parse(code) {
                 if (fns[n].translate)
                     n = fns[n].transName;
                 tk[p - 1].unshift(n);
-                console.log(tk);
             }
             if (tk[p] == ".")
                 tk[p - 1] += "." + tk[p + 1], tk.splice(p--, 2);
