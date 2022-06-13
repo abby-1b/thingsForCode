@@ -37,7 +37,15 @@ const mathFunctionMap = {
     "abs": "absolute",
     "mod": "modulo of"
 };
-function error(e, ret = undefined) { console.log(e); return ret; }
+function error(e, ret = undefined) {
+	function stackTrace() {
+		var err = new Error();
+		return err.stack;
+	}
+	console.log(e, stackTrace());
+	return ret;
+}
+
 function parse(code) {
     let tokens = code.match(/('|"|'''|""").*?\1|-[0-9.]{1,}|\/\/|[+\-*\/!<>=&|^]=|\+\+|\-\-|&&|\|\||[~{}()\[\]+\-*\/=,<>|&^!?]|[a-zA-Z_][a-zA-Z_0-9]*|[0-9.]{1,}|\n/gm);
     if (tokens == null)
@@ -62,7 +70,7 @@ function parse(code) {
             if ("([{".includes(tokens[0]) && "}])".includes(ret[ret.length - 1]))
                 break;
             if (i-- < 0)
-                return error("Couldn't find matching parenthesis!", []);
+                return error("Couldn't find matching clause!", []);
             if (n == 0 && (tokens[0] == "," || tokens[0] == "\n"))
                 break;
             if (tokens[0] != "\n")
@@ -94,6 +102,7 @@ function parse(code) {
                 tk[p] = valFromTokens(tk[p]);
             }
             if (tk[p] == '[') {
+				console.log(tk)
                 let isVar = typeof tk[p - 1] === "string" && vars.map(e => e.name).includes(tk[p - 1]);
                 tk[p++] = [];
                 let n = 1, i = MAX_ITER;
@@ -118,6 +127,31 @@ function parse(code) {
                     tk[p][0] = "$" + vr;
                 }
             }
+			if (tk[p] == '{') {
+				let isVar = typeof tk[p - 1] === "string" && vars.map(e => e.name).includes(tk[p - 1]);
+                tk[p++] = [];
+                let n = 1, i = MAX_ITER * 2;
+                while (n > 0) {
+                    if (tk[p] == '{')
+                        n++;
+                    if (tk[p] == '}')
+                        n--;
+                    if (i-- < 0)
+                        return error("Couldn't find matching curly brace!", []);
+                    let ct = tk.splice(p, 1)[0];
+                    if (ct != "\n")
+                        tk[p - 1].push(ct);
+                }
+                ;
+                tk[--p].splice(-1);
+                tk[p] = valFromTokens(tk[p]);
+				console.log(tk[p])
+                tk[p] = ["{" + Math.ceil(tk[p].length / 2), ...tk[p]];
+                if (isVar) {
+                    let vr = tk.splice(--p, 1)[0];
+                    tk[p][0] = "$" + vr;
+                }
+			}
             if (p > 0 && mathFunctions.includes(tk[p - 1])) {
                 tk[p--].unshift(tk.splice(p, 1)[0]);
             }
@@ -152,6 +186,8 @@ function parse(code) {
                 return ["select list item", translateVal([e.slice(1)])];
             if (e[0] == "[")
                 return [".e" + e.slice(1)];
+            if (e[0] == "{")
+                return [".k" + e.slice(1)];
             if (e[0] == '"')
                 return e.slice(0, -1);
             if (e == "==")
@@ -423,6 +459,10 @@ function typeBlock(t) {
 			getSelected().updateParams_()
 		} else if (t[1] == 'e') { // Makes an empty list of a length
 			typeBlock("create empty list")
+			let to = parseInt(t.slice(2))
+			for (let i = 0; i < to; i++) getSelected().appendValueInput("ADD" + i), getSelected().itemCount_++
+		} else if (t[1] == 'k') { // Makes an empty list of a length
+			typeBlock("create empty dictionary")
 			let to = parseInt(t.slice(2))
 			for (let i = 0; i < to; i++) getSelected().appendValueInput("ADD" + i), getSelected().itemCount_++
 		} else if (t[1] == 'i') // Adds an else or elseif
@@ -722,7 +762,10 @@ function toText(b) {
             return `${b.inputList[0].fieldRow[0].value_}`
             
 		case "procedures_defreturn":
-			return `fnr ${b.inputList[0].fieldRow[1].value_}(${b.inputList[0].fieldRow.slice(3).map(f => f.value_).filter(e => e != undefined).join(", ")}) {\n${indent(toText(ch[0].childBlocks_[1].childBlocks_[1]))}\n}`
+			console.log(ch[0].childBlocks_[1])
+			return `fnr ${b.inputList[0].fieldRow[1].value_}(${
+				b.inputList[0].fieldRow.slice(3).map(f => f.value_).filter(e => e != undefined).join(", ")}) {\n${
+				indent(toText(ch[0].childBlocks_[1].childBlocks_.filter(e => e.type != "lexical_variable_get")[0]))}\n}`
 
         case "procedures_callreturn":
             return b.inputList[0].fieldRow[1].value_ + "(" + b.childBlocks_.map(c => toText(c)).join(", ") + ")"
