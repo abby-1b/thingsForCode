@@ -12520,3 +12520,5 @@ for i in range(mn):
 		print("s2:", s2[i - r:i + r])
 		print(" " * r, "   ^")
 		break
+
+print(s2)
