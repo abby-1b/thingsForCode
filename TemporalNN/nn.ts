@@ -11,8 +11,8 @@ type TrainingData = number[][][]
 const actFn = (n: number) => 1 / (1 + Math.exp(n))//Math.tanh(n)
 
 export class NN {
-	activation = 0.5
-	steps = 10
+	defaultActivation = 0.5
+	steps = 5
 
 	num: number // The number of neurons.
 	neurons: Neuron[]
@@ -28,7 +28,7 @@ export class NN {
 		this.num = num
 		this.neurons = new Array(num)
 		for (let n = 0; n < num; n++) {
-			this.neurons[n] = [0, new Array(num), this.activation, 0]
+			this.neurons[n] = [0, new Array(num), this.defaultActivation, 0]
 			for (let w = 0; w < num; w++) {
 				this.neurons[n][1][w] = Math.random() * 2 - 1
 			}
