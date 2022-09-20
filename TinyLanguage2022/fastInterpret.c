@@ -2,40 +2,11 @@
 #include <stdio.h>
 
 uint8_t mem[0x200];
-uint16_t reg[4];
 
 void interpret();
 
 int main() {
-	printf("Starting...\n");
-
-	mem[0]  = (uint8_t)0x01;
-	mem[1]  = (uint8_t)0x01;
-	mem[2]  = (uint8_t)0xFF;
-	mem[3]  = (uint8_t)0x31;
-	mem[4]  = (uint8_t)0x00;
-	mem[5]  = (uint8_t)0x01;
-	mem[6]  = (uint8_t)0x11;
-	mem[7]  = (uint8_t)0x00;
-	mem[8]  = (uint8_t)0x01;
-	mem[9]  = (uint8_t)0x14;
-	mem[10] = (uint8_t)0x92;
-	mem[11] = (uint8_t)0x16;
-	mem[12] = (uint8_t)0x0E;
-	mem[13] = (uint8_t)0x43;
-	mem[14] = (uint8_t)0x16;
-	mem[15] = (uint8_t)0x0E;
-	mem[16] = (uint8_t)0x4B;
-	mem[17] = (uint8_t)0x21;
-	mem[18] = (uint8_t)0x00;
-	mem[19] = (uint8_t)0xE0;
-	mem[20] = (uint8_t)0x6A;
-	mem[21] = (uint8_t)0x21;
-	mem[22] = (uint8_t)0x00;
-	mem[23] = (uint8_t)0x08;
-	mem[24] = (uint8_t)0x27;
-
-	printf("Interpreting...\n");
+	mem[0]=0x01;mem[1]=0x01;mem[2]=0xFF;mem[3]=0x31;mem[4]=0x00;mem[5]=0x01;mem[6]=0x11;mem[7]=0x00;mem[8]=0xFF;mem[9]=0x14;mem[10]=0x92;mem[11]=0x16;mem[12]=0x0E;mem[13]=0x43;mem[14]=0x16;mem[15]=0x0E;mem[16]=0x4B;mem[17]=0x21;mem[18]=0x00;mem[19]=0xE0;mem[20]=0x6A;mem[21]=0x1D;mem[22]=0x21;mem[23]=0x00;mem[24]=0x08;mem[25]=0x27;
 
 	interpret();
 }
@@ -57,19 +28,10 @@ uint16_t doMath(int op, int a, int b) {
 }
 
 void interpret() {
-	printf("Resetting regisers.\n");
-	reg[0] = 0;
-	reg[1] = 0;
-	reg[2] = 0;
-	reg[3] = 0;
-	printf("Finished resetting regisers!\n");
+	uint16_t reg[4];
 
-	// let reps = 0
 	int ptr = 0;
 	while (mem[ptr] != 0) {
-		// if (reps++ > 500) break
-		// const ins = mem[ptr] & 15
-		printf("Ins: %d\n", mem[ptr] & 15);
 		switch (mem[ptr] & 15) {
 			/* 2 */ case 1: reg[mem[ptr] >> 4] = mem[ptr + 1] << 8 | mem[ptr + 2]; ptr += 2; break; // Set register
 			/* 0 */ case 2: reg[mem[ptr] >> 6] = reg[(mem[ptr] >> 4) & 3]; break; // Copy register value
@@ -87,14 +49,13 @@ void interpret() {
 			/* 1 */ case 14: {
 				int swaps = mem[++ptr];
 				uint16_t old[4] = { reg[0], reg[1], reg[2], reg[3] };
-				reg[0] = reg[swaps >> 6];
-				reg[1] = reg[swaps >> 4 & 3];
-				reg[2] = reg[swaps >> 2 & 3];
-				reg[3] = reg[swaps & 3];
+				reg[0] = old[swaps >> 6];
+				reg[1] = old[swaps >> 4 & 3];
+				reg[2] = old[swaps >> 2 & 3];
+				reg[3] = old[swaps & 3];
 			} break; // Swaps multiple registers at once.
 		}
 		ptr++;
-		// console.log([...reg].map(r => toHex(r, 4)).join(" "))
+		// printf("%04x %04x %04x %04x\n", reg[0], reg[1], reg[2], reg[3]);
 	}
-	// console.log()
 }
