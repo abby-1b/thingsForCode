@@ -42,6 +42,7 @@ await (async () => {
 		plugins.push(new p[cls]())
 	}
 })()
+plugins.sort((a, b) => a.importance - b.importance)
 
 // Connect
 console.log("Connecting...")
