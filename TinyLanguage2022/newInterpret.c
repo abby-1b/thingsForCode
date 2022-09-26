@@ -1,5 +1,6 @@
 #include <stdint.h>
-#include <stdio.h>
+// #include <stdio.h>
+int printf ( const char * format, ... );
 
 /*
 let i = 0
@@ -36,7 +37,7 @@ uint8_t mem[0x200] = {
 	0xE0, 0xFF, 0xE5, 0x00,
 	0xE0, 0xFF, 0x5D,
 	0xE0, 0xFF, 0x51, 0xE2, 0x01, 0xE3, 0x00, 0x45,
-	0xE0, 0xFF, 0x51, 0xE3, 0x04, 0xE2, 0x0F,
+	0xE0, 0xFF, 0x51, 0xE3, 0x04, 0xE2, 0x0A,
 	0xEE, 0x19, // <<< Put :done position here
 	0xEF, 0x05, // <<< This is :loop
 	0x5D
@@ -59,7 +60,7 @@ void interpret();
 
 int main() {
 	interpret();
-	printf("%04x %04x %04x %04x %04x %04x\n", reg[0], reg[1], reg[2], reg[3], reg[4], mem[reg[0]]);
+	// printf("%04x %04x %04x %04x %04x %04x\n", reg[0], reg[1], reg[2], reg[3], reg[4], mem[reg[0]]);
 }
 
 void interpret() {
@@ -67,8 +68,6 @@ void interpret() {
 	uint16_t ptr = -1;
 	int reps = 0;
 	while (mem[++ptr] != 0) {
-		// printf("[%04x] %04x %04x %04x %04x %04x %04x\n", ptr, reg[0], reg[1], reg[2], reg[3], reg[4], mem[reg[0]]);
-		// if (++reps > 130) break;
 		uint16_t from = mem[ptr] >> 4;
 		int to = mem[ptr] & 0b1111;
 		if (from == 15) { from = mem[ptr + 1] << 8 | mem[ptr + 2]; ptr += 2; }
