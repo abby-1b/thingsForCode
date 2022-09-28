@@ -20,6 +20,8 @@ export function baseToFloat(b: string) {
 	return fltArr[0]
 }
 
+// Math.random = (): number => 1
+
 export class NN {
 	size: number[]
 	ws: number[][][]
@@ -54,8 +56,9 @@ export class NN {
 		return ret
 	}
 
-	activate(n: number): number { return 1 / (1 + Math.exp(-n)) } // Sigmoid
-	// activate(n: number): number { return Math.max(0.01 * n, n) } // Leaky ReLU
+	// activate(n: number): number { return Math.tanh(n) } // Hyperbolic Tangent
+	// activate(n: number): number { return 1 / (1 + Math.exp(-n)) } // Sigmoid
+	activate(n: number): number { return Math.max(0.01 * n, n) } // Leaky ReLU
 
 	forward(val: number[]): number[] {
 		let cVal = val.map(e => e + 0)
@@ -125,19 +128,61 @@ export class RNN extends NN {
 	}
 
 	// TODO: Implement serialization, loading, and stringShape
+	
+	lossRNN(dat: number[][][], lab: number[][][], untilFn: (vals: number[]) => boolean, sw = false) {
+		let diff = 0
+		dat.map(e => this.forwardRNN(e, untilFn))
+			.map((n, i) => {
+				let li = 0
+				if (sw) console.log(n, lab[i])
+				while (n.length > 0 && (++li) < lab[i].length) n.shift()?.map((e, ei) => diff += Math.pow(e - lab[i][li][ei], 2))
+				if (sw) console.log(lab[i].slice(li))
+				if (sw) console.log()
+				n.flat(2).map(e => diff += Math.pow(e, 2) * 10)
+				lab[i].slice(li).flat(1).map(e => diff += Math.pow(e, 2) * 10)
+			})
+		return diff
+	}
 
-	forwardUntil(vals: number[][], untilFn: (vals: number[]) => boolean): number[][] {
+	forwardRNN(vals: number[][], untilFn: (vals: number[]) => boolean): number[][] {
 		this.innerState = new Array(this.revLayers[0]).fill(0)
 		let r: number[] = []
 		for (let i = 0; i < vals.length; i++) {
 			r = super.forward([...vals[i], ...this.innerState])
 			r.slice(this.surfaceLayers[this.surfaceLayers.length - 1]).map((e, i) => this.innerState[i] += e)
 		}
-		let ret: number[][] = [], i = 10
-		while (untilFn(r) && (i--) > 0) {
+		let ret: number[][] = [], i = 5
+		while ((i--) > 0 && !untilFn(r)) {
 			ret.push(r.slice(0, this.surfaceLayers[0]))
 			r = super.forward([...new Array(this.surfaceLayers[0]).fill(0), ...this.innerState])
+			r.slice(this.surfaceLayers[this.surfaceLayers.length - 1]).map((e, i) => this.innerState[i] += e)
 		}
 		return ret // r.slice(0, this.surfaceLayers[this.surfaceLayers.length - 1])
+	}
+
+	trainRNN(epochs: number, dat: number[][][], lab: number[][][], untilFn: (vals: number[]) => boolean) {
+		if (this.currentLoss == -1) this.currentLoss = this.lossRNN(dat, lab, untilFn)
+		for (let e = 0; e < epochs; e++) {
+			for (let l = 0; l < this.ws.length; l++) {
+				let wrnd = this.ws[l].map(m => m.map(n => this.amt * (Math.random() - 0.5)))
+				wrnd.map((m, mi) => m.map((n, ni) => this.ws[l][mi][ni] += n))
+				let wla = this.lossRNN(dat, lab, untilFn)
+				if (wla > this.currentLoss)
+					wrnd.map((m, mi) => m.map((n, ni) => this.ws[l][mi][ni] -= n))
+				else this.currentLoss = wla
+			}
+
+			for (let l = 0; l < this.ws.length; l++) {
+				let brnd = this.bs[l].map(b => this.amt * (Math.random() - 0.5))
+				brnd.map((b, bi) => this.bs[l][bi] += b)
+				let bla = this.lossRNN(dat, lab, untilFn)
+				if (bla > this.currentLoss)
+					brnd.map((b, bi) => this.bs[l][bi] -= b)
+				else this.currentLoss = bla
+			}
+			this.amt = this.currentLoss * 5
+			// console.log(this.ws[0][0])
+			console.log(this.currentLoss)
+		}
 	}
 }
