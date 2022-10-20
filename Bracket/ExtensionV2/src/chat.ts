@@ -126,8 +126,8 @@ class Chat {
 				let dat = doc.doc.data()
 				let tc = (Date.now() - parseInt(dat.time))
 				if (tc > 864e5) {
-					// console.log("Message " + id + " too old, deleting.")
-					firestore.deleteDoc(firestore.doc(pdb, "EDSMessages", id))
+					console.log("Message '" + dat.val + "' too old, deleting.")
+					// firestore.deleteDoc(firestore.doc(pdb, "EDSMessages", id))
 					return
 				}
 				this.displayMessage(dat.user, dat.time, dat.val)

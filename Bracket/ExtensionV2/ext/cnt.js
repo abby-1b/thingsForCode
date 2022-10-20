@@ -103,7 +103,7 @@ class Chat {
                     let dat = doc.doc.data();
                     let tc = (Date.now() - parseInt(dat.time));
                     if (tc > 864e5) {
-                        firestore.deleteDoc(firestore.doc(pdb, "EDSMessages", id));
+                        console.log("Message '" + dat.val + "' too old, deleting.");
                         return;
                     }
                     this.displayMessage(dat.user, dat.time, dat.val);
@@ -217,3 +217,5 @@ setTimeout(() => {
     }
     Chat.prepare(wsc);
 }, 500);
+function convert(str) {
+}

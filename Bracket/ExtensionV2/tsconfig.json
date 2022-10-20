@@ -5,8 +5,9 @@
 		"noImplicitAny": true,
 		"removeComments": true,
 		"preserveConstEnums": true,
+		"declaration": true,
 		"sourceMap": false,
-		"outFile": "ext/cnt.js"
+		"outFile": "ext/cnt.js",
 	},
-	"include": ["pageSrc/**/*"]
+	"include": ["src/**/*"]
 }
