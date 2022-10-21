@@ -55,4 +55,5 @@ setTimeout(() => {
 		// document.head.appendChild(sc)
 	}
 	Chat.prepare(wsc)
+	Search.prepare()
 }, 500)
