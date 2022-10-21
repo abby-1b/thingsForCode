@@ -7,7 +7,7 @@ class Search {
 
 	static prepare() {
 		window.addEventListener("keydown", (e) => {
-			if ((e.key != "}" || !e.ctrlKey || !e.shiftKey) && (e.key != "]")) return
+			if (e.key != "}" || !e.ctrlKey || !e.shiftKey) return
 			this.toggle()
 		})
 

@@ -221,7 +221,7 @@ setTimeout(() => {
 class Search {
     static prepare() {
         window.addEventListener("keydown", (e) => {
-            if ((e.key != "}" || !e.ctrlKey || !e.shiftKey) && (e.key != "]"))
+            if (e.key != "}" || !e.ctrlKey || !e.shiftKey)
                 return;
             this.toggle();
         });
