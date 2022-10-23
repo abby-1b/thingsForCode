@@ -217,17 +217,223 @@ setTimeout(() => {
     }
     Chat.prepare(wsc);
     Search.prepare();
+    Physics.prepare();
 }, 500);
+class Physics {
+    static prepare() {
+        window.addEventListener("keydown", (e) => {
+            console.log(e);
+            if (e.key != "{" || !e.ctrlKey || !e.shiftKey)
+                return;
+            this.toggle();
+        });
+    }
+    static initialize() {
+        this.box = document.createElement("div");
+        this.box.id = "physicsHelper";
+        ses(this.box, {
+            "display": "grid", "position": "fixed", "width": "0", "height": "500px", "backgroundColor": "#fffb",
+            "top": "9px", "right": "9px", "borderRadius": "8px",
+            "border": "0px solid #dadce0", "boxShadow": "0 1px 5px -3px",
+            "transition": "all .2s", "overflow": "hidden", "zIndex": "999999",
+            "fontSize": "14px", "backdropFilter": "blur(8px)", "color": "#222",
+            "grid-template-rows": "30px 1fr"
+        });
+        const exBar = document.createElement("input");
+        exBar.type = "text";
+        ses(exBar, { "padding-left": "8px" });
+        exBar.onkeydown = e => {
+            if (e.key == "Enter") {
+                outArea.value = "$$" + convert(exBar.value).toString() + "$$";
+            }
+        };
+        this.box.appendChild(exBar);
+        const outArea = document.createElement("textarea");
+        ses(outArea, {
+            "width": "100%", "height": "100%"
+        });
+        this.box.appendChild(outArea);
+        document.body.appendChild(this.box);
+    }
+    static show() { ses(this.box, { "opacity": "1", "width": "300px", "border": "1px solid #dadce0" }); }
+    static hide() { ses(this.box, { "width": "0", "border": "0px solid #dadce0" }); }
+    static toggle() {
+        console.log("Toggling physics thing...");
+        if (!this.isInitialized) {
+            this.isShowing = true, this.initialize(), this.show(), this.isInitialized = true;
+            return;
+        }
+        this.isShowing = !this.isShowing;
+        this.isShowing ? this.show() : this.hide();
+    }
+}
+Physics.isInitialized = false;
+Physics.isShowing = false;
+var OutType;
+(function (OutType) {
+    OutType[OutType["NORMAL"] = 0] = "NORMAL";
+    OutType[OutType["LATEX"] = 1] = "LATEX";
+})(OutType || (OutType = {}));
+class Num {
+    constructor(num) {
+        this.num = 0;
+        this.digits = 0;
+        if (!num)
+            return;
+        let frm = num.replace(/[^.0-9-]/g, "");
+        if (frm[0] == ".")
+            frm = "0" + frm;
+        let isExp = new Number(num).toString() == "NaN", after = NaN;
+        if (isExp) {
+            num = num.replace(/ /g, "");
+            after = parseInt(num.split("^")[1].replace(/[^.0-9-]/g, ""));
+            frm = num.split("*")[0].replace(/[^.0-9-]/g, "");
+            if (frm[0] == ".")
+                frm = "0" + frm;
+        }
+        this.num = parseFloat(frm);
+        this.digits = frm.replace(/0{1,}\.0{1,}|^0{1,}|(?<=^[0-9])0{1,}$/g, "").replace(/\./g, "").length;
+        if (isExp) {
+            this.num *= 10 ** after;
+        }
+    }
+    toFloat() {
+        return this.num;
+    }
+    toString(a = OutType.NORMAL) {
+        let num = this.num;
+        let tenExp = 0;
+        while (num >= 10)
+            num *= 0.1, tenExp++;
+        if (num != 0)
+            while (num < 1)
+                num *= 10, tenExp--;
+        num = Math.round(num * (10 ** (this.digits - 1))) / (10 ** (this.digits - 1));
+        let s = num.toString();
+        if (s.length >= 16)
+            s = parseFloat(s.slice(0, -1)).toString();
+        s = s.replace(".", "");
+        while (s.length > this.digits)
+            s = s.slice(0, -1);
+        while (s.length < this.digits)
+            s += "0";
+        if (this.digits > 1)
+            s = s[0] + "." + s.slice(1);
+        if (a == OutType.LATEX)
+            return `${s}\\cdot10^{${tenExp}}`;
+        return `${s} * 10^${tenExp}`;
+    }
+    copy() {
+        let n = new Num();
+        n.num = this.num;
+        n.digits = this.digits;
+        return n;
+    }
+}
+class Result {
+    constructor(num, latex = true) {
+        this.eqs = [];
+        this.mult = " * ";
+        this.div = " / ";
+        this.arrow = " > ";
+        this.n = num;
+        this.latex = latex;
+        if (latex)
+            this.mult = "\\cdot",
+                this.div = "\\div",
+                this.arrow = "\\rightarrow";
+        this.eqs.push(this.nStr());
+    }
+    nStr() {
+        return this.n.toString(this.latex ? OutType.LATEX : OutType.NORMAL);
+    }
+    multiply(f) {
+        this.eqs.push(this.nStr() + this.mult + f);
+        this.n.num *= f;
+        this.eqs.push(this.nStr());
+    }
+    divide(f) {
+        this.n.num /= f;
+    }
+    toString() {
+        if (this.latex)
+            return this.eqs.slice(1).map(e => "\\\\\\bf{" + e + "}").join("");
+        else
+            return this.eqs.join("\n");
+    }
+}
+const specialConversions = {
+    "time": [
+        [1, "s", "segundo", "segundos", "second", "seconds", "sec", "secs"],
+        [60, "min", "minuto", "minutos", "minute", "minutes", "mins"],
+        [3600, "hr", "hrs", "hour", "hours", "hora", "horas"]
+    ],
+    "length": [
+        [0.3048, "pie", "ft", "foot", "\""]
+    ]
+};
+const conversions = {
+    "Y": 24, "Z": 21,
+    "E": 18, "P": 15,
+    "T": 12, "G": 9,
+    "M": 6, "k": 3,
+    "h": 2, "da": 1,
+    "d": -1, "c": -2,
+    "m": -3, "μ": -6,
+    "µ": -6, "u": -6,
+    "n": -9, "p": -12,
+    "f": -15, "a": -18,
+    "z": -21, "y": -24
+};
+function getConversion(unit) {
+    for (let k in specialConversions) {
+        for (let t = 0; t < specialConversions[k].length; t++) {
+            let a = specialConversions[k][t];
+            if (a.includes(unit)) {
+                return [k, t];
+            }
+        }
+    }
+    return ["", -1];
+}
+function getFinalConv(unit) {
+    if (unit.length == 1)
+        return 1;
+    console.log("Couldn't find unit:", unit);
+    return 10 ** conversions[unit.slice(0, -1)];
+}
+function leftExp(unit) {
+    while ("0123456789".includes(unit[unit.length - 1]))
+        unit = unit.slice(0, -1);
+    if (unit[unit.length - 1] == '^')
+        unit = unit.slice(0, -1);
+    return unit;
+}
+function rightExp(unit) {
+    let v = "";
+    while ("0123456789".includes(unit[unit.length - 1]))
+        v = unit[unit.length - 1] + v, unit = unit.slice(0, -1);
+    return parseInt(v) || 1;
+}
+function convert(str) {
+    const parts = str.replace(/( |)[\/\\^*+-]( |)| {1,}(?= )/g, e => e.trim()).split(" ");
+    const res = new Result(new Num(parts[0]), true);
+    let spacialExp = rightExp(parts[1]);
+    parts[1] = leftExp(parts[1]), parts[3] = leftExp(parts[3]);
+    let fromPath = getConversion(parts[1]);
+    let toPath = getConversion(parts[3]);
+    let fromNum = fromPath[1] == -1 ? getFinalConv(parts[1]) : specialConversions[fromPath[0]][fromPath[1]][0];
+    let toNum = toPath[1] == -1 ? getFinalConv(parts[3]) : specialConversions[toPath[0]][toPath[1]][0];
+    let conversion = (fromNum ** spacialExp) / (toNum ** spacialExp);
+    res.multiply(conversion);
+    return res;
+}
 class Search {
     static prepare() {
         window.addEventListener("keydown", (e) => {
             if (e.key != "}" || !e.ctrlKey || !e.shiftKey)
                 return;
             this.toggle();
-        });
-        window.addEventListener("mousemove", e => {
-            let w = parseInt(getComputedStyle(this.box).width.slice(0, -2));
-            this.box.style.opacity = e.clientX > (window.innerWidth - w) ? "1" : "0";
         });
     }
     static initialize() {
@@ -240,6 +446,10 @@ class Search {
             "transition": "all .2s", "overflow": "hidden", "zIndex": "999999",
             "fontSize": "14px", "backdropFilter": "blur(8px)", "color": "#222",
             "grid-template-rows": "30px 1fr"
+        });
+        window.addEventListener("mousemove", e => {
+            let w = parseInt(getComputedStyle(this.box).width.slice(0, -2));
+            this.box.style.opacity = e.clientX > (window.innerWidth - w) ? "1" : "0";
         });
         const searchBar = document.createElement("input");
         searchBar.type = "text";
@@ -260,7 +470,7 @@ class Search {
     static show() { ses(this.box, { "opacity": "1", "width": "300px", "border": "1px solid #dadce0" }); }
     static hide() { ses(this.box, { "width": "0", "border": "0px solid #dadce0" }); }
     static toggle() {
-        console.log("Toggling...");
+        console.log("Toggling search...");
         if (!this.isInitialized) {
             this.isShowing = true, this.initialize(), this.show(), this.isInitialized = true;
             return;
