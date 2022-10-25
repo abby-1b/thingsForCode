@@ -56,4 +56,5 @@ setTimeout(() => {
 	}
 	Chat.prepare(wsc)
 	Search.prepare()
+	Physics.prepare()
 }, 500)

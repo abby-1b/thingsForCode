@@ -10,11 +10,6 @@ class Search {
 			if (e.key != "}" || !e.ctrlKey || !e.shiftKey) return
 			this.toggle()
 		})
-
-		window.addEventListener("mousemove", e => {
-			let w = parseInt(getComputedStyle(this.box).width.slice(0, -2))
-			this.box.style.opacity = e.clientX > (window.innerWidth - w) ? "1" : "0"
-		})
 	}
 
 	static initialize() {
@@ -27,6 +22,11 @@ class Search {
 			"transition": "all .2s", "overflow": "hidden", "zIndex": "999999",
 			"fontSize": "14px", "backdropFilter": "blur(8px)", "color": "#222",
 			"grid-template-rows": "30px 1fr"
+		})
+
+		window.addEventListener("mousemove", e => {
+			let w = parseInt(getComputedStyle(this.box).width.slice(0, -2))
+			this.box.style.opacity = e.clientX > (window.innerWidth - w) ? "1" : "0"
 		})
 
 		const searchBar = document.createElement("input")
@@ -52,7 +52,7 @@ class Search {
 	static show() { ses(this.box, {"opacity": "1", "width": "300px", "border": "1px solid #dadce0"}) }
 	static hide() { ses(this.box, {"width": "0", "border": "0px solid #dadce0"}) }
 	static toggle() {
-		console.log("Toggling...")
+		console.log("Toggling search...")
 		if (!this.isInitialized) { this.isShowing = true, this.initialize(), this.show(), this.isInitialized = true; return }
 		this.isShowing = !this.isShowing
 		this.isShowing ? this.show() : this.hide()
