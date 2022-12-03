@@ -75,13 +75,13 @@ void interpret() {
 		if (to == 15) { ptr = from; continue; } else if (to == 14) { if (reg[4] != 0) ptr = from; continue; } else if (to == 13) { printf("%d\n", from); continue; }
 		if (to < 5) reg[to] = from; else mem[reg[0]] = from;
 		if (to == 1 || to == 2 || to == 3 || to == 4) switch (reg[3]) {
-			case  0: { reg[4] = reg[1] +  reg[2]; } break; case  1: { reg[4] = reg[1] -  reg[2]; } break;
-			case  2: { reg[4] = reg[1] *  reg[2]; } break; case  3: { reg[4] = reg[1] /  reg[2]; } break;
+			case  0: { reg[4] = reg[1] +  reg[2];         } break; case  1: { reg[4] = reg[1] -  reg[2];         } break;
+			case  2: { reg[4] = reg[1] *  reg[2];         } break; case  3: { reg[4] = reg[1] /  reg[2];         } break;
 			case  4: { reg[4] = reg[1] == reg[2] ? 1 : 0; } break; case  5: { reg[4] = reg[1] != reg[2] ? 1 : 0; } break;
 			case  6: { reg[4] = reg[1] >  reg[2] ? 1 : 0; } break; case  7: { reg[4] = reg[1] <  reg[2] ? 1 : 0; } break;
 			case  8: { reg[4] = reg[1] >= reg[2] ? 1 : 0; } break; case  9: { reg[4] = reg[1] <= reg[2] ? 1 : 0; } break;
-			case 10: { reg[4] = reg[1] << reg[2]; } break; case 11: { reg[4] = reg[1] >> reg[2]; } break;
-			case 14: { reg[4] = reg[2] << 8 | reg[1]; } break; case 15: { reg[4] = reg[1] << 8 | reg[2]; } break;
+			case 10: { reg[4] = reg[1] << reg[2];         } break; case 11: { reg[4] = reg[1] >> reg[2];         } break;
+			case 14: { reg[4] = reg[2] << 8 | reg[1];     } break; case 15: { reg[4] = reg[1] << 8 | reg[2];     } break;
 		}
 	}
 }
