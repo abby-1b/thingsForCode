@@ -1,6 +1,7 @@
 {
 	"deno.enable": true,
 	"files.associations": {
-		"stdint.h": "c"
+		"stdint.h": "c",
+		"stdio.h": "c"
 	}
 }
