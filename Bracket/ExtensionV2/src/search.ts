@@ -34,7 +34,14 @@ class Search {
 		ses(searchBar, { "padding-left": "8px" })
 		searchBar.onkeydown = e => {
 			if (e.key == "Enter") {
-				iFrame.src = "https://www.google.com/search?q=" + encodeURIComponent(searchBar.value) + "&igu=1"
+				console.log("Value:", searchBar.value)
+				if (searchBar.value.startsWith("http")) {
+					console.log("Http!")
+					iFrame.src = searchBar.value
+				} else {
+					console.log("Search!")
+					iFrame.src = "https://www.google.com/search?q=" + encodeURIComponent(searchBar.value) + "&igu=1"
+				}
 			}
 		}
 		this.box.appendChild(searchBar)
