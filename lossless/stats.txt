@@ -1,0 +1,29 @@
+Started project on Friday, December 23, 2022 at 12:15 AM
+
+[The following tests were conducted on a string chosen by me (keep in mind the string remained the same during testing)]
+
+Compression tests (in milliseconds):
+
+	Typed: 1612, 1618, 1608
+	-Not:  956,  968,  976  (59.9%)
+
+	Filter: 972, 994, 988
+	-Not: 806, 806, 808  (81.9%)
+
+Decompression tests:
+
+	Pushed: 1610, 1610, 1644, 1628, 1608, 1620, 1642, 1630
+	-Not: 1612, 1626, 1612, 1616, 1614, 1612, 1610, 1608  (99.37%)
+	(Ran more tests due to uncertainty)
+
+
+[The following tests were conducted on a 4351 KB (4351186 byte) copy of the King James bible]
+
+Old (mainOld.ts):
+	2542.45s
+	42m 22.45s
+
+New (main.ts):
+	2.72s
+
+Finished project on Saturday, December 24, 2022 at 7:08 PM
