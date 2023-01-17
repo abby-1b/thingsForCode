@@ -1,5 +1,5 @@
 # function factorial(n:number){return n==1?1:n*factorial(n-1)}
-fn factorial:{(i32 n)n=1?1:n*t(n-1)}
+fn factorial:(i32 n){n=1?1:n*t(n-1)}
 
 # function fib(n:number){let a:number=0,b:number=1;for(let i=0;i<n;i++){[a,b]=[b,a+b]};return b}
-fn fib:{(i32 n)i32 a:0,b:1;[0..n]{a,b=b,a+b};b}
+fn fib:(i32 n){i32 a:0,b:1;[0..n]{a,b=b,a+b};b}
