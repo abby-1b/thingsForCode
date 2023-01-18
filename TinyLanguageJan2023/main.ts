@@ -1,10 +1,13 @@
 import { genTokens } from "./genTokens.ts"
 import { genAST } from "./genAST.ts"
+import { genBytes } from "./genBytes.ts"
 
-const code = "i32 a: (1 + 2) * 3 - 4;"
+const code = "i8 a: 5; i8 b: a"
 
 const tokens = genTokens(code)
 
 const ast = genAST(tokens)
 
-console.log(ast)
+const bytes = genBytes(ast, 0)
+
+// console.log(bytes)
