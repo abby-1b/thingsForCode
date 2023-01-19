@@ -1,35 +1,41 @@
-import { Node, NodeInitVar, NodeType, Type } from "./genAST.ts"
+import { Node, NodeInitVar, NodeType, NodeVar, Type } from "./genAST.ts"
 
-const enum From {
-	MATH_A   = 0 << 4,
-	MATH_B   = 1 << 4,
-	MATH_OP  = 2 << 4,
-	MATH_OUT = 3 << 4,
-	ADDR     = 4 << 4,
-	MEM      = 5 << 4,
-	VAL      = 6 << 4,
-	GEN_0    = 7 << 4,
-	GEN_1    = 8 << 4,
-	GEN_2    = 9 << 4,
-	READ_1 = 0xD << 4,
-	READ_2 = 0xE << 4,
-	READ_4 = 0xF << 4,
+export enum From {
+	MATA = 0x0 << 4,
+	MATB = 0x1 << 4,
+	MOPR = 0x2 << 4,
+	MOUT = 0x3 << 4,
+	ADDR = 0x4 << 4,
+	MEM1 = 0x5 << 4,
+	MEM2 = 0x6 << 4,
+	MEM4 = 0x7 << 4,
+	VALU = 0x8 << 4,
+	GEN1 = 0x9 << 4,
+	GEN2 = 0xA << 4,
+	GEN3 = 0xB << 4,
+	GEN4 = 0xC << 4,
+	RED1 = 0xD << 4,
+	RED2 = 0xE << 4,
+	RED4 = 0xF << 4,
 }
 
-const enum To {
-	MATH_A   = 0,
-	MATH_B   = 1,
-	MATH_OP  = 2,
-	MATH_OUT = 3,
-	ADDR     = 4,
-	MEM      = 5,
-	VAL      = 6,
-	GEN_0    = 7,
-	GEN_1    = 8,
-	GEN_2    = 9,
-	LOG    = 0xA,
-	JNZ    = 0xB,
-	JMP    = 0xC,
+export enum To {
+	MTHA = 0x0,
+	MTHB = 0x1,
+	MTOP = 0x2,
+	MTOT = 0x3,
+	ADDR = 0x4,
+	MEM1 = 0x5,
+	MEM2 = 0x6,
+	MEM4 = 0x7,
+	VALU = 0x8,
+	GEN1 = 0x9,
+	GEN2 = 0xA,
+	GEN3 = 0xB,
+	GEN4 = 0xC,
+	OLOG = 0xD,
+	JPNZ = 0xE,
+	JUMP = 0xF,
 }
 
 const enum Op {
@@ -79,7 +85,7 @@ function getTypeSize(type: Type): number {
 function getScopeOffset(scope: [string, number][], name: string) {
 	let offs = 0
 	for (let s = scope.length - 1; s >= 0; s--)
-		if (scope[s][0] == name) return scope[0]
+		if (scope[s][0] == name) return offs
 		else offs += scope[s][1]
 	throw new Error(`Variable \`${name}\` not found in scope`)
 }
@@ -87,30 +93,50 @@ function getScopeOffset(scope: [string, number][], name: string) {
 const stackPointerPos = 2
 	, stackSize = 32
 
-export function genBytes(ast: Node[], pos: number, outerScope?: [string, number][]) {
-	const scope: [string, number][] = outerScope ?? []
+const ByteSecuences = {
+	/** Puts the address of a variable into the ADDR register */
+	GET_VAR: (p: number) => [
+		From.RED1 | To.ADDR, stackPointerPos,
+		From.MEM1 | To.MTHA,
+		From.RED1 | To.MTHB, p,
+		From.RED1 | To.MTOP, Op.ADD,
+		From.MOUT | To.ADDR ],
+}
+
+export function genBytes(ast: Node[], pos: number, scope: [string, number][] = []) {
 	const bytes: number[] = []
 
-	if (pos == 0)
-		bytes.push(From.READ_1 | To.JMP, stackSize + stackPointerPos)
+	if (pos == 0) bytes.push(
+		From.RED1 | To.JUMP, stackSize + stackPointerPos * pointerSize + 2,
+		...new Array(stackSize + stackPointerPos * pointerSize)
+	)
 
 	for (let i = 0; i < ast.length; i++) {
 		const n = ast[i]
 		switch (n.nodeType) {
 		case NodeType.LITERAL_NUM: { // TODO: implement other int types + floats
 			const num = parseInt(n.val as string)
-			bytes.push(From.READ_1 | To.VAL, num)
+			bytes.push(From.RED1 | To.VALU, num)
 		} break
 		case NodeType.INIT_VAR: {
 			const name = (n as NodeInitVar).name
 			scope.push([name, getTypeSize(n.type!)])
-			const varPos = getScopeOffset(scope, name)[1]
+			const varPos = getScopeOffset(scope, name)
 			if (n.val) bytes.push(
-				...genBytes([(n as NodeInitVar).val as Node], pos + bytes.length), // Put value in the VAL register
-				From.READ_1 | To.ADDR, stackPointerPos,
-				From.MEM | To.MATH_A,
-				From.READ_1 | To.MATH_B, varPos,
-				From.READ_1 | To.MATH_OP, 
+				...genBytes(
+					[(n as NodeInitVar).val as Node],
+					pos + bytes.length,
+					scope), // Put value in the VAL register
+				...ByteSecuences.GET_VAR(varPos),
+				From.VALU | To.MEM1
+			)
+		} break
+		case NodeType.VAR: {
+			if (isTypePointer((n as NodeVar).type!))
+				throw new Error("TODO: implement variable pointers")
+			const varPos = getScopeOffset(scope, (n as NodeVar).name)
+			bytes.push(
+				...ByteSecuences.GET_VAR(varPos)
 			)
 			console.log(n)
 		} break
@@ -120,19 +146,21 @@ export function genBytes(ast: Node[], pos: number, outerScope?: [string, number]
 		}
 	}
 
-	console.log(scope)
-	logBytes(bytes)
+	if (pos == 0) {
+		console.log(scope)
+		logBytes(bytes)
+	}
 
 	return bytes
 }
 
-function logBytes(b: number[]) {
+export function logBytes(b: number[] | Uint8Array) {
 	if (b.length == 0) console.log("[no bytes to print]")
 	const byteLen = 16
 	let curr = ""
 	for (let i = 0; i < b.length; i++) {
+		if (i % byteLen == 0 && i != 0) console.log(curr), curr = ""
 		curr += ((b[i] >> 4).toString(16) + (b[i] & 15).toString(16)).toUpperCase() + " "
-		if (i % byteLen && i != 0) console.log(curr), curr = ""
 	}
 	if (curr != "") console.log(curr)
 }
