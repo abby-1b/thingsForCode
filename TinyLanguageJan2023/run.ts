@@ -2,7 +2,7 @@ import { From, To } from "./genBytes.ts"
 
 const encoder = new TextEncoder()
 
-export const mem = new Uint8Array(256)
+export const mem = new Uint8Array(64)
 const reg = new Uint32Array([
 	0, // 0x0 Math A
 	0, // 0x1 Math B
@@ -31,6 +31,8 @@ let i = 0 // Instruction pointer
  * @param prg The bytes to load into a program
  */
 export function loadProgram(prg: number[]) {
+	if (prg.length > mem.length)
+		throw new Error(`Program too big for memory! (${prg.length} > ${mem.length})`)
 	let p = 0
 	for (; p < prg.length; p++) mem[p] = prg[p]
 	for (; p < mem.length; p++) mem[p] = 0
@@ -38,7 +40,9 @@ export function loadProgram(prg: number[]) {
 
 function logIns(ins: number) {
 	const strNum = (n: number) => (n >> 4).toString(16) + (n & 15).toString(16)
-	console.log("[" + From[ins & 240] + " > " + To[ins & 15] + "]", strNum(ins), "[" + [...mem].splice(i + 1, 4).map(strNum).join(" ") + "]", "[" + [...reg].map(strNum).join(" ") + "]")
+	const r = [...reg]
+	r[To.MEM1] = mem[reg[0x4]]
+	console.log("[" + From[ins & 240] + " > " + To[ins & 15] + "]", strNum(ins), "[" + [...mem].splice(i + 1, 4).map(strNum).join(" ") + "]", "[" + r.map(strNum).join(" ") + "]")
 }
 
 /**
@@ -48,6 +52,7 @@ export function cycle() {
 	const ins = mem[i]
 		, t = ins & 15 // To reg
 	let f = ins >> 4 // From reg
+	if (ins == 0) return true
 	logIns(ins)
 	if (f >= 0xD) f = f == 0xD ? mem[++i]
 		: f == 0xE ? mem[++i] << 8 | mem[++i]
