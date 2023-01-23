@@ -1,25 +1,29 @@
 import { genTokens } from "./genTokens.ts"
 import { genAST } from "./genAST.ts"
-import { genIns } from "./genIns.ts"
+import { genIns, logIns } from "./genIns.ts"
+import { genBytesNew, logBytes } from "./genBytesNew.ts"
 // import { genBytes, logBytes } from "./genBytes.ts"
-// import { loadProgram, cycle, mem } from "./run.ts"
+import { loadProgram, cycle, mem } from "./run.ts"
 
-const code = "i16 a: 5 + 3"
+const code = "i16 a: 32; i16 b: a + 5"
 
 const tokens = genTokens(code)
 
 const ast = genAST(tokens)
 
-const ins = genIns(ast)
-console.log(ins)
+console.log(ast)
 
-// const bytes = genBytes(ast, 0)
+const ins = genIns(ast)
+// logIns(ins)
+
+const bytes = genBytesNew(ins)
 
 
 // console.log("\n\n")
-// loadProgram(bytes)
-// while (!cycle());
-// logBytes(mem)
+loadProgram(bytes)
+while (!cycle());
+// for (let x = 0; x < 20; x++) cycle()
+logBytes(mem)
 
 
 // console.log(bytes)
