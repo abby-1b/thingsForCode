@@ -1,3 +1,4 @@
+import { red, yellow } from "https://deno.land/std@0.173.0/fmt/colors.ts"
 import { TokenType, Token } from "./genTokens.ts"
 
 export enum NodeType {
@@ -22,6 +23,10 @@ export interface Node {
 
 	/** The type of the values inside this node */
 	type: Type | undefined
+}
+
+export interface NodeLiteralNum extends Node {
+	val: string
 }
 
 export interface NodeVar extends Node {
@@ -134,11 +139,11 @@ export function genAST(tokens: Token[], outerScope: Declaration[] = [], singleNo
 				type: {name: "str"}
 			})
 		} else if (t.type == TokenType.WORD) { // Deal with individual words
-			if (typeNames.includes(t.val)) {
+			if (typeNames.includes(t.val) || t.val == "let") {
 				// We're making a variable!
 
 				// Get its type
-				const type = {name: t.val, args: getTypeArgs(tokens)}
+				let type: Type = {name: t.val, args: getTypeArgs(tokens)}
 
 				// Get its name
 				t = tokens.shift()!
@@ -152,10 +157,14 @@ export function genAST(tokens: Token[], outerScope: Declaration[] = [], singleNo
 
 				// Get its value (if available)
 				let val: Node | undefined
-				if (tokens[0].val == ":") {
+				if (tokens.length != 0 && tokens[0].val == ":") {
 					tokens.shift()
 					val = genAST(tokens, [...outerScope, ...scope], true)[0]
+					if (type.name == "let") type = val.type!
 					if (val.nodeType == NodeType.LITERAL_NUM) val.type = type
+				} else if (type.name == "let") {
+					console.log(red(`Can't infer type of variable \`${name}\``))
+					Deno.exit(1)
 				}
 
 				scope.push({name, type}) // Add declaration to scope
