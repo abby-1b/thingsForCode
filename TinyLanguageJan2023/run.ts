@@ -60,16 +60,16 @@ export function cycle() {
 	logIns(ins)
 	if (ins == 0) return true
 	if (f >= 0xD) f = f == 0xD ? mem[++i]
-		: f == 0xE ? mem[++i] << 8 | mem[++i]
-		: mem[++i] << 24 | mem[++i] << 16 | mem[++i] << 8 | mem[++i]
+		: f == 0xE ? mem[++i] | mem[++i] << 8
+		: mem[++i] | mem[++i] << 8 | mem[++i] << 16 | mem[++i] << 24
 	else if (f == 0x5) f = mem[reg[0x4]]
-	else if (f == 0x6) f = mem[reg[0x4]] << 8 | mem[reg[0x4] + 1]
-	else if (f == 0x7) f = mem[reg[0x4]] << 24 | mem[reg[0x4] + 1] << 16 | mem[reg[0x4] + 2] << 8 | mem[reg[0x4] + 3]
+	else if (f == 0x6) f = mem[reg[0x4] + 1] << 8 | mem[reg[0x4]]
+	else if (f == 0x7) f = mem[reg[0x4] + 3] << 24 | mem[reg[0x4] + 2] << 16 | mem[reg[0x4] + 1] << 8 | mem[reg[0x4]]
 	else if (f == 0xC) f = stack[--sp]
 	else f = reg[f]
 	if (t == 0x5) mem[reg[0x4]] = f
-	else if (t == 0x6) mem[reg[0x4]] = f >> 8, mem[reg[0x4] + 1] = f
-	else if (t == 0x7) mem[reg[0x4]] = f >> 24, mem[reg[0x4] + 1] = f >> 16, mem[reg[0x4] + 2] = f >> 8, mem[reg[0x4] + 3] = f
+	else if (t == 0x6) mem[reg[0x4] + 1] = f >> 8, mem[reg[0x4]] = f
+	else if (t == 0x7) mem[reg[0x4] + 3] = f >> 24, mem[reg[0x4] + 2] = f >> 16, mem[reg[0x4] + 1] = f >> 8, mem[reg[0x4]] = f
 	else if (t == 0xC) stack[sp++] = f
 	else if (t == 0xD) Deno.stdout.writeSync(encoder.encode(String.fromCharCode(f)))
 	else if (t == 0xE) i = reg[0x3] != 0 ? f - 1 : i
