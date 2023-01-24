@@ -1,5 +1,5 @@
-import { green, red, yellow } from "https://deno.land/std@0.173.0/fmt/colors.ts"
-import { Node, NodeLiteralNum, NodeInitVar, NodeType, NodeVar, NodeOp, Type } from "./genAST.ts"
+import { green, red, yellow, cyan } from "https://deno.land/std@0.173.0/fmt/colors.ts"
+import { Node, NodeLiteralNum, NodeInitVar, NodeType, NodeVar, NodeOp, NodeFunction } from "./genAST.ts"
 
 enum Registers {
 	MATH_A = 0x0,
@@ -16,19 +16,36 @@ enum Registers {
 	READ = 0xD,
 }
 export enum InsType {
-	SVAR, // [int,i8 ] Sets a variable to the value in the VALUE register, i8 being the number of bytes to use
-	GVAR, // [int,i8 ] Gets a variable and puts it in the VALUE register, i8 being the number of bytes to use
-	SREG, // [reg,int] Sets a register to a literal value
-	MOV,  // [reg,reg] Moves a value from one register to another
-	PUSH, // [reg] Pushes a register to the stack
-	POP,  // [reg] Pops a value from the stack to a register
+	/** [int,i8 ] Sets a variable to the value in the VALUE register, i8 being the number of bytes to use  */
+	SVAR,
+	/** [int,i8 ] Gets a variable and puts it in the VALUE register, i8 being the number of bytes to use  */
+	GVAR,
+	/** [reg,int] Sets a register to a literal value  */
+	SREG,
+	/** [reg,reg] Moves a value from one register to another  */
+	MOV,
+	/** [reg] Pushes a register to the stack  */
+	PUSH,
+	/** [reg] Pops a value from the stack to a register  */
+	POP,
+	/** [reg,int] Sets a register to the address of a function */
+	FNDR,
+
+	/** An 'instruction' that stores all the function addresses */
+	ALL_FNS
 }
 export type Ins = number[]
 
+/// FUNCTIONS
+export interface InsFunction {
+	name: string
+	ins: Ins[]
+}
+
 /// SCOPES
 type Scope = [string, number][]
-const scope: Scope = []
-const outerScopes: Scope[] = []
+const scope: Scope = [] // TODO: implement scopes
+const _outerScopes: Scope[] = []
 
 function getScopeData(name: string): [string, number, number] { // [name, size, offset]
 	let offs = 0
@@ -46,19 +63,20 @@ const typeSizes: {[key: string]: number} = {
 	"f16": 2, "f32": 4, "f64": 8
 }
 
-function isTypePointer(_type: Type): boolean {
+function isTypePointer(node: Node): boolean {
+	if (node.type!.name == "fn") return true
 	return false // TODO: actually check if a type is a pointer
 }
 
-function getTypeSize(type: Type): number {
+function getTypeSize(node: Node): number {
 	// If the type is a pointer, return the pointer size
-	if (isTypePointer(type)) return pointerSize
+	if (isTypePointer(node)) return pointerSize
 
 	// If the type is a primitive, return that primitive's size
-	if (type.name in typeSizes) return typeSizes[type.name]
+	if (node.type!.name in typeSizes) return typeSizes[node.type!.name]
 
 	// Otherwise, fallback to 1 and log it
-	console.log(yellow(`Type not found: \`${type.name}\``))
+	console.log(yellow(`Type not found: \`${node.type!.name}\``))
 	return 1
 }
 
@@ -68,7 +86,7 @@ function visitLiteralNum(node: NodeLiteralNum): Ins[] {
 }
 
 function visitInitVar(node: NodeInitVar): Ins[] {
-	scope.push([node.name, getTypeSize(node.type!)])
+	scope.push([node.name, getTypeSize(node)])
 	const d = getScopeData(node.name)
 	return [
 		...genIns([node.val as Node]),
@@ -94,7 +112,15 @@ function visitOp(node: NodeOp): Ins[] {
 	]
 }
 
-export function genIns(ast: Node[]): Ins[] {
+function visitFunction(node: NodeFunction): Ins[] {
+	functions.push(genIns(node.body))
+	return [
+		[InsType.FNDR, Registers.ADDRESS, functions.length - 1]
+	]
+}
+
+const functions: Ins[][] = []
+export function genIns(ast: Node[], genFns = false): Ins[] {
 	const ins: Ins[] = []
 
 	for (let i = 0; i < ast.length; i++) {
@@ -117,6 +143,9 @@ export function genIns(ast: Node[]): Ins[] {
 		case NodeType.LITERAL_NUM:
 			ins.push(...visitLiteralNum(n as NodeLiteralNum))
 			break
+		case NodeType.FUNCTION:
+			ins.push(...visitFunction(n as NodeFunction))
+			break
 		default:
 			(n as unknown as {nodeType: string}).nodeType = NodeType[n.nodeType]
 			console.log(red(`Node not found:`), n)
@@ -124,6 +153,19 @@ export function genIns(ast: Node[]): Ins[] {
 		}
 	}
 
+	// Return current instructions if we don't need to provide functions
+	if (!genFns) return ins
+
+	const pos: number[] = [InsType.ALL_FNS]
+
+	// Add functions to instructions
+	for (let i = 0; i < functions.length; i++) {
+		pos.push(ins.length)
+		ins.push(...functions[i])
+	}
+
+	ins.push(pos)
+	
 	return ins
 }
 
@@ -152,18 +194,36 @@ function preCompOp(node: NodeOp): Node {
 	return ret
 }
 
-export function logIns(ins: Ins[]) {
-	const insTypes: {[key: string]: string[]} = {
-		SREG: ["r", "i"],
-		MOV : ["r", "r"],
-		PUSH: ["r"],
-		POP : ["r"]
-	}
-	for (let i = 0; i < ins.length; i++) {
+export function logIns(ins: Ins[], currFn = ":MAIN") {
+	const hasFunctions = ins[ins.length - 1][0] == InsType.ALL_FNS
+		, fnName = ":FN_"
+		, insTypes: {[key: string]: string[]} = {
+			SREG: ["r", "i"],
+			MOV : ["r", "r"],
+			PUSH: ["r"],
+			POP : ["r"],
+			FNDR: ["r", "f"]
+		}
+	const fnPos = hasFunctions ? ins[ins.length - 1].slice(1) : []
+	let fnIdx = 0
+
+	// Print ":MAIN"
+	if (hasFunctions) console.log(cyan(currFn))
+	for (let i = 0; i < ins.length - (hasFunctions ? 1 : 0); i++) {
+		if (i == fnPos[0]) console.log(cyan(":FN_" + fnIdx++)), fnPos.shift()
 		const t = InsType[ins[i][0]]
 			, p = !(t in insTypes) ? ins[i].slice(1) :
 				ins[i].slice(1).map((n, i) => 
-					insTypes[t][i] == "r" ? Registers[n] : n)
-		console.log(`\t${green(t)} ${p.map(i => yellow(i.toString())).join(", ")}`)
+					insTypes[t][i] == "r" ? Registers[n] :
+					insTypes[t][i] == "f" ? cyan(fnName + n) :
+					n)
+		console.log(`${t == "ALL_FNS" ? '' : '\t'}${green(t)} ${p.map(i => yellow(i.toString())).join(", ")}`)
 	}
+
+	// If not the main call, don't print functions
+	if (currFn != ":MAIN") return
+	
+	// Print functions
+	// for (let i = 0; i < functions.length; i++)
+	// 	logIns(functions[i], fnName + i)
 }

@@ -49,11 +49,18 @@ const enum Op {
 }
 
 export function genBytesNew(ins: Ins[]): number[] {
+	// Create header
 	const bytes: number[] = [
 		...readTo(stackSize + pointerSize + 5, To.JUMP, 4)
 	]
 	stackPointerPos = bytes.length
-	bytes.push(...genPointer(bytes.length + 1), ...new Array(stackSize))
+	bytes.push(...genPointer(bytes.length + 1), ...new Array(stackSize).fill(0))
+
+	// Check for ALL_FNS information
+	const fnCalls: [number, number][] = []
+	// if (ins[ins.length - 1] == InsType.ALL_FNS) {}
+
+	// Loop through instructions
 	for (let x = 0; x < ins.length; x++) {
 		const i = ins[x]
 		switch (i[0]) {
@@ -77,6 +84,11 @@ export function genBytesNew(ins: Ins[]): number[] {
 		case InsType.POP: {
 			bytes.push(From.POP | i[1])
 		} break
+		case InsType.FNDR: {
+			bytes.push(...readTo(0, i[1], pointerSize))
+			fnCalls.push([bytes.length - pointerSize, i[2]])
+		} break
+		case InsType.ALL_FNS: break
 		default:
 			(i as unknown as [string])[0] = InsType[i[0]]
 			console.log(yellow(`Instruction not found:`), i)
@@ -84,8 +96,9 @@ export function genBytesNew(ins: Ins[]): number[] {
 		}
 	}
 
-	// logBytes(bytes)
-	return bytes
+	// console.log(fnCalls)
+
+	return bytes // Finally, return
 }
 
 function genPointer(to: number): number[] {
@@ -97,7 +110,7 @@ function readTo(num: number, to: To, bl?: number): number[] {
 	if (byteLen == 3) byteLen = 4
 	const offs = byteLen == 4 ? 2 : byteLen - 1
 	const ret = [((From.RED1 >> 4) + offs) << 4 | to]
-	for (let i = 0; i < byteLen; i++) ret.push((num >> (8 * (byteLen - 1 - i))) & 255)
+	for (let i = 0; i < byteLen; i++) ret.push((num >> (8 * i)) & 255)
 	return ret
 }
 
