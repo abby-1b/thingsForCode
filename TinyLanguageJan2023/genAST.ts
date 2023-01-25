@@ -12,6 +12,8 @@ export enum NodeType {
 	PARENTHESIS,
 	ARRAY,
 	BLOCK,
+
+	FUNCTION,
 }
 
 export interface Node {
@@ -44,6 +46,12 @@ export interface NodeClause extends Node {
 	val: Node[]
 }
 
+export interface NodeFunction extends Node {
+	nodeType: NodeType.FUNCTION,
+	args: Node[],
+	body: Node[]
+}
+
 export interface NodeOp extends Node {
 	nodeType: NodeType.OP
 	val: string
@@ -67,6 +75,7 @@ const operatorPrecedence: {[key: string]: number} = {
 	"*": 1, "/": 1,
 	".": 2
 }
+const VOID_TYPE: Type = {name: "void"}
 
 /**
  * Gets the type of a number
@@ -83,21 +92,18 @@ function getResultingType(a: Node, b: Node, _op: string): Type | undefined {
 	return {name: "i32"} // TODO: get actual return type
 }
 
-function getTypeArgs(tokens: Token[]): Type[] | undefined {
-	if (tokens[0].val as unknown != "<") return undefined
+function getTypeArgs(name: string, tokens: Token[]): Type {
+	if (tokens[0].val as unknown != "<") return {name}
 	tokens.shift()
 
 	const args: Type[] = []
 	while (tokens[0].val != ">") {
-		args.push({
-			name: tokens.shift()!.val,
-			args: getTypeArgs(tokens)
-		})
+		args.push(getTypeArgs(tokens.shift()!.val, tokens))
 		if (tokens[0].val == ",") tokens.shift()
 	}
 	tokens.shift()
 	
-	return args
+	return {name, args}
 }
 
 export function genAST(tokens: Token[], outerScope: Declaration[] = [], singleNode = false) {
@@ -139,21 +145,26 @@ export function genAST(tokens: Token[], outerScope: Declaration[] = [], singleNo
 				type: {name: "str"}
 			})
 		} else if (t.type == TokenType.WORD) { // Deal with individual words
+			console.log("Got word:", t, scope) 
 			if (typeNames.includes(t.val) || t.val == "let") {
 				// We're making a variable!
 
 				// Get its type
-				let type: Type = {name: t.val, args: getTypeArgs(tokens)}
+				let type: Type = getTypeArgs(t.val, tokens)
 
 				// Get its name
+				console.log(tokens)
 				t = tokens.shift()!
 				if (t.type != TokenType.WORD)
 					throw new Error("Expected word token after type initializer!")
 				const name = t.val
+				console.log("Got var name:", name)
 				
 				// Check if the variable is already defined
-				if (inScope(name))
-					throw new Error(`Variable \`${name}\` already declared in this scope!`)
+				if (inScope(name)) {
+					console.log(red(`Variable \`${name}\` already declared in this scope!`))
+					Deno.exit(1)
+				}
 
 				// Get its value (if available)
 				let val: Node | undefined
@@ -162,6 +173,7 @@ export function genAST(tokens: Token[], outerScope: Declaration[] = [], singleNo
 					val = genAST(tokens, [...outerScope, ...scope], true)[0]
 					if (type.name == "let") type = val.type!
 					if (val.nodeType == NodeType.LITERAL_NUM) val.type = type
+					else if (val.nodeType == NodeType.FUNCTION) type = val.type!
 				} else if (type.name == "let") {
 					console.log(red(`Can't infer type of variable \`${name}\``))
 					Deno.exit(1)
@@ -202,16 +214,29 @@ export function genAST(tokens: Token[], outerScope: Declaration[] = [], singleNo
 				operators.push(t.val)
 			}
 
-			// If it's an opening brace, add it to 
+			// If it's an opening brace, parse it separately
 			if ("([{".includes(t.val)) {
 				const braceAST = genAST(tokens, [...outerScope, ...scope], false)
-				ast.push({
-					nodeType: t.val == "(" ? NodeType.PARENTHESIS
-						: t.val == "{" ? NodeType.BLOCK
-						: NodeType.ARRAY,
-					val: braceAST,
-					type: braceAST[braceAST.length - 1].type
-				} as NodeClause)
+				if (tokens.length > 0 && tokens[0].val == "{") {
+					// If there's a bracket after the parenthesis, that's a function declaration
+					const fnAST = (genAST(tokens, [...outerScope, ...scope], false)[0] as NodeClause).val
+					ast.push({
+						nodeType: NodeType.FUNCTION,
+						args: braceAST,
+						body: fnAST,
+						type: {name: "fn", args: [fnAST.length == 0 ? VOID_TYPE : fnAST[fnAST.length - 1].type]}
+					} as NodeFunction)
+				} else {
+					// Otherwise, just add it as a NodeClause
+					console.log({braceAST, tokens, ast, t})
+					ast.push({
+						nodeType: t.val == "(" ? NodeType.PARENTHESIS
+							: t.val == "{" ? NodeType.BLOCK
+							: NodeType.ARRAY,
+						val: braceAST,
+						type: braceAST[braceAST.length - 1].type
+					} as NodeClause)
+				}
 			}
 
 			// I 
