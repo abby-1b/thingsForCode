@@ -52,5 +52,5 @@ scoreboard players remove @e[scores={BridgeAmount=1..}] BridgeAmount 1
 
 execute as @e[scores={UseEnder=1..}] run scoreboard players set @s UseEnder 0
 
-#item replace entity CodeIGuess armor.feet with minecraft:leather_boots{Unbreakable:1b,display:{color:8273333,Name:'{"text":"Ab*y\'s Boots"}'},Enchantments:[{id:"minecraft:feather_falling",lvl:255},{id:"minecraft:protection",lvl:255},{id:"minecraft:thorns",lvl:10},{id:"minecraft:depth_strider",lvl:3}]}
+# item replace entity CodeIGuess armor.feet with minecraft:leather_boots{Unbreakable:1b,display:{color:8273333,Name:'{"text":"Ab*y\'s Boots"}'},Enchantments:[{id:"minecraft:feather_falling",lvl:255},{id:"minecraft:protection",lvl:255},{id:"minecraft:thorns",lvl:10},{id:"minecraft:depth_strider",lvl:3}]}
 

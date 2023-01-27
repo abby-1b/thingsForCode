@@ -18,7 +18,7 @@ execute as @r[tag=!Sneaking,scores={UseElectric=1..}] at @s as @e[distance=1..15
 effect give @e[tag=ElectricUser,tag=Sneaking] jump_boost 1 5 true
 effect give @e[tag=ElectricUser,tag=Sneaking] resistance 1 2 true
 execute at @e[tag=Sneaking,nbt={OnGround:1b}] run particle minecraft:dust 1 1 0 2 ~ ~0.3 ~ 5 0.2 5 0.05 2
-execute at @e[tag=Sneaking,nbt={OnGround:1b}] run effect give @e[distance=1..] wither 3 0 true
+execute at @e[tag=Sneaking,nbt={OnGround:1b}] run effect give @e[distance=1..10] wither 3 0 true
 
 # Sneak + Click
 execute as @e[tag=Sneaking,scores={UseElectric=1..}] at @s run summon lightning_bolt ~2 ~ ~

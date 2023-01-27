@@ -1,5 +1,6 @@
-const fs = require('fs')
-const clipboardy = require('clipboardy')
+import * as clipboard from 'https://deno.land/x/clipboard/mod.ts'
+// const fs = import('fs')
+// const clipboardy = import('clipboardy')
 
 function log(t) {
 	console.log(t)
@@ -21,7 +22,7 @@ function stackPass(pss) {
 	return r + e
 }
 
-let fl = fs.readFileSync("stone.mcfunction", "utf-8").split("# Repeat")
+let fl = Deno.readTextFileSync("CodeIGuess.mcfunction", "utf-8").split("# Repeat")
 	.map(s => s.split('\n').map(e => e.trim()).filter(e => e.length != 0 && e[0] != '#'))
 
 let initCommands = fl[0]
@@ -61,5 +62,4 @@ passengers.push(`id:"minecraft:command_block_minecart",Command:"kill @e[type=com
 let fc = `summon falling_block ~ ~2 ~ {BlockState:{Name:"minecraft:stone"},Time:1,Passengers:[` + stackPass(passengers) + `]}`
 // fc = stackPass(passengers)
 // console.log(fc)
-clipboardy.writeSync(compile(fc))
-
+await clipboard.default.writeText(compile(fc))
