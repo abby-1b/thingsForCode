@@ -89,22 +89,56 @@ interface Type {
 	name: string
 	args?: Type[]
 }
+const Primitive = {
+	NOT: {name: "not"} as Type,
+	NIL: {name: "nil"} as Type
+}
+
+interface Scope {
+	vars: {[key: string]: Type}
+	soft: boolean
+}
+function getVarType(scope: Scope[], name: string, throwErr = false): Type {
+	for (let i = scope.length - 1; i >= 0; i--) {
+		if (name in scope[i].vars)
+			return scope[i].vars[name]
+		if (!scope[i].soft) break
+	}
+	if (throwErr) error(`Variable \`${name}\` not found.`)
+	return Primitive.NOT // This will never run, but TS complains without it.
+}
 
 interface Node {
 	kind: string // The kind of node this node is.
 	type: Type // The type of this node's *value*
 }
-interface NodeLet {
+interface NodeLet extends Node {
 	kind: "LET"
-	type: Type
 	name: string
 	value?: Node
 }
+interface NodeNum extends Node {
+	kind: "NUM"
+	type: {name: "i32" | "f32"}
+	value: string
+}
+interface NodeOp extends Node {
+	kind: "OPR"
+	value: string
+}
+interface NodeCondition extends Node {
+	condition: Node
+	executes: Node[]
+}
+interface NodeIf extends NodeCondition {
+	kind: "IF"
+}
 
-function getType(tokens: Token[]): Type {
-	return {
-		name: tokens.shift()!.val
-	}
+const precedence: {[key: string]: number} = {
+	"+": 0, "-": 0,
+	"*": 1, "/": 1,
+	".": 2,
+	"=": 3
 }
 
 /**
@@ -113,11 +147,15 @@ function getType(tokens: Token[]): Type {
  * @param multiple Wether or not to return multiple nodes from this operation. 
  * @returns 
  */
-function genAST(tokens: Token[], multiple = false): Node[] {
-	console.log("Starting:", tokens)
+function genAST(tokens: Token[], inScope: Scope[], soft: boolean, multiple = false): Node[] {
+	const scope = [...inScope, {
+		vars: {},
+		soft
+	}]
+	const operators: string[] = []
 	const ast: Node[] = []
 	while (tokens.length > 0) {
-		if (ast.length == 1 && !multiple) return ast
+		if ((tokens[0].type == "SPC" && !multiple) || (tokens.length > 0 && tokens[0].type == "SPC")) break
 		const t = tokens.shift()!
 		if (t.type == "OPR") {
 			if (t.val == "#") {
@@ -134,24 +172,75 @@ function genAST(tokens: Token[], multiple = false): Node[] {
 				}
 				if (f.val == "=") {
 					// It has a value
-					value = genAST(tokens)[0]
+					value = genAST(tokens, scope, true)[0]
 				}
 
-				if (!value && !type) error(`\`let\` not provided a type nor a value.`)
-				if (!type) type = value!.type
+				if (!value && !type) error(`\`let\` not provided a type nor a value.`) // Throw error if nothing is provided
+				if (value && type && value.type != type) error(`\`let\` value doesn't match type.`)
+				if (!type) type = value!.type // If no type is provided, say `fuck it`
 
+				// Add declaration to AST
 				ast.push({
 					kind: "LET",
 					name: name.val,
 					type,
 					value
 				} as NodeLet)
+				
+				// Add variable to scope
+				scope[scope.length - 1].vars[name.val] = type
+			} else if (t.val == "?") {
+				const condition = genAST(tokens, scope, true)
+					, code = genAST(tokens, scope, true, true)
+				ast.push({
+					kind: "IF",
+					condition: condition[0],
+					executes: code,
+					type: code.length > 0 ? code[code.length - 1].type : Primitive.NIL
+				} as NodeIf)
+			} else if (t.val in precedence) {
+				const op = precedence[t.val]
+				let cp = operators.length == 0 ? -1 : precedence[operators[operators.length - 1]]
+				while (op < cp) {
+					ast.push({
+						kind: "OPR",
+						value: operators.pop()!
+					} as NodeOp)
+					cp = operators.length == 0 ? -1 : precedence[operators[operators.length - 1]]
+				}
+				operators.push(t.val)
 			}
 		} else if (t.type == "NUM") {
-
+			ast.push({
+				kind: "NUM",
+				value: t.val,
+				type: {name: "i32"}
+			} as NodeNum)
 		}
 	}
+
+	for (let o = 0; o < ast.length; o++) {
+		if (ast[o].kind != "OPR") continue
+		ast[o - 2] = {
+			kind: "OPR",
+			value: (ast[o] as NodeOp).value,
+			opA: ast[o - 2],
+			opB: ast[o - 1]
+			type: getResultingType(ast[o - 2], ast[o - 1], (ast[o] as NodeOp).value)
+		} as NodeOp
+	}
+
+	console.log("Returned:", ast)
+
+	if (tokens.length > 0 && tokens[0].type == "SPC") tokens.shift()
 	return ast
+}
+
+function getType(tokens: Token[]): Type {
+	// TODO: get `type`, `type<arg>`, `type<arg,>`, `type<arg, arg>`, ect.
+	return {
+		name: tokens.shift()!.val
+	}
 }
 
 /*
@@ -163,9 +252,10 @@ Compiles to:
 		print(i + 1)
 	}
 */
-const program = "#lmao=0 .?lmao=0 i  :lmao=1 lmao+1  : lmao"
+// const program = "#lmao=0 #out=?lmao=0 lmao  :lmao=1 lmao+1  : lmao"
+const program = "?0=0 6  "
 const t = genTokens(program)
-console.log(t)
+// console.log(t)
 
-const a = genAST(t)
+const a = genAST(t, [], true)
 console.log(a)
