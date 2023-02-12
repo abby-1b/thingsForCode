@@ -33,7 +33,7 @@ signifies a closing bracket.
 
 */
 
-function error(...problem: string[]) {
+function error(...problem: any[]) {
 	console.log(...problem)
 	Deno.exit()
 }
@@ -90,8 +90,13 @@ interface Type {
 	args?: Type[]
 }
 const Primitive = {
+	/** A type for when there is NO type. */
 	NOT: {name: "not"} as Type,
-	NIL: {name: "nil"} as Type
+
+	/** A nil type means the value is not defined. */
+	NIL: {name: "nil"} as Type,
+
+	I32: {name: "i32"} as Type
 }
 
 interface Scope {
@@ -116,6 +121,10 @@ interface NodeLet extends Node {
 	kind: "LET"
 	name: string
 	value?: Node
+}
+interface NodeVarGet extends Node {
+	kind: "GET"
+	name: string
 }
 interface NodeNum extends Node {
 	kind: "NUM"
@@ -216,16 +225,32 @@ function genAST(tokens: Token[], inScope: Scope[], soft: boolean, multiple = fal
 				value: t.val,
 				type: {name: "i32"}
 			} as NodeNum)
+		} else if (t.type == "NAM") {
+			ast.push({
+				kind: "GET",
+				name: t.val,
+				type: getVarType(scope, t.val)
+			} as NodeVarGet)
+		} else {
+			error(`Token not found:`, t)
 		}
 	}
 
+	for (let o = operators.length - 1; o >= 0; o--) {
+		ast.push({
+			kind: "OPR",
+			value: operators[o]
+		} as NodeOp)
+	}
+
+	console.log("OPERATORS:", operators)
 	for (let o = 0; o < ast.length; o++) {
 		if (ast[o].kind != "OPR") continue
 		ast[o - 2] = {
 			kind: "OPR",
 			value: (ast[o] as NodeOp).value,
 			opA: ast[o - 2],
-			opB: ast[o - 1]
+			opB: ast[o - 1],
 			type: getResultingType(ast[o - 2], ast[o - 1], (ast[o] as NodeOp).value)
 		} as NodeOp
 	}
@@ -243,6 +268,11 @@ function getType(tokens: Token[]): Type {
 	}
 }
 
+function getResultingType(opA: Node, opB: Node, opr: string): Type {
+	if (opA.type.name == "i32" && opB.type.name == "i32") return Primitive.I32
+	return Primitive.NIL
+}
+
 /*
 Compiles to:
 	let i = 0
@@ -253,9 +283,9 @@ Compiles to:
 	}
 */
 // const program = "#lmao=0 #out=?lmao=0 lmao  :lmao=1 lmao+1  : lmao"
-const program = "?0=0 6  "
+const program = "#lmao=0+1 "
 const t = genTokens(program)
 // console.log(t)
 
 const a = genAST(t, [], true)
-console.log(a)
+console.log(a[0])
