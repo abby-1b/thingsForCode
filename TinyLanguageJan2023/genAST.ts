@@ -252,7 +252,11 @@ export function genAST(tokens: Token[], outerScope: Declaration[] = [], singleNo
 
 	// Deal with remaining operators in op stack
 	for (let o = operators.length - 1; o >= 0; o--)
-		ast.push({nodeType: NodeType.PRE_OP, val: operators[o], type: undefined})
+		ast.push({
+			nodeType: NodeType.PRE_OP,
+			val: operators[o],
+			type: undefined
+		})
 
 	// Give operators their operands
 	for (let o = 0; o < ast.length; o++) {
