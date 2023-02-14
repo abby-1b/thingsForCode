@@ -1,0 +1,1 @@
+A small TypeScript framework for creating interactive websites.
