@@ -1,6 +1,7 @@
+import { spell } from "./spell.ts"
 
-class spellbook extends spell {
+export class spellbook extends spell {
 	public init() {
-
+		
 	}
 }

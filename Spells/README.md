@@ -1,1 +1,1 @@
-A small TypeScript framework for creating interactive websites.
+A small Deno library for creating interactive static websites.
