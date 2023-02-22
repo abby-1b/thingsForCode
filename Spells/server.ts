@@ -1,5 +1,6 @@
 import { extname } from "https://deno.land/std@0.165.0/path/mod.ts"
 import { contentType } from "https://deno.land/std@0.177.0/media_types/mod.ts"
+import { compile } from "./compile.ts"
 
 const PORT = 8000
 
@@ -13,7 +14,7 @@ async function handleConnection(conn: Deno.Conn) {
 		const { request } = requestEvent
 		const url = new URL(request.url)
 		let path = url.pathname.substring(1)
-		if (path.length == 0) path = "index.html"
+		if (path.length == 0) path = "index.pug"
 		console.log("GET", path)
 		if (path in serveText) {
 			const headers = new Headers()
@@ -21,9 +22,16 @@ async function handleConnection(conn: Deno.Conn) {
 			requestEvent.respondWith(new Response(serveText[path].data() + "", { headers }))
 		} else {
 			try {
-				const file = await Deno.readFile(path)
+				let sct = contentType(extname(path)) ?? "text/plain"
+				let file: Uint8Array | string = await Deno.readFile(path)
+
+				// Replace .pug files with compiled HTML!
+				if (path.endsWith(".pug"))
+					sct = "text/html",
+					file = compile(new TextDecoder().decode(file))
+
 				const headers = new Headers()
-				headers.set("Content-Type", contentType(extname(path)) ?? "text/plain")
+				headers.set("Content-Type", sct)
 				requestEvent.respondWith(new Response(file, { headers }))
 			} catch {
 				requestEvent.respondWith(new Response("Not Found", { status: 404 }))

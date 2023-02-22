@@ -10,6 +10,7 @@ interface Element {
 	id?: string
 	innerText?: string
 	children?: Element[]
+	singleTag?: boolean
 }
 
 function idxToPos(src: string, idx: number): string {
@@ -28,7 +29,10 @@ function parse(src: string, indent = 0, startI = 0): [Element[], number] {
 		if (!nameChars.includes(c)) {
 			if (c == "\t") tagIndent++
 			if (tagName.length == 0) continue
-			if (tagIndent < indent) { i -= tagName.length + 2; break }
+			if (tagIndent < indent) {
+				i -= tagName.length + 2
+				break
+			}
 
 			// Get the things that are a part of the tag: class, ID, and attributes. (+ the multi-line operator)
 			let j = i, nest = 0
@@ -39,14 +43,15 @@ function parse(src: string, indent = 0, startI = 0): [Element[], number] {
 				if (++j > src.length) error("Un-matched nest:", idxToPos(src, i))
 			}
 			const thingsString = src.slice(i, j); i = j
-			const things = thingsString.replace(/ |\n/g, "").split(/(?<=.)(?=#|\(|\.)/g)
+			const things = thingsString
+				.trim().split(/(?<=.)(?=#|\(|\.)(?![^(]*\))/g)
 
 			// Get the attributes
 			const attrs: {[key: string]: string} = {}
 			things.filter(t => t[0] == "(").forEach(a => {
 				a.slice(1, -1).split(",").forEach(n => {
 					const s = n.split("=")
-					attrs[s[0]] = s[1]
+					attrs[s[0].trim()] = s[1]?.trim()
 				})
 			})
 
@@ -77,30 +82,100 @@ function parse(src: string, indent = 0, startI = 0): [Element[], number] {
 				id: things.filter(t => t[0] == "#")[0]?.slice(1),
 				innerText, children
 			}), tagName = "", tagIndent = 0
-		} else tagName += src[i]
+		} else
+			tagName += src[i]
 	}
 	return [els, i]
 }
 
-function gen(els: Element[]) {
-	let out = ""
+/** Converts elements to their HTML representation. */
+function gen(els: Element[], indent = 0) {
+	let out = "", i = 0
 	for (const e of els) {
-		out += "<" + e.tagName
+		out += (i++ == 0 ? "<" : "\n<") + e.tagName // Tag beginning
+
+		// Append attributes
 		if (e.attrs && Object.keys(e.attrs).length > 0)
 			out += " " + Object.entries(e.attrs).map(n => n[0] + (n[1] ? "=" + n[1] : ""))
+
+		// Append id & class
 		if (e.id) out += ` id="${e.id}"`
 		if (e.clss && e.clss.length > 0) out += ` class="${e.clss.join(" ")}"`
-		out += ">"
-		if (e.innerText) out += markDownToHtml(e.innerText)
-		if (e.children && e.children.length > 0) out += "\n\t" + gen(e.children).split("\n").join("\t\n")
-		out += `</${e.tagName}>\n`
+		out += ">" // Close the opening tag
+
+		// Append innerText and children (recursively)
+		const isTooLong = (e.innerText ?? "").length > 70
+		if (e.innerText && e.innerText.length > 0)
+			out += (isTooLong ? "\n\t" : "") + markDownToHtml(e.innerText) + (isTooLong ? "\n" : "")
+		if (e.children && e.children.length > 0) out += "\n\t" + gen(e.children, indent + 1).split("\n").join("\n\t") + "\n"
+
+		// Append closing tag
+		if (
+			(e.innerText && e.innerText.length > 0) ||
+			(e.children && e.children.length > 0) ||
+			!e.singleTag
+		) out += `</${e.tagName}>`
 	}
 	return out
 }
 
-const f = Deno.readTextFileSync("index.pug")
-const out = parse(f)[0]
-const g = gen(out)
-console.log(g)
+function modify(els: Element[]) {
+	const hasTag = (el: Element, searchTag: string): boolean =>
+		el.children ? !!el.children.find(e => e.tagName == searchTag) : false
 
-Deno.writeTextFileSync("index.html", g)
+	let htmlTag: Element
+	const topTags = els.map(e => e.tagName)
+	if (!topTags.includes("html")) {
+		// Add <html> around everything
+		els = [htmlTag = {
+			tagName: "html",
+			children: els
+		} as Element]
+	} else htmlTag = els[topTags.indexOf("html")]
+	if (!hasTag(htmlTag, "body")) {
+		// Add <body> around everything after <head>
+		const headIdx = htmlTag.children!.findIndex(c => c.tagName == "head")
+		const bodyEls = htmlTag.children!.splice(headIdx + 1)
+		htmlTag.children!.push({
+			tagName: "body",
+			children: bodyEls
+		} as Element)
+	}
+
+	// Crawls through the modified element tree, modifying things here and there.
+	// Keep in mind this is depth-first, so things are parsed in the order they
+	// appear in the oringal file (so sections can't be used before they're declared)
+	const components: Record<string, Element[]> = {}
+	function crawl(els: Element[]) {
+		for (const el of els) {
+			if (el.attrs && "@" in el.attrs) {
+				// Is a component!
+				components[el.tagName] = el.children ?? []
+				els.splice(els.indexOf(el)) // Remove the component from the main tree
+				continue
+			}
+			// TODO: repeatable components across a single file
+			// TODO: repeatable components across multiple files
+			// TODO: parse a few attributes into CSS
+
+			// if (el.children) crawl(el.children)
+		}
+	}
+	crawl(els)
+	// Add <!DOCTYPE html> at the beginning of the document
+	els.unshift({
+		tagName: "!DOCTYPE html",
+		singleTag: true
+	} as Element)
+	return els
+}
+
+export function compile(src: string) {
+	return gen(modify(parse(src)[0]))
+}
+
+const f = Deno.readTextFileSync("index.pug")
+const out = compile(f)
+console.log(out)
+
+// Deno.writeTextFileSync("index.html", out)
