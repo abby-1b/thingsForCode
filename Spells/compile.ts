@@ -1,5 +1,5 @@
 import { error } from "./logging.ts"
-import { markDownToHtml } from "./src/mdc.ts"
+import { markDownToHtml } from "./mdc.ts"
 
 const nameChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXZY0123456789_-"
 

@@ -10,8 +10,8 @@ export function markDownToHtml(md: string): string {
 		.replace(`&`, "&amp;")
 		.replace(`<`, "&lt;")
 		.replace(`>`, "&gt;")
-		.replace(`"`, "&quot;")
-		.replace(`'`, "&#039;")
+		// .replace(`"`, "&quot;")
+		// .replace(`'`, "&#039;")
 
 	// Headers (#)
 		.replace(/^(\s*)(#{1,6} )(?=.*$)/gm, e => "<h" + e.trim().length + ">")
@@ -40,6 +40,7 @@ export function markDownToHtml(md: string): string {
 		.replace(/\^\d{1,}/g, e => "<sup>" + e.slice(1) + "</sup>")
 	
 	// Spacers (newlines, basically)
+		.replace(/\\/g, "\n<br>")
 		.replace(/\n\n/gm, "\n<br>")
 
 	// Removes all the unused things
