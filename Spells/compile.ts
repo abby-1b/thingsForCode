@@ -96,7 +96,7 @@ function gen(els: Element[], indent = 0) {
 
 		// Append attributes
 		if (e.attrs && Object.keys(e.attrs).length > 0)
-			out += " " + Object.entries(e.attrs).map(n => n[0] + (n[1] ? "=" + n[1] : ""))
+			out += " " + Object.entries(e.attrs).map(n => n[0] + (n[1] ? "=" + n[1] : "")).join(" ")
 
 		// Append id & class
 		if (e.id) out += ` id="${e.id}"`
@@ -123,7 +123,7 @@ function modify(els: Element[]) {
 	const hasTag = (el: Element, searchTag: string): boolean =>
 		el.children ? !!el.children.find(e => e.tagName == searchTag) : false
 
-	let htmlTag: Element
+	let htmlTag: Element, headTag: Element
 	const topTags = els.map(e => e.tagName)
 	if (!topTags.includes("html")) {
 		// Add <html> around everything
@@ -135,30 +135,68 @@ function modify(els: Element[]) {
 	if (!hasTag(htmlTag, "body")) {
 		// Add <body> around everything after <head>
 		const headIdx = htmlTag.children!.findIndex(c => c.tagName == "head")
+		if (headIdx == -1) {
+			// Get the head element
+			headTag = {tagName: "head", children: []}
+			htmlTag.children?.unshift(headTag)
+		} else
+			headTag = htmlTag.children![headIdx]
 		const bodyEls = htmlTag.children!.splice(headIdx + 1)
 		htmlTag.children!.push({
 			tagName: "body",
 			children: bodyEls
 		} as Element)
+	} else {
+		// Just the head element
+		if (hasTag(htmlTag, "head"))
+			headTag = htmlTag.children!.find(t => t.tagName == "head")!
+		else {
+			headTag = {tagName: "head", children: []}
+			htmlTag.children?.unshift(headTag)
+		}
 	}
+
+	headTag.children!.push({
+		tagName: "link",
+		attrs: { rel: '"stylesheet"', href: '"css/basic.css"' }
+	} as Element)
 
 	// Crawls through the modified element tree, modifying things here and there.
 	// Keep in mind this is depth-first, so things are parsed in the order they
 	// appear in the oringal file (so sections can't be used before they're declared)
-	const components: Record<string, Element[]> = {}
+	const components: Record<string, Element> = {}
 	function crawl(els: Element[]) {
-		for (const el of els) {
+		for (let e = 0; e < els.length; e++) {
+			const el = els[e]
 			if (el.attrs && "@" in el.attrs) {
 				// Is a component!
-				components[el.tagName] = el.children ?? []
-				els.splice(els.indexOf(el)) // Remove the component from the main tree
+				if (el.tagName in components) {
+					// It's an instance!
+					const c = components[el.tagName]
+					const nel: Element = {
+						tagName: c.tagName,
+						attrs: {...c.attrs},
+						clss: [...c.clss ?? []],
+						id: c.id,
+						innerText: c.innerText,
+						children: [...c.children ?? [], ...el.children ?? []],
+						singleTag: c.singleTag
+					}
+					els[e] = nel
+				} else {
+					// It's a new one!
+					components[el.tagName] = el
+					delete el.attrs["@"]
+					el.tagName = "div"
+					els.splice(e--, 1) // Remove the component from the main tree
+				}
 				continue
+				// TODO: repeatable components across a single file
 			}
-			// TODO: repeatable components across a single file
 			// TODO: repeatable components across multiple files
 			// TODO: parse a few attributes into CSS
 
-			// if (el.children) crawl(el.children)
+			if (el.children) crawl(el.children)
 		}
 	}
 	crawl(els)
