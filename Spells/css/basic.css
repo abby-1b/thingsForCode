@@ -7,16 +7,19 @@
 
 * {
 	font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-	margin: 0;
+	margin-top: 0;
 }
 
 :link, :visited {
 	color: inherit;
-	text-decoration-color: #872525;
+	text-decoration-color: #b78901;
 }
-h1 {
-	font-size: 2.5em;
-}
+h1 { font-size: 2.5em; }
+h2 { font-size: 1.8em; }
+h3 { font-size: 1.3em; }
+h4 { font-size: .93em; }
+h5 { font-size: .67em; }
+h6 { font-size: .48em; }
 
 section {
 	padding: var(--vertSpace);
@@ -25,17 +28,17 @@ section {
 	overflow: hidden;
 	color: #F6F6F6;
 }
-section:nth-child(3n + 0) { background-color: #7a0000; }
-section:nth-child(3n + 1) { background-color: #775c0a; }
-section:nth-child(3n + 2) { background-color: #00455e; }
+section:nth-child(3n + 0) { background-color: #5b0d0d; }
+section:nth-child(3n + 1) { background-color: #5b390d; }
+section:nth-child(3n + 2) { background-color: #153940; }
 section.tall {
-	padding-top: 40vh;
-	padding-bottom: 40vh;
+	padding-top: 30vh;
+	padding-bottom: 30vh;
 }
 
 code {
 	font-family: monospace;
-	background-color: #0004;
+	background-color: #8884;
 	border-radius: 2px;
 	padding: 2px;
 }

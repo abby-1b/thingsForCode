@@ -160,6 +160,10 @@ function modify(els: Element[]) {
 		tagName: "link",
 		attrs: { rel: '"stylesheet"', href: '"css/basic.css"' }
 	} as Element)
+	headTag.children!.push({
+		tagName: "link",
+		attrs: { rel: '"stylesheet"', href: '"css/modifiers.css"' }
+	} as Element)
 
 	// Crawls through the modified element tree, modifying things here and there.
 	// Keep in mind this is depth-first, so things are parsed in the order they
