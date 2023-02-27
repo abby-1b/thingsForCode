@@ -1,7 +1,7 @@
 :root {
 	--contentWidth: 800px;
 	--sideSpace: calc(50vw - var(--contentWidth) / 2);
-	--sideSpaceMin: 12px;
+	--sideSpaceMin: 5vw;
 	--vertSpace: 80px;
 }
 
