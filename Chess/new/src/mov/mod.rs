@@ -1,4 +1,5 @@
 use crate::board::Board;
+use crate::positions;
 
 pub mod pawn;
 pub mod knight;
@@ -28,5 +29,7 @@ pub fn gen_moves(b: &Board, idx: u8) -> u64 {
 	}
 	// TODO: implement remaining piece types.
 
-	panic!("A piece wasn't found at index {}. Good luck.", idx);
+	// Board::print_bitboard(b.w_o);
+	// Board::print(b);
+	panic!("A piece wasn't found at {} ({}). Good luck.", positions::NAMES[idx as usize], idx);
 }

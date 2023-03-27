@@ -8,14 +8,15 @@ pub fn gen_moves(b: &Board, piece: u64) -> u64 {
 	return (
 		(piece & NOT_A) >> 9 |
 		(piece & NOT_H) >> 7
-	) & b.b_o | (piece & IS_2) >> 16 | piece >> 8;
+	) & b.b_o | (((piece & IS_2) >> 16) | piece >> 8) & !(b.b_o | b.w_o);
 }
 
-#[allow(dead_code)]
-pub fn gen_all_pawn_moves(b: &Board) -> u64 {
-	let pieces = b.typ[0] & b.w_o;
-	return (
-		(pieces & NOT_A) >> 9 |
-		(pieces & NOT_H) >> 7
-	) | (pieces & IS_2) >> 16 | pieces >> 8;
-}
+// This doesn't work; it doesn't attack using `b.b_o`
+// #[allow(dead_code)]
+// pub fn gen_all_pawn_moves(b: &Board) -> u64 {
+// 	let pieces = b.typ[0] & b.w_o;
+// 	return (
+// 		(pieces & NOT_A) >> 9 |
+// 		(pieces & NOT_H) >> 7
+// 	) | (pieces & IS_2) >> 16 | pieces >> 8;
+// }
