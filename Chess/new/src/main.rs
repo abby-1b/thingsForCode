@@ -1,7 +1,11 @@
-use std::sync::{Arc, Mutex};
+#![allow(dead_code)]
+
+use std::sync::{Arc};
 use std::sync::atomic::{AtomicI8, Ordering};
 use std::thread;
 use std::io::{self, Write};
+
+mod tree;
 
 mod board;
 use crate::board::*;
@@ -18,18 +22,27 @@ fn main() {
 	// PRECOMPUTE
 	slide::precompute_slide_table();
 
-    player_play();
+    self_play();
+	// player_play();
+	
+	// let mut t = tree::MainTree::create();
+	// for _ in 0..80 {
+	// 	t.analyze(50, 10);
+	// }
+
+	// t.do_move(positions::D2, positions::D4);
+
+	// t.print();
 }
 
 fn player_play() {
-	let mut b = Board::new();
-	Board::print(&b);
+	let mut t = tree::MainTree::create();
+	t.print();
 	// let shared_var = Arc::new(Mutex::new(Board::new()));
 	// let shared_var_clone = shared_var.clone();
 
 	let ready_state = Arc::new(AtomicI8::new(0));
 	let ready_state_lock = ready_state.clone();
-	// let mut ready = false;
 
 	let _handle = thread::spawn(move || {
 		loop {
@@ -59,16 +72,7 @@ fn player_play() {
 		io::stdin().read_line(&mut m).unwrap();
 	
 		// Get the move index
-		m = m.to_lowercase();
-		let idx: (u8, u8) = if m.len() >= 2 {
-			let ff = m.chars().nth(0).unwrap_or('a') as u32 - 97;
-			let fr = 7 - (m.chars().nth(1).unwrap_or('8') as u32 - 49);
-			let tf = m.chars().nth(2).unwrap_or('a') as u32 - 97;
-			let tr = 7 - (m.chars().nth(3).unwrap_or('8') as u32 - 49);
-			((ff | fr * 8) as u8, (tf | tr * 8) as u8)
-		} else {
-			(0, 0)
-		};
+		let idx: (u8, u8) = positions::parse_move_str(m);
 
 		// Tell the thread to stop looking for new moves
 		ready_state.store(1, Ordering::Relaxed);
@@ -78,34 +82,40 @@ fn player_play() {
 			thread::sleep(std::time::Duration::from_millis(10));
 		}
 
+		// Do the player's move
+		if !t.do_move(idx.0, idx.1) {
+			println!("Move not valid, doing random move.");
+			// continue
+		}
+
+		// Analyze 
+		for _ in 0..1000 {
+			t.analyze(30, 10);
+		}
+		t.do_best();
+		t.print();
+
 		// Do the move on the board
-		b = b.mov_copy(idx.0, idx.1);
-		b.gen_moves();
-		b.analyze(1.0, 0.25);
-		let ixd = b.ixd << 0;
-		b = b.board_best_move();
-		b.ixd = ixd;
-		Board::print(&b);
+		// b = b.mov_copy(idx.0, idx.1);
+		// b.gen_moves();
+		// b.analyze_mm(1.0, 0.25);
+		// let ixd = b.ixd << 0;
+		// b = b.board_best_move();
+		// b.ixd = ixd;
 
 		// Once we're done, give the board back to the thread.
 		ready_state.store(1, Ordering::Relaxed);
 	}
 }
 
-#[allow(dead_code)]
 fn self_play() {
 	println!("Started.");
-	let mut b = Board::new();
-	let mut f = false;
+	let mut t = tree::MainTree::create();
 	for _ in 0..128 {
-		b.gen_moves();
-		let t = b.analyze(1.0, 0.24);
-		b = b.board_best_move();
-		f = !f;
-		if f {
-			Board::print_flip(&b);
-		} else {
-			Board::print(&b);
+		for _ in 0..1000 {
+			t.analyze(30, 8);
 		}
+		t.print();
+		t.do_best();
 	}
 }

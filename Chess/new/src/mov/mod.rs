@@ -12,24 +12,21 @@ pub mod rook;
 pub mod queen;
 
 // Generates the moves for a given position in a board.
-pub fn gen_moves(b: &Board, idx: u8) -> u64 {
+pub fn gen_moves(b: &Board, idx: u8, side: bool) -> u64 {
 	let piece = 1 << idx;
 	if b.typ[0] & piece != 0 {
-		return pawn::gen_moves(b, piece);
+		pawn::gen_moves(piece, if side { b.b_o } else { b.w_o }, if side { b.w_o } else { b.b_o }, side)
 	} else if b.typ[1] & piece != 0 {
-		return knight::gen_moves(b, piece);
+		knight::gen_moves(piece, if side { b.b_o } else { b.w_o })
 	} else if b.typ[2] & piece != 0 {
-		return bishop::gen_moves(b, piece, idx);
+		bishop::gen_moves(idx, if side { b.b_o } else { b.w_o }, if side { b.w_o } else { b.b_o })
 	} else if b.typ[3] & piece != 0 {
-		return rook::gen_moves(b, piece, idx);
+		rook::gen_moves(idx, if side { b.b_o } else { b.w_o }, if side { b.w_o } else { b.b_o })
 	} else if b.typ[4] & piece != 0 {
-		return queen::gen_moves(b, piece, idx);
+		queen::gen_moves(idx, if side { b.b_o } else { b.w_o }, if side { b.w_o } else { b.b_o })
 	} else if b.typ[5] & piece != 0 {
-		return king::gen_moves(b, piece);
+		king::gen_moves(piece, if side { b.b_o } else { b.w_o })
+	} else {
+		panic!("A piece wasn't found at {} ({}). Good luck.", positions::NAMES[idx as usize], idx);
 	}
-	// TODO: implement remaining piece types.
-
-	// Board::print_bitboard(b.w_o);
-	// Board::print(b);
-	panic!("A piece wasn't found at {} ({}). Good luck.", positions::NAMES[idx as usize], idx);
 }

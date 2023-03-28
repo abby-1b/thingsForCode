@@ -1,4 +1,5 @@
-#![allow(dead_code)]
+
+// use crate::tree;
 
 use crate::mov;
 use crate::positions;
@@ -13,6 +14,7 @@ const TYPE_VALUE: [u8; 5] = [
 	9 // [4] Queen
 ];
 const KING_COST: f32 = 99.0;
+const KING_COST_HIGH: f32 = 999.0;
 
 // HELPER FUNCTIONS (inline)
 
@@ -23,20 +25,20 @@ fn get_bit(b: u64, i: u8) -> bool {
 }
 
 // Flip bytes in a u64
-fn flip_u64(n: u64) -> u64 {
-	(n << 56) |
-	(n << 40 & 0x00FF000000000000) |
-    (n << 24 & 0x0000FF0000000000) |
-	(n <<  8 & 0x000000FF00000000) |
-    (n >>  8 & 0x00000000FF000000) | 
-	(n >> 24 & 0x0000000000FF0000) |
-    (n >> 40 & 0x000000000000FF00) |
-	(n >> 56)
-}
+// fn flip_u64(n: u64) -> u64 {
+// 	(n << 56) |
+// 	(n << 40 & 0x00FF000000000000) |
+//     (n << 24 & 0x0000FF0000000000) |
+// 	(n <<  8 & 0x000000FF00000000) |
+//     (n >>  8 & 0x00000000FF000000) | 
+// 	(n >> 24 & 0x0000000000FF0000) |
+//     (n >> 40 & 0x000000000000FF00) |
+// 	(n >> 56)
+// }
 
-fn flip_move(m: u8) -> u8 {
-	(m & 7) | ((7 - (m >> 3)) << 3)
-}
+// fn flip_move(m: u8) -> u8 {
+// 	(m & 7) | ((7 - (m >> 3)) << 3)
+// }
 
 /// BOARD
 pub struct Board {
@@ -47,12 +49,9 @@ pub struct Board {
 
 	// Analysis
 	pub mvs: Vec<(u8, u8)>, // Current moves
-	pub rmv: Vec<f32>, // Move ratings
 
-	pub dep: u8, // The depth that this board is from the initial board
 	pub val: f32, // The value (or rating) for this board
-
-	pub ixd: u64 // The amount of moves indexed
+	pub tmv: bool // The side that has to move
 }
 
 impl Board {
@@ -70,11 +69,19 @@ impl Board {
 			w_o: 0xFFFF000000000000,
 			b_o: 0x000000000000FFFF, 
 			mvs: Vec::new(),
-			rmv: Vec::new(),
-
-			dep: 0,
 			val: 0.0,
-			ixd: 0
+			tmv: false
+		}
+	}
+
+	pub fn copy(&self) -> Board {
+		Board {
+			typ: self.typ.clone(),
+			w_o: self.w_o,
+			b_o: self.b_o,
+			mvs: self.mvs.to_vec(),
+			val: self.val,
+			tmv: self.tmv
 		}
 	}
 
@@ -109,41 +116,7 @@ impl Board {
 			}
 			print!("\n");
 		}
-		print!("\x1b[0m\x1b[1m  a b c d e f g h\x1b[0m  {}  [depth: {}  indexed: {}]\n", b.val, b.dep, b.ixd);
-	}
-
-	pub fn print_flip(b: &Board) {
-		for y in (0..8).rev() {
-			print!("\x1b[0m\x1b[1m{}", y + 1);
-			for x in 0..8 {
-				let i = x + y * 8;
-				if get_bit(b.w_o, i) {
-					// Print white
-					let color = String::from("\x1b[1;31m");
-					if      get_bit(b.typ[0], i) { print!(" {}♟︎", color); }
-					else if get_bit(b.typ[1], i) { print!(" {}♞", color); }
-					else if get_bit(b.typ[2], i) { print!(" {}♝", color); }
-					else if get_bit(b.typ[3], i) { print!(" {}♜", color); }
-					else if get_bit(b.typ[4], i) { print!(" {}♛", color); }
-					else if get_bit(b.typ[5], i) { print!(" {}♚", color); }
-				} else if get_bit(b.b_o, i) {
-					// Print black
-					let color = String::from("\x1b[1;32m");
-					if      get_bit(b.typ[0], i) { print!(" {}♟︎", color); }
-					else if get_bit(b.typ[1], i) { print!(" {}♞", color); }
-					else if get_bit(b.typ[2], i) { print!(" {}♝", color); }
-					else if get_bit(b.typ[3], i) { print!(" {}♜", color); }
-					else if get_bit(b.typ[4], i) { print!(" {}♛", color); }
-					else if get_bit(b.typ[5], i) { print!(" {}♚", color); }
-				} else {
-					// Print empty square and continue
-					print!(" \x1b[0m•");
-					continue;
-				}
-			}
-			print!("\n");
-		}
-		print!("\x1b[0m\x1b[1m  a b c d e f g h\x1b[0m  {}  [depth: {}  indexed: {}]\n", b.val, b.dep, b.ixd);
+		print!("\x1b[0m\x1b[1m  a b c d e f g h\x1b[0m [{}] {}\n", if b.tmv {"blk"} else {"wht"}, b.val);
 	}
 
 	pub fn print_bitboard(b: u64) {
@@ -159,9 +132,9 @@ impl Board {
 	pub fn print_moves(&self) {
 		print!("[\n");
 		for i in 0..self.mvs.len() {
-			print!("    ({}, {}  [{}]),\n", positions::NAMES[self.mvs[i].0 as usize], positions::NAMES[self.mvs[i].1 as usize], self.rmv[i]);
+			print!("    ({}, {}),\n", positions::NAMES[self.mvs[i].0 as usize], positions::NAMES[self.mvs[i].1 as usize]);
 		}
-		print!("]");
+		print!("] len: {}", self.mvs.len());
 	}
 
 	// Gets the type of a piece at an index
@@ -170,75 +143,78 @@ impl Board {
 		for i in 0..6 {
 			if self.typ[i] & from_idx != 0 { return i; }
 		}
+		Board::print(self);
 		panic!("Piece not found at index {} ({})", positions::NAMES[idx as usize], idx);
 	}
 
 	// Moves a piece from one index to another
 	pub fn mov(&mut self, from: u8, to: u8) -> u8 {
-		let mut ate_type = 255;
+		let ate_type = 255;
 		let from_change = 1 << from;
 		let to_change = 1 << to;
 		let change = from_change | to_change;
 		let typ = self.get_type(from);
 
-		if self.w_o & change != 0 {
-			// If the move eats a black piece
-			self.w_o &= !change; // Remove the black piece from occupancy
-
-			// Go through the pieces occupancies
-			for p in 0..6 {
-				if self.typ[p] & to_change != 0 {
-					// When the correct type is found, remove it.
-					ate_type = p as u8;
-					self.typ[p] ^= to_change;
-					break
-				}
+		if self.tmv {
+			if to_change & self.w_o != 0 {
+				let eat_typ = self.get_type(to);
+				self.typ[eat_typ] ^= to_change;
+				self.w_o ^= to_change;
 			}
+			self.b_o ^= change;
+		} else {
+			if to_change & self.b_o != 0 {
+				let eat_typ = self.get_type(to);
+				self.typ[eat_typ] ^= to_change;
+				self.b_o ^= to_change;
+			}
+			self.w_o ^= change;
 		}
-
-		// Moves are always performed by black.
 		self.typ[typ] ^= change;
-		self.b_o ^= change;
+
+		// Clear moves and switch side to move
+		self.mvs.clear();
+		self.tmv = !self.tmv;
 
 		return ate_type;
 	}
 
-	pub fn mov_copy(&self, from: u8, to: u8) -> Board {
-		let mut ret = Board {
-			typ: Box::new([
-				flip_u64(self.typ[0]),
-				flip_u64(self.typ[1]),
-				flip_u64(self.typ[2]),
-				flip_u64(self.typ[3]),
-				flip_u64(self.typ[4]),
-				flip_u64(self.typ[5])
-			]),
-			w_o: flip_u64(self.b_o),
-			b_o: flip_u64(self.w_o), 
-			mvs: Vec::new(),
-			rmv: Vec::new(),
-			dep: self.dep + 1,
-			val: 0.0,
-			ixd: 0
-		};
-		ret.mov(flip_move(from), flip_move(to));
-		ret.rate_position();
-		return ret
+	pub fn mov_rand(&mut self) {
+		let m = self.mvs[rand::thread_rng().gen_range(0..self.mvs.len())];
+		// println!("({}, {})", positions::NAMES[m.0 as usize], positions::NAMES[m.1 as usize]);
+		self.mov(m.0, m.1);
 	}
 
 	// Generate all moves possible on the current board
 	pub fn gen_moves(&mut self) {
+		// Warn if in debug
+		#[cfg(debug_assertions)]
 		if !self.mvs.is_empty() { panic!("Non-empty moveset found!"); }
+
+		// Get the current bitboard
+		let bb = if self.tmv { self.b_o } else { self.w_o };
+
+		// If our king is dead, there are no moves
+		if bb & self.typ[5] == 0 {
+			self.val = if self.tmv {
+				KING_COST_HIGH
+			} else {
+				-KING_COST_HIGH
+			};
+			return
+		}
+
+		// Loop through all positions
 		for y in 0..8 {
 			for x in 0..8 {
+				// TODO: don't include illegal moves (check)
 				let from: u8 = x + y * 8;
-				if !get_bit(self.w_o, from) { continue; }
-				let mut piece_moves = mov::gen_moves(self, from);
+				if !get_bit(bb, from) { continue; }
+				let mut piece_moves = mov::gen_moves(self, from, self.tmv);
 				while piece_moves != 0 {
 					let to: u8 = piece_moves.trailing_zeros() as u8;
 					piece_moves ^= 1 << to;
 					self.mvs.push((from, to));
-					self.rmv.push(0f32);
 				}
 			}
 		}
@@ -268,70 +244,21 @@ impl Board {
 		) * 0.05
 	}
 
-	pub fn analyze(&mut self, mov_prc: f32, prc_dim: f32) -> (u64, f32) {
-		let mut ixd: u64 = 0;
-		let mut ret_val =
-			if self.typ[5] & self.w_o == 0 { -KING_COST } else { 0.0 } +
-			if self.typ[5] & self.b_o == 0 { KING_COST } else { 0.0 };
-		for i in 0..self.mvs.len() {
-			let mut nb = self.mov_copy(self.mvs[i].0, self.mvs[i].1);
+	pub fn rand_repeat(&mut self, max: u16) {
+		let mut i = 0;
+		self.gen_moves();
+		while self.mvs.len() > 0 {
+			self.mov_rand();
+			self.gen_moves();
 
-			// Analyze board if random chance
-			let n = rand::thread_rng().gen_range(0.0f32..1.0f32);
-			let ch = if n < mov_prc {
-				nb.gen_moves();
-				let got = nb.analyze(mov_prc - prc_dim, prc_dim);
-				ixd += got.0 + 1;
-				-got.1
-			} else {
-				self.val
-			};
-			self.rmv[i] += ch;
-			ret_val += ch;
-		}
-		self.ixd += ixd;
-		return (ixd, ret_val / self.mvs.len() as f32);
-	}
-
-	pub fn analyze_mm(&mut self, mov_prc: f32, prc_dim: f32) -> (u64, f32) {
-		let mut ixd: u64 = 0;
-		let mut ret_val =
-			if self.typ[5] & self.w_o == 0 { -KING_COST } else { 0.0 } +
-			if self.typ[5] & self.b_o == 0 { KING_COST } else { 0.0 };
-		for i in 0..self.mvs.len() {
-			let mut nb = self.mov_copy(self.mvs[i].0, self.mvs[i].1);
-
-			// Analyze board if random chance
-			let n = rand::thread_rng().gen_range(0.0f32..1.0f32);
-			let ch = if n < mov_prc {
-				nb.gen_moves();
-				let got = nb.analyze_mm(mov_prc - prc_dim, prc_dim);
-				ixd += got.0 + 1;
-				-got.1
-			} else {
-				self.val
-			};
-			self.rmv[i] += ch;
-			ret_val += ch;
-		}
-		self.ixd += ixd;
-		return (ixd, ret_val / self.mvs.len() as f32);
-	}
-
-	pub fn board_best_move(&self) -> Board {
-		let mut max = self.rmv[0];
-		let mut max_i: usize = 0;
-		for i in 1..self.mvs.len() {
-			if self.rmv[i] > max {
-				max = self.rmv[i];
-				max_i = i;
+			// Stop if reached max
+			if i >= max {
+				if self.val == 0.0 {
+					self.rate_position()
+				}
+				break
 			}
+			i += 1;
 		}
-		return self.mov_copy(self.mvs[max_i].0, self.mvs[max_i].1);
 	}
-}
-
-pub struct GameBoard {
-	pub b: Board, // The board we're playing on
-	pub mvb: Vec<Board> // The possible boards that can result from a play here
 }

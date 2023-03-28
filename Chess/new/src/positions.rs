@@ -66,3 +66,14 @@ pub const G1: u8 = 62;
 pub const H1: u8 = 63;
 
 pub const NAMES: [&str; 64] = ["A8", "B8", "C8", "D8", "E8", "F8", "G8", "H8", "A7", "B7", "C7", "D7", "E7", "F7", "G7", "H7", "A6", "B6", "C6", "D6", "E6", "F6", "G6", "H6", "A5", "B5", "C5", "D5", "E5", "F5", "G5", "H5", "A4", "B4", "C4", "D4", "E4", "F4", "G4", "H4", "A3", "B3", "C3", "D3", "E3", "F3", "G3", "H3", "A2", "B2", "C2", "D2", "E2", "F2", "G2", "H2", "A1", "B1", "C1", "D1", "E1", "F1", "G1", "H1"];
+
+pub fn parse_move_str(s: String) -> (u8, u8) {
+	let m = s.to_lowercase();
+	if m.len() >= 2 {
+		let ff: u8 = (m.chars().nth(0).unwrap_or('a') as u32 - 97) as u8;
+		let fr: u8 = (7 - (m.chars().nth(1).unwrap_or('8') as u32 - 49)) as u8;
+		let tf: u8 = (m.chars().nth(2).unwrap_or('a') as u32 - 97) as u8;
+		let tr: u8 = (7 - (m.chars().nth(3).unwrap_or('8') as u32 - 49)) as u8;
+		(ff | fr * 8, tf | tr * 8)
+	} else { (0, 0) }
+}
