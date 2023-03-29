@@ -15,3 +15,5 @@ pub fn gen_moves(piece: u64, t_o: u64) -> u64 {
 		(piece & NOT_H) << 1
 	) & !t_o;
 }
+
+// TODO: implement king check. that'll fix everything.
