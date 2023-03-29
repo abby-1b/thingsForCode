@@ -134,7 +134,7 @@ impl Board {
 		for i in 0..self.mvs.len() {
 			print!("    ({}, {}),\n", positions::NAMES[self.mvs[i].0 as usize], positions::NAMES[self.mvs[i].1 as usize]);
 		}
-		print!("] len: {}", self.mvs.len());
+		println!("] len: {}", self.mvs.len());
 	}
 
 	// Gets the type of a piece at an index
@@ -181,26 +181,30 @@ impl Board {
 
 	pub fn mov_rand(&mut self) {
 		let m = self.mvs[rand::thread_rng().gen_range(0..self.mvs.len())];
-		// println!("({}, {})", positions::NAMES[m.0 as usize], positions::NAMES[m.1 as usize]);
 		self.mov(m.0, m.1);
 	}
+
+	// pub fn undo_mov(&mut self, from: u8, to: u8, ate: u8) {
+	// 	self.mov(from, to);
+	// 	// TODO: add back eaten piece
+	// }
 
 	// Generate all moves possible on the current board
 	pub fn gen_moves(&mut self) {
 		// Warn if in debug
-		#[cfg(debug_assertions)]
-		if !self.mvs.is_empty() { panic!("Non-empty moveset found!"); }
+		// #[cfg(debug_assertions)]
+		// if !self.mvs.is_empty() { panic!("Non-empty moveset found!"); }
+		self.mvs.clear();
 
 		// Get the current bitboard
 		let bb = if self.tmv { self.b_o } else { self.w_o };
 
 		// If our king is dead, there are no moves
-		if bb & self.typ[5] == 0 {
-			self.val = if self.tmv {
-				KING_COST_HIGH
-			} else {
-				-KING_COST_HIGH
-			};
+		if self.typ[5] & self.b_o == 0 {
+			self.val = KING_COST_HIGH;
+			return
+		} else if self.typ[5] & self.w_o == 0 {
+			self.val = -KING_COST_HIGH;
 			return
 		}
 
@@ -221,6 +225,14 @@ impl Board {
 	}
 
 	pub fn rate_position(&mut self) {
+		// let self_moves = self.mvs.len();
+		// self.tmv = !self.tmv;
+		// self.mvs.clear();
+		// self.gen_moves();
+		// let other_moves = self.mvs.len();
+		// self.tmv = !self.tmv;
+		// self.mvs.clear();
+
 		self.val =
 			if self.typ[5] & self.w_o == 0 { -KING_COST } else { 0.0 } +
 			if self.typ[5] & self.b_o == 0 { KING_COST } else { 0.0 } + ((
@@ -242,6 +254,11 @@ impl Board {
 			(self.w_o & 0x007E7E7E7E7E7E00).count_ones() as f32 -
 			(self.b_o & 0x007E7E7E7E7E7E00).count_ones() as f32
 		) * 0.05
+		//  + (
+		// 	self_moves as f32
+		// ) * 0.01 - (
+		// 	other_moves as f32
+		// ) * 0.01
 	}
 
 	pub fn rand_repeat(&mut self, max: u16) {
