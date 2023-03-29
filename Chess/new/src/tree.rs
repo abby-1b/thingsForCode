@@ -12,8 +12,10 @@ pub struct Tree {
 	wns: u32, // How many wins from this position
 	lss: u32, // How many losses from this position
 
-	mvs: Vec<*mut Tree>, // The moves possible from here
-	prt: *mut Tree // The parent of this move
+	// The moves possible from here, expressed as indices into
+	// an array of `Tree` structs.
+	mvs: Option<Vec<usize>>,
+	prt: usize // The parent of this move
 }
 
 impl Tree {
@@ -21,49 +23,93 @@ impl Tree {
 		Tree {
 			mvf: from,
 			mvt: to,
-			wns: 0,
-			lss: 0,
+			wns: 1, // Start 1-1 to avoid divide by zero error
+			lss: 1,
 
-			mvs: Vec::new(),
-			prt: NULL_MUT
+			mvs: Some(Vec::new()),
+			prt: 0
 		}
 	}
 
-	pub fn gen_mvs(&mut self, mvs: &Vec<(u8, u8)>) {
-		for a in 0..mvs.len() {
-			let b = Box::from(Tree::new(mvs[a].0, mvs[a].1));
-			self.mvs.push(Box::into_raw(b));
-		}
-	}
-
-	pub fn pick(&self) -> *mut Tree {
-		self.mvs[rand::thread_rng().gen_range(0..self.mvs.len())]
-		// self.mvs[0] // TODO: change this into random!
-	}
-
-	// pub fn print(&self) {
-	// 	print!("{{");
-	// 	for i in self.mvs {
-
+	// pub fn gen_mvs(&mut self, mvs: &Vec<(u8, u8)>) {
+	// 	#[cfg(debug_assertions)]
+	// 	if self.mvs.is_some() {
+	// 		panic!("Tried re-generating moves for a given tree!");
 	// 	}
-	// 	print!("}}\n");
+
+	// 	// Copy them (as trees)
+	// 	for a in 0..mvs.len() {
+	// 		// let b = Box::from(Tree::new(mvs[a].0, mvs[a].1));
+	// 		// self.mvs.push(Box::into_raw(b));
+	// 	}
+	// }
+
+	// pub fn pick(&self) -> usize {
+	// 	#[cfg(debug_assertions)]
+	// 	if self.mvs.is_none() {
+	// 		panic!("No moves found!");
+	// 	}
+	// 	self.mvs.unwrap()[rand::thread_rng().gen_range(0..self.mvs.unwrap().len())]
+	// }
+
+	// pub fn print(&self, depth: u8) {
+	// 	let pad = "  ".repeat(depth as usize);
+	// 	print!(
+	// 		"{}({} -> {} [{:05.2}% {} / {}]){}\n", pad,
+	// 		positions::NAMES[self.mvf as usize],
+	// 		positions::NAMES[self.mvt as usize],
+	// 		(self.wns as f32 / self.lss as f32) * 100.0, self.wns, self.lss,
+	// 		if self.mvs.is_none() || self.mvs.unwrap().len() == 0 { "" } else { " {" }
+	// 	);
+	// 	if self.mvs.is_some() && self.mvs.unwrap().len() != 0 {
+	// 		for b in 0..self.mvs.unwrap().len() {
+	// 			let t = unsafe { self.mvs[b].as_ref() };
+	// 			if t.is_some() {
+	// 				t.unwrap().print(depth + 1);
+	// 			} else {
+	// 				print!("{}***FUCK***\n", pad);
+	// 			}
+	// 		}
+	// 		println!("{}}},\n", pad);
+	// 	}
 	// }
 }
 
 pub struct MainTree {
-	t: Tree,
-	b: Board
+	pub t: usize,
+	pub b: Board,
+
+	pub a: Vec<Tree> // The array of trees
 }
 
 impl MainTree {
 	pub fn create() -> MainTree {
 		let mut r = MainTree {
-			t: Tree::new(0, 0),
-			b: Board::new()
+			t: 0,
+			b: Board::new(),
+
+			a: Vec::new()
 		};
-		r.b.gen_moves();
-		r.t.gen_mvs(&r.b.mvs);
+		r.gen_moves();
 		r
+	}
+
+	pub fn gen_moves(&mut self) {
+		let t: &Tree = &self.a[0];
+		self.b.gen_moves();
+
+		#[cfg(debug_assertions)]
+		if t.mvs.is_some() {
+			panic!("Tried re-generating moves for a given tree!");
+		}
+
+		t.mvs = Some(Vec::new());
+
+		// Copy them (as trees)
+		for a in 0..self.b.mvs.len() {
+			t.mvs.unwrap().push(self.a.len());
+			self.a.push(Tree::new(self.b.mvs[a].0, self.b.mvs[a].1));
+		}
 	}
 
 	pub fn do_move(&mut self, from: u8, to: u8) -> bool {
@@ -104,7 +150,7 @@ impl MainTree {
 			self.t = it;
 
 			// delete the parent pointer, deleting the parent node
-			self.t.prt = NULL_MUT;
+			// self.t.prt = NULL_MUT;
 		}
 
 		self.b.gen_moves();
@@ -116,15 +162,33 @@ impl MainTree {
 	}
 
 	pub fn analyze(&mut self, runs: u32, max_mvs: u16) {
-		let ib = self.b.copy();
+		let mut ib = self.b.copy();
 		// Select a random leaf
+		if self.t.mvs.len() == 0 {
+			return
+		}
+		self.t.print(0);
 		let mut ct: *mut Tree = self.t.pick();
-		unsafe { while (&mut *ct).mvs.len() > 0 {
-			// ib = ib.mov_copy((&mut *ct).mvf, (&mut *ct).mvt);
-			ct = (&mut *ct).pick();
-		} }
+		println!("Before full pick");
+		unsafe {
+			dbg!(ct);
+			while (&mut *ct).mvs.len() > 0 {
+				ib.mov((&mut *ct).mvf, (&mut *ct).mvt);
+				ct = (&mut *ct).pick();
+			}
+		}
+		// println!("After full pick");
+		unsafe { ib.mov((&mut *ct).mvf, (&mut *ct).mvt); }
 
-		// TODO: add a leaf to the chosen one
+		// TODO: add leaves to the chosen branch
+		ib.gen_moves();
+		unsafe {
+			dbg!(ct);
+			(&mut *ct).gen_mvs(&ib.mvs);
+		// 	println!("MOVES: {}", (&mut *ct).mvs.len());
+		// 	ct = (&mut *ct).pick();
+		}
+
 		// TODO: backpropagate the new wins/losses
 
 		// Run x amount of games on the board
@@ -134,9 +198,13 @@ impl MainTree {
 			let mut b = ib.copy();
 			b.mvs.clear();
 			b.rand_repeat(max_mvs);
-			if b.val > 0.0 {
+			if b.val == 0.0 {
+				b.rate_position();
+				Board::print(&b);
+			}
+			if b.val > 10.0 {
 				unsafe { (&mut *ct).wns += 1 }
-			} else {
+			} else if b.val < -10.0 {
 				unsafe { (&mut *ct).lss += 1 }
 			}
 		}
@@ -147,27 +215,22 @@ impl MainTree {
 
 	pub fn do_best(&mut self) {
 		let mut best_idx: usize = 0;
-		let mut best: f32 = f32::NEG_INFINITY;
+		let mut best: f32 = if self.b.tmv { f32::INFINITY } else { f32::NEG_INFINITY };
 		for b in 0..self.t.mvs.len() {
 			let t = unsafe { self.t.mvs[b].as_ref().unwrap() };
 			let v = t.wns as f32 / t.lss as f32;
-			if v < best {
+			if if self.b.tmv { v < best } else { v > best } {
 				best = v;
 				best_idx = b;
 			}
 		}
 		let m = unsafe { self.t.mvs[best_idx].as_ref().unwrap() };
+		println!(" >>> ");
 		self.do_move(m.mvf, m.mvt);
 	}
 
-	pub fn print(&self) {
-		// Board::print(&self.b);
-		print!("{{\n");
-		for b in 0..self.t.mvs.len() {
-			let t = unsafe { self.t.mvs[b].as_ref().unwrap() };
-			print!("  ({} -> {}  [{:05.2}% {} / {}]),\n", positions::NAMES[t.mvf as usize], positions::NAMES[t.mvt as usize], (t.wns as f32 / t.lss as f32) * 100.0, t.wns, t.lss);
-		}
-		println!(" }}");
+	pub fn print(&mut self) {
+		// self.t.print(0);
 		Board::print(&self.b);
 	}
 }
