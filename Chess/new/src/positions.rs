@@ -77,3 +77,7 @@ pub fn parse_move_str(s: String) -> (u8, u8) {
 		(ff | fr * 8, tf | tr * 8)
 	} else { (0, 0) }
 }
+
+pub fn print(from: u8, to: u8) {
+	println!("{} -> {}", NAMES[from as usize], NAMES[to as usize]);
+}
