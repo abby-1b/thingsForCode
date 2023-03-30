@@ -4,30 +4,29 @@ use rand::Rng;
 use crate::board::*;
 use crate::positions;
 
-pub const NULL_MUT: *mut Tree = std::ptr::null_mut();
-
 pub struct Tree {
-	mvf: u8, // The move executed to get here (from)
-	mvt: u8, // The move executed to get here (to)
-	wns: u32, // How many wins from this position
-	lss: u32, // How many losses from this position
+	pub mvf: u8, // The move executed to get here (from)
+	pub mvt: u8, // The move executed to get here (to)
+	pub wns: u32, // How many wins from this position
+	pub lss: u32, // How many losses from this position
 
 	// The moves possible from here, expressed as indices into
 	// an array of `Tree` structs.
-	mvs: Option<Vec<usize>>,
-	prt: usize // The parent of this move
+	pub mvs: Option<Vec<usize>>,
+	pub prt: usize // The parent of this move
 }
 
 impl Tree {
-	pub fn new(from: u8, to: u8) -> Tree {
+	#[must_use]
+	pub fn new(from: u8, to: u8, parent: usize) -> Self {
 		Tree {
 			mvf: from,
 			mvt: to,
 			wns: 1, // Start 1-1 to avoid divide by zero error
 			lss: 1,
 
-			mvs: Some(Vec::new()),
-			prt: 0
+			mvs: None,
+			prt: parent
 		}
 	}
 
@@ -44,13 +43,16 @@ impl Tree {
 	// 	}
 	// }
 
-	// pub fn pick(&self) -> usize {
-	// 	#[cfg(debug_assertions)]
-	// 	if self.mvs.is_none() {
-	// 		panic!("No moves found!");
-	// 	}
-	// 	self.mvs.unwrap()[rand::thread_rng().gen_range(0..self.mvs.unwrap().len())]
-	// }
+	pub fn pick(&self) -> usize {
+		#[cfg(debug_assertions)]
+		if self.mvs.is_none() {
+			panic!("No moves found!");
+		}
+
+		self.mvs.as_ref().unwrap()[
+			rand::thread_rng().gen_range(0..self.mvs.as_ref().unwrap().len())
+		]
+	}
 
 	// pub fn print(&self, depth: u8) {
 	// 	let pad = "  ".repeat(depth as usize);
@@ -76,40 +78,128 @@ impl Tree {
 }
 
 pub struct MainTree {
-	pub t: usize,
-	pub b: Board,
+	pub t: usize, // The main tree branch for the current board
+	pub b: Board, // The current active board
 
-	pub a: Vec<Tree> // The array of trees
+	pub branches: Vec<Tree>, // The array of branches
+	available: Vec<bool>, // Array of available branches
+
+	pub count: u64
 }
 
 impl MainTree {
-	pub fn create() -> MainTree {
+	#[must_use]
+	pub fn create() -> Self {
 		let mut r = MainTree {
 			t: 0,
 			b: Board::new(),
 
-			a: Vec::new()
+			branches: vec!(Tree::new(0, 0, usize::MAX)),
+			available: vec!(false),
+			count: 1
 		};
-		r.gen_moves();
+		r.b.gen_moves();
+		r.gen_self_moves(0);
 		r
 	}
 
-	pub fn gen_moves(&mut self) {
-		let t: &Tree = &self.a[0];
-		self.b.gen_moves();
-
+	#[inline]
+	fn get_branch(&self, idx: usize) -> &Tree {
 		#[cfg(debug_assertions)]
-		if t.mvs.is_some() {
-			panic!("Tried re-generating moves for a given tree!");
+		if self.available[idx] {
+			panic!("Tried accessing a branch that has been removed! {}", idx);
+		} else if idx > self.available.len() {
+			panic!("Tried accessing a branch that's higher than our branch count! {}", idx);
+		}
+		&self.branches[idx]
+	}
+
+	#[inline]
+	fn get_branch_mut(&mut self, idx: usize) -> &mut Tree {
+		#[cfg(debug_assertions)]
+		if self.available[idx] {
+			panic!("Tried accessing a branch that has been removed! {}", idx);
+		} else if idx > self.available.len() {
+			panic!("Tried accessing a branch that's higher than our branch count! {}", idx);
+		}
+		&mut self.branches[idx]
+	}
+
+	fn del_branch(&mut self, idx: usize, except: usize) {
+		// If you don't want to spare a branch with `except`, just pass `usize::MAX`.
+		#[cfg(debug_assertions)]
+		if self.available[idx] {
+			panic!("Tried removing a branch that has been removed! {} (!{})", idx, except);
 		}
 
-		t.mvs = Some(Vec::new());
+		self.count -= 1;
+
+		// Delete the children (but spare the `except`!)
+		// print!("({}) {{", idx);
+		self.available[idx] = true;
+		if self.branches[idx].mvs.is_some() {
+			for a in 0..self.branches[idx].mvs.as_ref().unwrap().len() {
+				let inner_branch = self.branches[idx].mvs.as_ref().unwrap()[a];
+				if inner_branch == except {
+					continue
+				}
+				self.del_branch(inner_branch, except);
+			}
+		}
+		// print!("}},");
+	}
+
+	fn new_branch(&mut self, branch: Tree) -> usize {
+		self.count += 1;
+
+		for t in 0..self.available.len() {
+			if self.available[t] {
+				// Found an empty spot!
+				self.branches[t] = branch;
+				self.available[t] = false;
+				return t
+			}
+		}
+
+		// No empty spots found, make a new one
+		self.branches.push(branch);
+		self.available.push(false);
+
+		return self.available.len() - 1
+	}
+
+	pub fn gen_self_moves(&mut self, branch: usize) {
+		let mut mov_vec: Vec<usize> = Vec::new();
 
 		// Copy them (as trees)
 		for a in 0..self.b.mvs.len() {
-			t.mvs.unwrap().push(self.a.len());
-			self.a.push(Tree::new(self.b.mvs[a].0, self.b.mvs[a].1));
+			let n = Tree::new(self.b.mvs[a].0, self.b.mvs[a].1, branch);
+			mov_vec.push(self.new_branch(n));
 		}
+		let t = self.get_branch_mut(branch);
+		#[cfg(debug_assertions)]
+		if t.mvs.is_some() {
+			panic!("Tried re-generating moves for a branch!");
+		}
+		t.mvs = Some(mov_vec);
+	}
+
+	pub fn gen_moves(&mut self, board: &mut Board, branch: usize) {
+		board.gen_moves();
+
+		let mut mov_vec: Vec<usize> = Vec::new();
+
+		// Copy them (as trees)
+		for a in 0..board.mvs.len() {
+			let n = Tree::new(board.mvs[a].0, board.mvs[a].1, branch);
+			mov_vec.push(self.new_branch(n));
+		}
+		let t = self.get_branch_mut(branch);
+		#[cfg(debug_assertions)]
+		if t.mvs.is_some() {
+			panic!("Tried re-generating moves for a branch!");
+		}
+		t.mvs = Some(mov_vec);
 	}
 
 	pub fn do_move(&mut self, from: u8, to: u8) -> bool {
@@ -126,111 +216,164 @@ impl MainTree {
 
 		// Change the board
 		self.b.mov(from, to);
+		self.b.gen_moves();
 
 		// Check if the move has been analyzed
 		mov_valid = 255;
-		for m in 0..self.t.mvs.len() {
-			if unsafe { (*self.t.mvs[m]).mvf == from && (*self.t.mvs[m]).mvt == to } {
-				mov_valid = m as u8; // There won't ever be more than 254 moves
-				break;
+
+		if self.get_branch_mut(self.t).mvs.is_some() {
+			// Check if any moves have been analyzed
+			for m in 0..self.get_branch(self.t).mvs.as_ref().unwrap().len() {
+				let b = self.get_branch_mut(self.get_branch(self.t).mvs.as_ref().unwrap()[m]);
+				if  b.mvf == from && b.mvt == to {
+					mov_valid = m as u8; // There won't ever be more than 254 moves
+					break;
+				}
 			}
 		}
+
+		let st = self.get_branch_mut(self.t);
+
 		if mov_valid == 255 {
 			// If the move hasn't been analyzed, just
 			// make a new tree with this move
-			self.t = Tree::new(from, to)
+			self.del_branch(self.t, usize::MAX);
+			self.t = self.new_branch(Tree::new(from, to, usize::MAX));
+
+			// Also generate its moves
+			println!("Branch is brand-new, generate moves for it!");
+			self.gen_self_moves(self.t);
 		} else {
-			// If the move has been analyzed, move the branch down
+			// If the move has been analyzed, move the branch to be the main one
 			// If there's a memory leak, it sure as hell happens here
-			let ptr = self.t.mvs[mov_valid as usize];
-			let it = unsafe { std::ptr::read(ptr) };
-			for i in 0..self.t.mvs.len() {
-				unsafe { Box::from_raw(self.t.mvs[i]) };
+
+			// Get the new branch that we're moving to be the main branch
+			let new_branch = st.mvs.as_ref().unwrap()[mov_valid as usize];
+
+			#[cfg(debug_assertions)]
+			if new_branch == self.t {
+				panic!("SAME MOVE!");
 			}
-			self.t = it;
 
-			// delete the parent pointer, deleting the parent node
-			// self.t.prt = NULL_MUT;
-		}
+			// Delete the main branch, which also removes all its children, but
+			// tell the function to exclude our new branch (and its children)
+			self.del_branch(self.t, new_branch);
 
-		self.b.gen_moves();
-		if self.t.mvs.len() == 0 {
-			self.t.gen_mvs(&self.b.mvs);
+			// Move the branch down to be the main branch
+			self.t = new_branch;
+
+			// Set its parent to the max usize, which we're taking as an `undefined`.
+			self.get_branch_mut(self.t).prt = usize::MAX;
+
+			// Don't generate this mf's moves unless it doesn't have them
+			if self.get_branch(self.t).mvs.is_none() {
+				self.gen_self_moves(self.t);
+			}
 		}
 
 		return true
 	}
 
-	pub fn analyze(&mut self, runs: u32, max_mvs: u16) {
+	pub fn analyze(&mut self, runs: u32, max_mvs: u16, branch_chance: f32) {
 		let mut ib = self.b.copy();
+
+		// if self.t.mvs.len() == 0 {
+		// 	return
+		// }
+		// self.t.print(0);
+
 		// Select a random leaf
-		if self.t.mvs.len() == 0 {
-			return
-		}
-		self.t.print(0);
-		let mut ct: *mut Tree = self.t.pick();
-		println!("Before full pick");
-		unsafe {
-			dbg!(ct);
-			while (&mut *ct).mvs.len() > 0 {
-				ib.mov((&mut *ct).mvf, (&mut *ct).mvt);
-				ct = (&mut *ct).pick();
+		let mut curr_branch_idx = self.get_branch(self.t).pick();
+		loop {
+			let br = self.get_branch(curr_branch_idx);
+			if br.mvs.is_none() {
+				break
 			}
-		}
-		// println!("After full pick");
-		unsafe { ib.mov((&mut *ct).mvf, (&mut *ct).mvt); }
-
-		// TODO: add leaves to the chosen branch
-		ib.gen_moves();
-		unsafe {
-			dbg!(ct);
-			(&mut *ct).gen_mvs(&ib.mvs);
-		// 	println!("MOVES: {}", (&mut *ct).mvs.len());
-		// 	ct = (&mut *ct).pick();
+			ib.mov(br.mvf, br.mvt);
+			curr_branch_idx = br.pick();
 		}
 
-		// TODO: backpropagate the new wins/losses
+		// Advance the final branch's step + add leaves to the chosen branch
+		let mut curr_branch = if rand::thread_rng().gen_range(0.0..1.0) < branch_chance {
+			let curr_branch = self.get_branch(curr_branch_idx);
+			ib.mov(curr_branch.mvf, curr_branch.mvt);
+
+			self.gen_moves(&mut ib, curr_branch_idx);
+			self.get_branch_mut(self.get_branch(curr_branch_idx).pick())
+		} else {
+			self.get_branch_mut(curr_branch_idx)
+		};
 
 		// Run x amount of games on the board
-		// let old_wns = unsafe { (&mut *ct).wns };
-		// let old_lss = unsafe { (&mut *ct).lss };
+		let old_wns = curr_branch.wns;
+		let old_lss = curr_branch.lss;
 		for _ in 0..runs {
 			let mut b = ib.copy();
 			b.mvs.clear();
 			b.rand_repeat(max_mvs);
 			if b.val == 0.0 {
 				b.rate_position();
-				Board::print(&b);
 			}
 			if b.val > 10.0 {
-				unsafe { (&mut *ct).wns += 1 }
+				curr_branch.wns += 1
 			} else if b.val < -10.0 {
-				unsafe { (&mut *ct).lss += 1 }
+				curr_branch.lss += 1
 			}
 		}
-		unsafe { while (&mut *ct).prt != NULL_MUT {
-			ct = (&mut *ct).prt;
-		} }
+		let add_wns = curr_branch.wns - old_wns;
+		let add_lss = curr_branch.lss - old_lss;
+
+		// Descend back to the main branch
+		let mut prt = curr_branch.prt;
+		while prt != usize::MAX {
+			let cb = self.get_branch_mut(prt);
+			cb.wns += add_wns;
+			cb.lss += add_lss;
+			prt = cb.prt;
+		}
 	}
 
 	pub fn do_best(&mut self) {
+		let move_tree = self.get_branch(self.t);
 		let mut best_idx: usize = 0;
 		let mut best: f32 = if self.b.tmv { f32::INFINITY } else { f32::NEG_INFINITY };
-		for b in 0..self.t.mvs.len() {
-			let t = unsafe { self.t.mvs[b].as_ref().unwrap() };
+		for b in 0..move_tree.mvs.as_ref().unwrap().len() {
+			let t = self.get_branch(move_tree.mvs.as_ref().unwrap()[b]);
 			let v = t.wns as f32 / t.lss as f32;
-			if if self.b.tmv { v < best } else { v > best } {
+			if (self.b.tmv && v < best) || (!self.b.tmv && v > best) {
 				best = v;
 				best_idx = b;
 			}
 		}
-		let m = unsafe { self.t.mvs[best_idx].as_ref().unwrap() };
-		println!(" >>> ");
-		self.do_move(m.mvf, m.mvt);
+		let m = self.get_branch(move_tree.mvs.as_ref().unwrap()[best_idx]);
+		let f = m.mvf; let t = m.mvt;
+		if !self.do_move(f, t) {
+			panic!("MOVE NOT VALID! {} -> {} (out of {})", positions::NAMES[f as usize], positions::NAMES[t as usize], self.b.mvs.len());
+		}
 	}
 
 	pub fn print(&mut self) {
-		// self.t.print(0);
+		// self.print_branch(self.t, 0);
 		Board::print(&self.b);
+	}
+
+	pub fn print_branch(&self, idx: usize, depth: u8) {
+		let t = self.get_branch(idx);
+		let pad = "  ".repeat(depth as usize);
+		print!(
+			"{}({} -> {} [{:05.2}% {} / {}]){}\n", pad,
+			positions::NAMES[t.mvf as usize],
+			positions::NAMES[t.mvt as usize],
+			(t.wns as f32 / t.lss as f32) * 100.0, t.wns, t.lss,
+			if t.mvs.is_none() || t.mvs.as_ref().unwrap().len() == 0 { "" } else { " {" }
+		);
+		if t.mvs.is_some() && t.mvs.as_ref().unwrap().len() != 0 {
+			if depth < 1 {
+				for b in t.mvs.as_ref().unwrap() {
+					self.print_branch(*b, depth + 1);
+				}
+			}
+			println!("{}}},\n", pad);
+		}
 	}
 }
