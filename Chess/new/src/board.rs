@@ -1,6 +1,8 @@
 
 // use crate::tree;
 
+use std::collections::HashMap;
+
 use crate::mov;
 use crate::positions;
 
@@ -58,7 +60,6 @@ impl Board {
 	pub fn new() -> Board {
 		Board {
 			typ: Box::new([
-				// 0x0000000000000000, // [0] Pawn
 				0x00FF00000000FF00, // [0] Pawn
 				0x4200000000000042, // [1] Knight
 				0x2400000000000024, // [2] Bishop
@@ -71,6 +72,42 @@ impl Board {
 			mvs: Vec::new(),
 			val: 0.0,
 			tmv: false
+		}
+	}
+
+	pub fn from_fen(&mut self, fen: &str) {
+		self.typ[0] = 0; self.typ[1] = 0;
+		self.typ[2] = 0; self.typ[3] = 0;
+		self.typ[4] = 0; self.typ[5] = 0;
+		self.w_o = 0; self.b_o = 0;
+		let mut map = HashMap::new();
+		map.insert('p', 0b0_000); map.insert('P', 0b1_000);
+		map.insert('n', 0b0_001); map.insert('N', 0b1_001);
+		map.insert('b', 0b0_010); map.insert('B', 0b1_010);
+		map.insert('r', 0b0_011); map.insert('R', 0b1_011);
+		map.insert('q', 0b0_100); map.insert('Q', 0b1_100);
+		map.insert('k', 0b0_101); map.insert('K', 0b1_101);
+		let mut idx: u8 = 0;
+		for c in fen.chars() {
+			let n = c as u8;
+			if n > 48 && n < 58 {
+				idx += n - 48;
+			} else if c == '/' {
+				// print!("{} -> ", idx);
+				// idx = 8 * (idx / 7);
+				// print!("{}\n", idx);
+			} else {
+				println!("{}", idx);
+				let pp: u64 = 1 << idx;
+				let s = *map.get(&c).unwrap();
+				self.typ[s & 0b111] |= pp;
+				if s & 0b1_000 == 0 {
+					self.b_o |= pp;
+				} else {
+					self.w_o |= pp;
+				}
+				idx += 1;
+			}
 		}
 	}
 

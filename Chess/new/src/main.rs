@@ -8,7 +8,7 @@ use std::io::{self, Write};
 mod tree;
 
 mod board;
-// use crate::board::*;
+use crate::board::*;
 
 mod positions;
 
@@ -22,15 +22,8 @@ fn main() {
 	// PRECOMPUTE
 	slide::precompute_slide_table();
 
-	// let mut t = tree::MainTree::create();
-	// t.b.typ[0] = 0;
-	// t.b.typ[1] = 0x00_20_00_00_00_00_00_00;
-	// t.b.typ[2] = 0;
-	// t.b.typ[3] = 0;
-	// t.b.typ[4] = 0;
-	// t.b.typ[5] = 0x08_00_00_00_00_00_00_08;
-	// t.b.w_o = 0x00_20_00_00_00_00_00_08;
-	// t.b.b_o = 0x08_00_00_00_00_00_00_00;
+	let mut t = tree::MainTree::create();
+	t.b.from_fen("5r2/8/1R6/ppk3p1/2N3P1/P4b2/1K6/5B2");
 	// t.gen_moves();
 	// for _ in 0..1000 {
 	// 	t.analyze(100, 5);
@@ -39,12 +32,13 @@ fn main() {
 	// t.b.print_moves();
 
 	// t.do_move(positions::F2, positions::D1);
-	// t.print();
+	t.print();
 
 	// t.b.rand_repeat(0);
 	// Board::print(&t.b);
 
-    self_play();
+    // self_play();
+
 	// player_play();
 	
 	// let mut t = tree::MainTree::create();
@@ -134,12 +128,12 @@ fn self_play() {
 	println!("Started.");
 	let mut t = tree::MainTree::create();
 	for _ in 0..128 {
-		for _ in 0..300 {
-			t.analyze(30, u16::MAX, 0.15);
+		for _ in 0..1000 {
+			t.analyze(50, u16::MAX, 0.15);
 		}
 		println!("\nsize: {} {}", t.count, t.branches.len());
 		println!("0: {} -> {}", t.branches[0].mvf, t.branches[0].mvt);
-		
+
 		t.do_best();
 		t.b.rate_position();
 		t.print();
