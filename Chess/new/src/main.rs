@@ -8,7 +8,7 @@ use std::io::{self, Write};
 mod tree;
 
 mod board;
-use crate::board::*;
+// use crate::board::*;
 
 mod positions;
 
@@ -112,7 +112,7 @@ fn player_play() {
 
 		// Analyze 
 		for _ in 0..1000 {
-			t.analyze(30, 10);
+			t.analyze(30, 10, 0.2);
 		}
 		t.do_best();
 		t.print();
@@ -134,10 +134,14 @@ fn self_play() {
 	println!("Started.");
 	let mut t = tree::MainTree::create();
 	for _ in 0..128 {
-		for _ in 0..30 {
-			t.analyze(30, u16::MAX);
+		for _ in 0..300 {
+			t.analyze(30, u16::MAX, 0.15);
 		}
-		t.print();
+		println!("\nsize: {} {}", t.count, t.branches.len());
+		println!("0: {} -> {}", t.branches[0].mvf, t.branches[0].mvt);
+		
 		t.do_best();
+		t.b.rate_position();
+		t.print();
 	}
 }
