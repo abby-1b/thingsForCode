@@ -90,14 +90,20 @@ impl Board {
 		let mut idx: u8 = 0;
 		for c in fen.chars() {
 			let n = c as u8;
+			if idx == 64 {
+				idx += 1;
+				continue
+			} else if idx == 65 {
+				self.tmv = c == 'b';
+				break
+			}
 			if n > 48 && n < 58 {
 				idx += n - 48;
 			} else if c == '/' {
-				// print!("{} -> ", idx);
-				// idx = 8 * (idx / 7);
-				// print!("{}\n", idx);
+				// Ignore slashes
+			} else if c == ' ' {
+				idx = 64;
 			} else {
-				println!("{}", idx);
 				let pp: u64 = 1 << idx;
 				let s = *map.get(&c).unwrap();
 				self.typ[s & 0b111] |= pp;
@@ -109,6 +115,7 @@ impl Board {
 				idx += 1;
 			}
 		}
+		self.gen_moves();
 	}
 
 	pub fn copy(&self) -> Board {
@@ -181,7 +188,7 @@ impl Board {
 			if self.typ[i] & from_idx != 0 { return i; }
 		}
 		Board::print(self);
-		panic!("Piece not found at index {} ({})", positions::NAMES[idx as usize], idx);
+		panic!("Piece not found at index {}", positions::NAMES[idx as usize]);
 	}
 
 	// Moves a piece from one index to another
