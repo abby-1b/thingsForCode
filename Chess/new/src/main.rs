@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::sync::{Arc};
+use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicI8, Ordering};
 use std::thread;
 use std::io::{self, Write};
@@ -8,7 +8,7 @@ use std::io::{self, Write};
 mod tree;
 
 mod board;
-use crate::board::*;
+// use crate::board::*;
 
 mod positions;
 
@@ -22,22 +22,25 @@ fn main() {
 	// PRECOMPUTE
 	slide::precompute_slide_table();
 
-	let mut t = tree::MainTree::create();
-	t.b.from_fen("5r2/8/1R6/ppk3p1/2N3P1/P4b2/1K6/5B2");
-	// t.gen_moves();
+	// let mut t = tree::MainTree::create();
+	// // 4rrk1/ppp2pb1/3p1npp/8/PQ1Pp3/1P2P1Pq/2P1bP1P/R1B1KR2 w
+	// t.from_fen("8/8/2P5/4pk2/8/4K3/1nb3r1/b3n3 b");
+	// // Board::print(&t.b);
 	// for _ in 0..1000 {
-	// 	t.analyze(100, 5);
+	// 	t.analyze(100, 5, 0.3);
 	// }
 	// t.print();
+	// t.do_best_new();
+
 	// t.b.print_moves();
 
 	// t.do_move(positions::F2, positions::D1);
-	t.print();
+	// t.print();
 
 	// t.b.rand_repeat(0);
 	// Board::print(&t.b);
 
-    // self_play();
+    self_play();
 
 	// player_play();
 	
@@ -52,10 +55,13 @@ fn main() {
 }
 
 fn player_play() {
-	let mut t = tree::MainTree::create();
-	t.print();
-	// let shared_var = Arc::new(Mutex::new(Board::new()));
-	// let shared_var_clone = shared_var.clone();
+	let shared_var = Arc::new(Mutex::new(tree::MainTree::create()));
+	let shared_var_lock = shared_var.clone();
+
+	{
+		// Print the board
+		shared_var.lock().unwrap().print();
+	}
 
 	let ready_state = Arc::new(AtomicI8::new(0));
 	let ready_state_lock = ready_state.clone();
@@ -72,10 +78,18 @@ fn player_play() {
 				continue;
 			}
 
-			// TODO: Analyze inside here
+			// Analyze the board inside here
+			let mut t = shared_var_lock.lock().unwrap();
+
+			// If it's too long, stop analyzing
+			if t.count > 10000 {
+				continue;
+			}
+			t.analyze(50, 30, 0.15);
+			// println!("size: {}", t.count);
 
 			// Wait a bit!
-			thread::sleep(std::time::Duration::from_millis(10));
+			// thread::sleep(std::time::Duration::from_millis(10));
 		}
 	});
 
@@ -98,18 +112,24 @@ fn player_play() {
 			thread::sleep(std::time::Duration::from_millis(10));
 		}
 
-		// Do the player's move
-		if !t.do_move(idx.0, idx.1) {
-			println!("Move not valid, doing random move.");
-			// continue
-		}
+		let mut t = shared_var.lock().unwrap();
 
-		// Analyze 
-		for _ in 0..1000 {
-			t.analyze(30, 10, 0.2);
+		// Do the player's move
+		let bef = t.count;
+		if !t.do_move(idx.0, idx.1) {
+			println!("Move not valid.");
+			continue
 		}
-		t.do_best();
+		let aft = t.count;
+		for _ in 0..500 {
+			t.analyze(50, 30, 0.15);
+		}
+		let re = t.count;
+
+		// Analyze
+		t.do_best_new();
 		t.print();
+		println!("bef: {}  aft: {}  re: {}", bef, aft, re);
 
 		// Do the move on the board
 		// b = b.mov_copy(idx.0, idx.1);
@@ -120,7 +140,7 @@ fn player_play() {
 		// b.ixd = ixd;
 
 		// Once we're done, give the board back to the thread.
-		ready_state.store(1, Ordering::Relaxed);
+		ready_state.store(0, Ordering::Relaxed);
 	}
 }
 
@@ -128,13 +148,13 @@ fn self_play() {
 	println!("Started.");
 	let mut t = tree::MainTree::create();
 	for _ in 0..128 {
-		for _ in 0..1000 {
-			t.analyze(50, u16::MAX, 0.15);
+		for _ in 0..200 {
+			t.analyze(30, 30, 0.15);
 		}
 		println!("\nsize: {} {}", t.count, t.branches.len());
 		println!("0: {} -> {}", t.branches[0].mvf, t.branches[0].mvt);
 
-		t.do_best();
+		t.do_best_new();
 		t.b.rate_position();
 		t.print();
 	}
