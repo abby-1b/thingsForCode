@@ -228,11 +228,6 @@ impl Board {
 		self.mov(m.0, m.1);
 	}
 
-	// pub fn undo_mov(&mut self, from: u8, to: u8, ate: u8) {
-	// 	self.mov(from, to);
-	// 	// TODO: add back eaten piece
-	// }
-
 	// Generate all moves possible on the current board
 	pub fn gen_moves(&mut self) {
 		// Warn if in debug

@@ -22,25 +22,25 @@ fn main() {
 	// PRECOMPUTE
 	slide::precompute_slide_table();
 
-	// let mut t = tree::MainTree::create();
-	// // 4rrk1/ppp2pb1/3p1npp/8/PQ1Pp3/1P2P1Pq/2P1bP1P/R1B1KR2 w
-	// t.from_fen("8/8/2P5/4pk2/8/4K3/1nb3r1/b3n3 b");
-	// // Board::print(&t.b);
-	// for _ in 0..1000 {
-	// 	t.analyze(100, 5, 0.3);
-	// }
+	let mut t = tree::MainTree::create();
+	// 4rrk1/ppp2pb1/3p1npp/8/PQ1Pp3/1P2P1Pq/2P1bP1P/R1B1KR2 w
+	t.from_fen("8/8/2P5/4pk2/8/4K3/1nb3r1/b3n3 b");
+	// Board::print(&t.b);
+	for _ in 0..1000 {
+		t.analyze(100, 5, 1.4);
+	}
 	// t.print();
 	// t.do_best_new();
 
 	// t.b.print_moves();
 
 	// t.do_move(positions::F2, positions::D1);
-	// t.print();
+	t.print();
 
 	// t.b.rand_repeat(0);
 	// Board::print(&t.b);
 
-    self_play();
+    // self_play();
 
 	// player_play();
 	
@@ -148,8 +148,8 @@ fn self_play() {
 	println!("Started.");
 	let mut t = tree::MainTree::create();
 	for _ in 0..128 {
-		for _ in 0..200 {
-			t.analyze(30, 30, 0.15);
+		for _ in 0..1000 {
+			t.analyze(50, 30, 0.15);
 		}
 		println!("\nsize: {} {}", t.count, t.branches.len());
 		println!("0: {} -> {}", t.branches[0].mvf, t.branches[0].mvt);
