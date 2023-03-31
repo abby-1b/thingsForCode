@@ -4,6 +4,8 @@ use rand::Rng;
 use crate::board::*;
 use crate::positions;
 
+const EMTPY_VEC: Vec<usize> = Vec::new();
+
 pub struct Tree {
 	pub mvf: u8, // The move executed to get here (from)
 	pub mvt: u8, // The move executed to get here (to)
@@ -43,16 +45,16 @@ impl Tree {
 	// 	}
 	// }
 
-	pub fn pick(&self) -> usize {
-		#[cfg(debug_assertions)]
-		if self.mvs.is_none() {
-			panic!("No moves found!");
-		}
+	// pub fn pick(&self) -> usize {
+		// #[cfg(debug_assertions)]
+		// if self.mvs.is_none() || self.mvs.as_ref().unwrap().len() == 0 {
+		// 	panic!("No moves found!");
+		// }
 
-		self.mvs.as_ref().unwrap()[
-			rand::thread_rng().gen_range(0..self.mvs.as_ref().unwrap().len())
-		]
-	}
+	// 	self.mvs.as_ref().unwrap()[
+	// 		rand::thread_rng().gen_range(0..self.mvs.as_ref().unwrap().len())
+	// 	]
+	// }
 
 	// pub fn print(&self, depth: u8) {
 	// 	let pad = "  ".repeat(depth as usize);
@@ -101,6 +103,11 @@ impl MainTree {
 		r.b.gen_moves();
 		r.gen_self_moves(0);
 		r
+	}
+
+	pub fn from_fen(&mut self, fen: &str) {
+		self.b.from_fen(fen);
+		self.gen_self_moves_full();
 	}
 
 	#[inline]
@@ -168,6 +175,41 @@ impl MainTree {
 		return self.available.len() - 1
 	}
 
+	fn pick_branch(&self, branch: &Tree, exp_const: f32) -> usize {
+		#[cfg(debug_assertions)]
+		if branch.mvs.is_none() || branch.mvs.as_ref().unwrap().len() == 0 {
+			panic!("No moves found!");
+		}
+
+		let mut best_node: usize = usize::MAX;
+		let mut best_uct = f32::NEG_INFINITY;
+
+		for child_idx in branch.mvs.as_ref().unwrap().iter() {
+			let child = self.get_branch(*child_idx);
+			let uct = if (child.lss + child.wns) == 0 {
+				f32::INFINITY
+			} else {
+				let exploitation = (child.wns as f32) / ((child.lss + child.wns) as f32);
+				let exploration = exp_const * ((branch.lss + branch.wns) as f32).sqrt() / ((child.lss + child.wns) as f32).sqrt();
+				exploitation + exploration
+			};
+
+			if uct > best_uct {
+				best_uct = uct;
+				best_node = *child_idx;
+			}
+		}
+
+		best_node
+	}
+
+	pub fn gen_self_moves_full(&mut self) {
+		self.del_branch(self.t, usize::MAX);
+		self.b.gen_moves();
+		self.t = self.new_branch(Tree::new(0, 0, usize::MAX));
+		self.gen_self_moves(self.t);
+	}
+
 	pub fn gen_self_moves(&mut self, branch: usize) {
 		let mut mov_vec: Vec<usize> = Vec::new();
 
@@ -176,7 +218,7 @@ impl MainTree {
 			let n = Tree::new(self.b.mvs[a].0, self.b.mvs[a].1, branch);
 			mov_vec.push(self.new_branch(n));
 		}
-		let t = self.get_branch_mut(branch);
+		let mut t = self.get_branch_mut(branch);
 		#[cfg(debug_assertions)]
 		if t.mvs.is_some() {
 			panic!("Tried re-generating moves for a branch!");
@@ -221,10 +263,10 @@ impl MainTree {
 		// Check if the move has been analyzed
 		mov_valid = 255;
 
-		if self.get_branch_mut(self.t).mvs.is_some() {
+		if self.get_branch(self.t).mvs.is_some() {
 			// Check if any moves have been analyzed
 			for m in 0..self.get_branch(self.t).mvs.as_ref().unwrap().len() {
-				let b = self.get_branch_mut(self.get_branch(self.t).mvs.as_ref().unwrap()[m]);
+				let b = self.get_branch(self.get_branch(self.t).mvs.as_ref().unwrap()[m]);
 				if  b.mvf == from && b.mvt == to {
 					mov_valid = m as u8; // There won't ever be more than 254 moves
 					break;
@@ -232,7 +274,7 @@ impl MainTree {
 			}
 		}
 
-		let st = self.get_branch_mut(self.t);
+		let st = self.get_branch(self.t);
 
 		if mov_valid == 255 {
 			// If the move hasn't been analyzed, just
@@ -274,7 +316,7 @@ impl MainTree {
 		return true
 	}
 
-	pub fn analyze(&mut self, runs: u32, max_mvs: u16, branch_chance: f32) {
+	pub fn analyze(&mut self, runs: u32, max_mvs: u16, branch_chance: f32) -> bool {
 		let mut ib = self.b.copy();
 
 		// if self.t.mvs.len() == 0 {
@@ -283,14 +325,20 @@ impl MainTree {
 		// self.t.print(0);
 
 		// Select a random leaf
-		let mut curr_branch_idx = self.get_branch(self.t).pick();
+		let mut curr_branch_idx = self.pick_branch(self.get_branch(self.t), branch_chance);
 		loop {
 			let br = self.get_branch(curr_branch_idx);
 			if br.mvs.is_none() {
 				break
 			}
 			ib.mov(br.mvf, br.mvt);
-			curr_branch_idx = br.pick();
+			if br.mvs.as_ref().unwrap_or(&EMTPY_VEC).len() == 0 {
+				// br.wns += 1000;
+				// do_analysis = false;
+				// break
+				return false
+			}
+			curr_branch_idx = self.pick_branch(br, branch_chance);
 		}
 
 		// Advance the final branch's step + add leaves to the chosen branch
@@ -299,12 +347,16 @@ impl MainTree {
 			ib.mov(curr_branch.mvf, curr_branch.mvt);
 
 			self.gen_moves(&mut ib, curr_branch_idx);
-			self.get_branch_mut(self.get_branch(curr_branch_idx).pick())
+			let curr_branch = self.get_branch(curr_branch_idx);
+			if curr_branch.mvs.as_ref().unwrap_or(&EMTPY_VEC).len() == 0 {
+				return false
+			}
+			self.get_branch_mut(self.pick_branch(self.get_branch(curr_branch_idx), branch_chance))
 		} else {
 			self.get_branch_mut(curr_branch_idx)
 		};
 
-		// Run x amount of games on the board
+		// Run x amount of random games on the board
 		let old_wns = curr_branch.wns;
 		let old_lss = curr_branch.lss;
 		for _ in 0..runs {
@@ -331,6 +383,8 @@ impl MainTree {
 			cb.lss += add_lss;
 			prt = cb.prt;
 		}
+
+		return true
 	}
 
 	pub fn do_best(&mut self) {
@@ -348,7 +402,36 @@ impl MainTree {
 		let m = self.get_branch(move_tree.mvs.as_ref().unwrap()[best_idx]);
 		let f = m.mvf; let t = m.mvt;
 		if !self.do_move(f, t) {
-			panic!("MOVE NOT VALID! {} -> {} (out of {})", positions::NAMES[f as usize], positions::NAMES[t as usize], self.b.mvs.len());
+			panic!("MOVE NOT VALID! {} -> {} (out of {} moves)", positions::NAMES[f as usize], positions::NAMES[t as usize], self.b.mvs.len());
+		}
+	}
+
+	pub fn do_best_new(&mut self) {
+		let branch = self.get_branch(self.t);
+		let mv = self.find_best(branch, self.b.tmv);
+		let final_move = self.get_branch(branch.mvs.as_ref().unwrap()[mv.0 as usize]);
+		let mvf = final_move.mvf; let mvt = final_move.mvt;
+		print!("Did: ");
+		positions::print(final_move.mvf, final_move.mvt);
+		self.do_move(mvf, mvt);
+	}
+
+	fn find_best(&self, branch: &Tree, side: bool) -> (u8, f32) {
+		let mut best_idx: u8 = 0;
+		let mut best: f32 = if side { 0.0 } else { 1.0 };
+		if branch.mvs.is_some() {
+			let mvs = branch.mvs.as_ref().unwrap();
+			for b in 0..mvs.len() {
+				let tb = self.find_best(self.get_branch(mvs[b]), !side);
+				if (side && tb.1 > best) || (!side && tb.1 < best) {
+					best_idx = b as u8;
+					best = tb.1;
+				}
+			}
+			// println!("Final best: {}    side: {}", best, side);
+			return (best_idx, best)
+		} else {
+			return (255, branch.wns as f32 / branch.lss as f32)
 		}
 	}
 
@@ -373,7 +456,7 @@ impl MainTree {
 					self.print_branch(*b, depth + 1);
 				}
 			}
-			println!("{}}},\n", pad);
+			println!("{}}},", pad);
 		}
 	}
 }
