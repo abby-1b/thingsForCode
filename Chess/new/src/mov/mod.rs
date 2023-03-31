@@ -27,6 +27,6 @@ pub fn gen_moves(b: &Board, idx: u8, side: bool) -> u64 {
 	} else if b.typ[5] & piece != 0 {
 		king::gen_moves(piece, if side { b.b_o } else { b.w_o })
 	} else {
-		panic!("A piece wasn't found at {} ({}). Good luck.", positions::NAMES[idx as usize], idx);
+		panic!("A piece wasn't found at {}. Good luck.", positions::NAMES[idx as usize]);
 	}
 }
