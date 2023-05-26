@@ -61,4 +61,10 @@ export class BiMap<F, T> {
 
         // This object doesn't exist (within our arrays)
     }
+
+
+    /** Returns the number of keys in the map */
+    size() {
+        return this.arrFrom.length
+    }
 }
