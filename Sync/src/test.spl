@@ -1,0 +1,6 @@
+
+script(src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js",defer)
+script(src="./peerHandler.ts",defer)
+script(src="./interface.ts",defer)
+script(src="./control/base.ts",defer)
+script(src="./control/popcorn.ts",defer)

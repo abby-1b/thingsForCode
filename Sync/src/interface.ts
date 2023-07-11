@@ -198,10 +198,3 @@ class Interface {
 		}
 	}
 }
-
-const i = new Interface()
-// const i2 = new Interface()
-
-i.onStateChange(state => {
-	console.log("State changed:", state)
-})
