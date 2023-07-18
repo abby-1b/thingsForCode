@@ -1,4 +1,4 @@
-import { Token } from "./tokenize.ts"
+import { Token } from "./lex.ts"
 
 export function logError(message: string) {
 	console.log("\x1b[0;31m" + message)

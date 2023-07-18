@@ -1,0 +1,8 @@
+// Declare a list
+f32[] l=[]
+
+// Fill it up with random numbers (0-1)
+@..10{l.push(rnd)}
+
+// Make those numbers a bit smoother
+@a 1..9{l[a]=(l[a-1]+l[a]+l[a+1])/3}

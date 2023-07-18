@@ -75,8 +75,11 @@ and finally a code block
 Sometimes, you don't want a variable, and just want to repeat something a
 certain amount of times. For that, just define the for loop as the following
 ```
-@10{ ... }
+@..10{ ... }
 ```
+
+Note that the above example requires that two dots be added to make this an
+iterator, as otherwise it would be interpreted as a while loop.
 
 Although this takes two tokens, just like the while loop, the token proceeding
 the `@` is an iterator (or a range), it's assumed to be a for loop

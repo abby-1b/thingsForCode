@@ -1,10 +1,12 @@
-import { tokenize } from "./tokenize.ts"
+import { Lexer } from "./lex.ts"
+import { parse } from "./parse.ts"
 
 export function compile(code: string) {
-	console.log(tokenize(code))
+	const tokens = new Lexer(code)
+	const tree = parse(tokens)
+	console.log(tree)
 }
 
-// TODO: implement comments (`#`, `//`, and `/* */`)
 const code = `@a 10{ ... }`
 
 const _compiled = compile(code)
