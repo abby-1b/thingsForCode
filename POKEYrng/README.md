@@ -1,0 +1,1 @@
+# This is a simple implementation of the POKEY chip's RNG used by many Atari games
