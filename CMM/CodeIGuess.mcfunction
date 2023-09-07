@@ -4,7 +4,7 @@ scoreboard objectives add Recharge dummy
 scoreboard objectives add BridgeAmount dummy
 tag CodeIGuess add EnderUser
 
-# Repeat
+## REPEAT
 execute as @e[scores={Recharge=1..}] run scoreboard players set @s UseEnder 0
 execute as @e[tag=!EnderUser,scores={UseEnder=1..}] run scoreboard players set @s UseEnder 0
 execute as @e[scores={Sneak=1..}] run tag @s add Sneaking

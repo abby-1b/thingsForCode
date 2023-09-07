@@ -4,7 +4,7 @@ scoreboard objectives add Recharge dummy
 tag CodeIGuess add ElectricUser
 tag boyatog add ElectricUser
 
-# Repeat
+## REPEAT
 #execute as @e[scores={Recharge=1..}] run scoreboard players set @s UseElectric 0
 #execute as @e[tag=!ElectricUser,scores={UseElectric=1..}] run scoreboard players set @s UseElectric 0
 #execute as @e[scores={Sneak=1..}] run tag @s add Sneaking
