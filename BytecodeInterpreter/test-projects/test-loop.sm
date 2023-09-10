@@ -1,0 +1,24 @@
+
+STX_U8 10
+STC
+
+@loop
+
+STX_U8 3
+MVX
+
+STA
+DEC
+
+STX_U16 :end
+JZE
+
+STX_U8 1
+MVX
+STC
+
+STX_U16 :loop
+JMP
+
+@end
+END
