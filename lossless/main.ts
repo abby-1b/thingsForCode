@@ -213,25 +213,26 @@ function decompress(inp: number[]) {
 	return data.map(e => String.fromCharCode(e)).join("")
 }
 
-const text = Deno.readTextFileSync("./main.min.js")
+const text = Deno.readTextFileSync("./kjv.txt")
 
 // const t = performance.now()
 const comp = compress(text)
-Deno.writeFileSync("./main.min.js.lsl", new Uint8Array(comp))
-// const f = performance.now()
-// console.log("Comp time:", f - t)
+Deno.writeFileSync("./kjv-compressed.txt", new Uint8Array(comp))
+// Deno.writeFileSync("./main.min.js.lsl", new Uint8Array(comp))
+// // const f = performance.now()
+// // console.log("Comp time:", f - t)
 
-// const t = performance.now()
-const decomp = decompress(comp)
-// const f = performance.now()
-// console.log("Decomp time:", f - t)
+// // const t = performance.now()
+// const decomp = decompress(comp)
+// // const f = performance.now()
+// // console.log("Decomp time:", f - t)
 
-if (verbose) {
-	console.log()
-	for (const k in dict) {
-		console.log(k, dict[k][0] / dict[k][1], `(${dict[k][1]})`)
-	}
-}
+// if (verbose) {
+// 	console.log()
+// 	for (const k in dict) {
+// 		console.log(k, dict[k][0] / dict[k][1], `(${dict[k][1]})`)
+// 	}
+// }
 
-console.log(text == decomp, text.length, decomp.length)
-console.log(text.length, "=>", comp.length)
+// console.log(text == decomp, text.length, decomp.length)
+// console.log(text.length, "=>", comp.length)
