@@ -1,4 +1,7 @@
 
+/** The default sample rate */
+export const SAMPLE_RATE = 44100;
+
 function numAsUint32(n: number): [ number, number, number, number ] {
 	return [ n & 255, (n >> 8) & 255, (n >> 16) & 255, (n >> 24) & 255 ];
 }

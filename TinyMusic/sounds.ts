@@ -1,13 +1,11 @@
-import { Filter, FadeInOut, Vibrato } from "./filters.ts";
-import { save } from "./save-wav.ts";
-
-const SAMPLE_RATE = 44100;
+import { Filter, FadeInOut, FadeOut } from "./filters.ts";
+import { SAMPLE_RATE } from "./save-wav.ts";
 
 export class Sound {
 	public timeStart = 0; // Start time (in seconds)
 	public timeEnd = 0; // End time (in seconds)
 
-	private filters: Filter[] = [ FadeInOut ];
+	protected filters: Filter[] = [ new FadeOut(), new FadeInOut() ];
 
 	public addFilter(filter: Filter) {
 		this.filters.push(filter);
@@ -25,6 +23,12 @@ export class Sound {
 	}
 
 	public getFinalSample(time: number): number {
+		// Run presample
+		for (const filter of this.filters) {
+			if (filter.type != "presample") continue;
+			({ time } = filter.fn(time, 1, this));
+		}
+
 		// Get sample
 		let sample = this.getSample(time);
 
@@ -32,12 +36,6 @@ export class Sound {
 		for (const filter of this.filters) {
 			if (filter.type != "volonly") continue;
 			sample *= filter.fn(time, 1, this).sample;
-		}
-
-		// Run time warp
-		for (const filter of this.filters) {
-			if (filter.type != "presample") continue;
-			time = filter.fn(time, 1, this).time;
 		}
 
 		// Run remaining filters
@@ -77,7 +75,7 @@ export class Square extends Sound {
 	}
 }
 
-export class Triangle extends Sound {
+export class Sawtooth extends Sound {
 	public frequency = 1;
 	constructor(freq: number) {
 		super();
@@ -89,14 +87,26 @@ export class Triangle extends Sound {
 	}
 }
 
+export class Noise extends Sound {
+	public frequency = 1;
+	constructor(freq: number) {
+		super();
+		this.frequency = freq;
+		this.filters.pop();
+	}
+
+	public getSample(_time: number): number {
+		return Math.random() - 0.5;
+	}
+}
+
 /**
  * Mixes sounds together
  * @param s The sounds to be mixed
  */
-function mixSounds(sounds: Sound[]): number[] {
+export function mixSounds(sounds: Sound[]): number[] {
 	let lengthInSeconds = 0;
 	for (const sound of sounds) {
-		sound.addFilter(Vibrato);
 		if (sound.timeEnd > lengthInSeconds) {
 			lengthInSeconds = sound.timeEnd;
 		}
@@ -130,19 +140,17 @@ function mixSounds(sounds: Sound[]): number[] {
 	return samples;
 }
 
-const sounds: Sound[] = [];
+// const sounds: Sound[] = [];
 
-const NOTE = Math.pow(2, 1 / 12);
+// sounds.push(new Sine(440 * (NOTE **  0)).setTime(0.00, 4));
+// sounds.push(new Sine(440 * (NOTE **  4)).setTime(0.05, 4));
+// sounds.push(new Sine(440 * (NOTE **  7)).setTime(0.10, 4));
+// sounds.push(new Sine(440 * (NOTE ** 11)).setTime(0.15, 4));
 
-sounds.push(new Sine(440 * (NOTE **  0)).setTime(0.00, 2));
-sounds.push(new Sine(440 * (NOTE **  4)).setTime(0.05, 2));
-sounds.push(new Sine(440 * (NOTE **  7)).setTime(0.10, 2));
-sounds.push(new Sine(440 * (NOTE ** 11)).setTime(0.15, 2));
-
-sounds.push(new Sine(440 * (NOTE **  0)).setTime(2.00 + 0.15, 4));
-sounds.push(new Sine(440 * (NOTE **  4)).setTime(2.05 + 0.15, 4));
-sounds.push(new Sine(440 * (NOTE **  7)).setTime(2.10 + 0.15, 4));
-sounds.push(new Sine(440 * (NOTE ** 10)).setTime(2.15 + 0.15, 4));
+// sounds.push(new Sine(440 * (NOTE **  0)).setTime(2.00 + 0.15, 4));
+// sounds.push(new Sine(440 * (NOTE **  4)).setTime(2.05 + 0.15, 4));
+// sounds.push(new Sine(440 * (NOTE **  7)).setTime(2.10 + 0.15, 4));
+// sounds.push(new Sine(440 * (NOTE ** 10)).setTime(2.15 + 0.15, 4));
 
 // sounds.push(new Square(440 * (1.05946309436 **  0)).setTime(4.00, 6.00));
 
@@ -156,5 +164,6 @@ sounds.push(new Sine(440 * (NOTE ** 10)).setTime(2.15 + 0.15, 4));
 // sounds.push(new Vibrato(new Square(440 * (1.05946309436 **  0)).setTime(5.20, 5.40 + 0.08)));
 // sounds.push(new Vibrato(new Square(440 * (1.05946309436 **  1)).setTime(5.40, 5.60 + 0.08)));
 
-const samples = mixSounds(sounds);
-save("out.wav", samples, SAMPLE_RATE);
+// const samples = mixSounds(sounds);
+// import { save } from "./save-wav.ts";
+// save("out.wav", samples, SAMPLE_RATE);
