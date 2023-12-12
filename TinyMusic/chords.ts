@@ -21,7 +21,12 @@ interface Key {
 let time = 0;
 let length = 0.5;
 let noteType = Sine;
-function playNote(note: number | undefined, key: Key, vibrato = false, timeOffset?: number) {
+function playNote(
+	note: number | undefined,
+	key: Key,
+	vibrato = false,
+	timeOffset?: number
+) {
 	if (note != undefined) {
 		let multiplier = 1;
 		while (note >= key.modality.relativeNotes.length) {
@@ -32,7 +37,10 @@ function playNote(note: number | undefined, key: Key, vibrato = false, timeOffse
 			multiplier /= 2;
 			note += key.modality.relativeNotes.length;
 		}
-		const n = new noteType(key.tone * multiplier * (SEMITONE_RATIO ** key.modality.relativeNotes[note]));
+		const n = new noteType(
+			key.tone * multiplier *
+			(SEMITONE_RATIO ** key.modality.relativeNotes[note])
+		);
 		if (vibrato) n.addFilter(new Vibrato());
 		n.setTime(time + (timeOffset ?? 0), time + length + (timeOffset ?? 0));
 		sounds.push(n);
