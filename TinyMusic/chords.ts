@@ -11,7 +11,8 @@ const scales = {
 	major:         { name: "major"        , relativeNotes: [ 0, 2, 4, 5, 7, 9, 11 ] },
 	minorNatural:  { name: "minorNatural" , relativeNotes: [ 0, 2, 3, 5, 7, 8, 10 ] },
 	minorHarmonic: { name: "minorHarmonic", relativeNotes: [ 0, 2, 3, 5, 7, 8, 11 ] },
-}
+	pentatonic:    { name: "pentatonic"   , relativeNotes: [ 0, 2, 4, 7, 9 ] },
+};
 
 interface Key {
 	tone: number, // The starting tone of the key
@@ -51,9 +52,10 @@ function playNote(
 const sounds: Sound[] = [];
 
 const key: Key = {
-	tone: 1000,
-	modality: scales.major
-}
+	tone: 523.251,
+	modality: scales.pentatonic
+};
+
 
 // Melody
 noteType = Square;

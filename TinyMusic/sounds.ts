@@ -96,7 +96,8 @@ export class Noise extends Sound {
 	}
 
 	public getSample(_time: number): number {
-		return Math.random() - 0.5;
+		// return Math.random() - 0.5;
+		return Math.sin(_time * 100000) - 0.5;
 	}
 }
 
