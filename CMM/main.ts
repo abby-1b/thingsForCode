@@ -1,5 +1,7 @@
 import * as clipboard from "https://deno.land/x/clipboard@v0.0.2/mod.ts"
 
+const entity = "snowball"
+
 function compile(c: string) {
 	// return c
 	return c.split("\n").map(e => e.trim()).join("")
@@ -30,9 +32,9 @@ stackCommands.push(...repeatCommands.map((e, i) => `setblock ~ ~-${i + 4} ~ ${i 
 stackCommands.push(`setblock ~ ~-2 ~ command_block{auto:1,Command:"fill ~ ~ ~ ~ ~3 ~ air"}`)
 stackCommands.push(`setblock ~ ~-3 ~ command_block{Command:"fill ~ ~ ~ ~ ~-${repeatCommands.length} ~ air"}`)
 const passengers: string[] = [
-	`id:armor_stand,Health:0`,
+	`id:${entity},Health:0`,
 	`id:"minecraft:falling_block",Time:1,BlockState:{Name:"minecraft:redstone_block"}`,
-	`id:armor_stand,Health:0`,
+	`id:${entity},Health:0`,
 	`id:"minecraft:falling_block",Time:1,BlockState:{Name:"minecraft:activator_rail"}`,
 ]
 
