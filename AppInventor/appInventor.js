@@ -514,7 +514,7 @@ var drawParams = {
 	sy: 10 // Start Y
 }
 ;{
-	let b = document.querySelectorAll(".ode-Box-body")[5]
+	let b = document.querySelectorAll(".ode-Box-body")[6]
 	b.style.display = "grid"
 	b.style.gridTemplateColumns = "1fr 0fr"
 	while (b.children.length > 1) b.removeChild(b.children[1])
