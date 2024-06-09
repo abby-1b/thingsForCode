@@ -4,3 +4,7 @@ MicroLang/wabt/
 InterfaceMod/.DS_Store
 MicroLang/.vscode/settings.json
 NaLA/DiscordBot/config.ts
+/AppInventor/node_modules
+/AppInventor/src/to_app_inventor/target
+AppInventor/yarn.lock
+AppInventor/bun.lockb

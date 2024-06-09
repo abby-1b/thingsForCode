@@ -1,0 +1,19 @@
+{
+  "name": "appinventor",
+  "version": "1.0.0",
+  "description": "Adds TypeScript support to MIT AppInventor",
+  "main": "src/main.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Abby.041b",
+  "license": "MIT",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.12.0",
+    "@typescript-eslint/parser": "^7.12.0",
+    "eslint": "^9.4.0"
+  },
+  "dependencies": {
+    "typescript": "^5.4.5"
+  }
+}

@@ -629,7 +629,7 @@ var drawParams = {
 		}
 	}, 16)
 
-	let btn = document.querySelectorAll(".ode-Box-content>table>tbody>tr>td")[5]
+	let btn = document.querySelectorAll(".ode-Box-content>table>tbody>tr>td")[6]
 	btn.onclick = () => { editorShow = editorShow == 1 ? 0 : 1 }
 	btn.children[0].children[0].innerText = "Toggle"
 }
@@ -755,6 +755,8 @@ function toText(b) {
 		case "component_set_get":
 			if (ch.length == 1) return `get(${b.typeName}.${b.propertyName}, ${toText(ch[0])})`
 			return `set(${b.typeName}.${b.propertyName}, ${toText(ch[0])}, ${toText(ch[1])})` + (ch.length == 2 ? "" : "\n" + toText(ch[2]))
+        case "component_method":
+            return `${b.instanceName}.${b.methodName}(${b.childBlocks_.map(toText).join(', ')})`
 			
 		case "helpers_dropdown":
 			return `${b.key_}${b.inputList[0].fieldRow[1].value_}()`
@@ -802,3 +804,5 @@ function realPos(block) {
 }
 realPos(getSelected())
 */
+
+// Canvas1.SetBackgroundPixelColor(0, 0, rgb([randi(0, 255), randi(0, 255), randi(0, 255)]))
