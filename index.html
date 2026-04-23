@@ -4,11 +4,326 @@
 <head>
     <title>Compost Calculator</title>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0"></meta>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    </meta>
+    <style>
+        /* COMPONENT THINGS */
+
+        :root {
+            --border-radius: 100px;
+            --green: #3f6f23;
+            --light-green: #e4eae0;
+            --light-gray: #f2f2f2;
+        }
+
+        .text-label {
+            margin-top: 2px;
+            margin-bottom: 10px;
+            font-weight: 100;
+        }
+
+        .text-label>b {
+            font-weight: bold;
+        }
+
+        .text-header {
+            margin-top: 15px;
+            margin-bottom: 10px;
+            color: black;
+            font-size: 1.53em;
+            width: 80%;
+        }
+
+        .text-header>* {
+            color: black;
+        }
+
+        .header-sub {
+            margin-top: 1px;
+            margin-bottom: 18px;
+            font-weight: 100;
+            font-size: 1.25em;
+        }
+
+        .horizontal-container {
+            display: grid;
+            grid-auto-flow: column;
+            gap: 2px;
+            grid-template-rows: auto auto;
+        }
+
+        .select-input,
+        .number-input,
+        .text-input {
+            width: 100%;
+            padding: 12px;
+            padding-left: 14px;
+            margin-bottom: 16px;
+            font-size: 1.3em;
+            border-radius: var(--border-radius);
+            box-sizing: border-box;
+            border: 1px solid #cbcbcb;
+            background-color: var(--light-gray);
+        }
+
+        .number-input *,
+        .text-input * {
+            width: 100%;
+        }
+
+        .horizontal-container .number-input:nth-child(2) {
+            border-radius: var(--border-radius) 0 0 var(--border-radius);
+        }
+
+        .horizontal-container .number-input {
+            border-radius: 0;
+        }
+
+        .horizontal-container .number-input:last-child {
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+        }
+
+        .single-year {
+            display: grid;
+            grid-template-columns: 1fr 10fr 1fr;
+            padding-bottom: 10px;
+        }
+
+        .single-year h2 {
+            margin: 0;
+            padding-left: 10px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .year-select {
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 100%;
+        }
+
+        .year-delete {
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 25%;
+        }
+
+        /* OUTPUT TAB */
+        .output-tab {
+            position: fixed !important;
+            bottom: 0;
+            background-color: #0008;
+            border-radius: 12px 12px 0 0;
+            padding-top: 6px;
+        }
+
+        .output-tab input {
+            outline: none;
+        }
+
+        /* BASE HTML */
+
+        body,
+        html {
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 1.2em;
+            color: white;
+        }
+
+        #header,
+        .tab-content {
+            /* padding-left: max(10px, calc(50vw - 800px / 2));
+  padding-right: max(10px, calc(50vw - 800px / 2)); */
+            box-sizing: border-box;
+        }
+
+        /* PAGE */
+
+        /* Top of the page (text, logo, tabs) */
+        #header {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: 1fr;
+            padding-top: 8px;
+        }
+
+        #header h1 {
+            font-size: 2em;
+            font-weight: bolder;
+            transition: font-size 1s ease-in-out;
+        }
+
+        /* Resources */
+
+        #resources {
+            background-color: var(--light-green);
+            padding-bottom: 100px;
+        }
+
+        #resources>.button-container {
+            margin-top: 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        @media screen and (max-width: 675px) {
+            #resources>.button-container {
+                margin-top: 40px;
+                display: grid;
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr 1fr;
+                max-width: 800px;
+                margin: auto;
+                row-gap: 5px;
+            }
+        }
+
+        /* Container for the three tabs */
+        .tab-select-holder {
+            grid-column: 1 / 3;
+            grid-row: 2;
+            width: 100%;
+            height: 100%;
+
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .tab-select-holder>input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 12px 12px 0px 0px;
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: bolder;
+            font-size: 1.1em;
+        }
+
+        .tab-content {
+            position: relative;
+            box-sizing: border-box;
+            width: 100%;
+            left: 0vw;
+            transition: .2s left ease-out;
+        }
+
+        #centered {
+            width: 95%;
+            max-width: 737px;
+            margin: auto;
+            margin-top: 51px;
+            margin-bottom: 80px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 70px;
+        }
+
+        @media screen and (max-width: 650px) {
+            #centered {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr;
+                gap: 50px;
+            }
+        }
+
+        .tab-output {
+            background-color: var(--light-gray);
+            height: fit-content;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .tab-output>.strong-header {
+            background-color: var(--green);
+            color: white;
+            width: 100%;
+            margin: 0;
+            padding-top: 18px;
+            padding-left: 29px;
+            padding-bottom: 14px;
+            font-size: .86em;
+            box-sizing: border-box;
+        }
+
+        .tab-output>.parts-container {
+            display: grid;
+            gap: 2px;
+            margin: 29px;
+            margin-top: 14px;
+            margin-bottom: 0;
+        }
+
+        .tab-output>.parts-container>div {
+            border-bottom: 2px solid var(--green);
+        }
+
+        .tab-output>.parts-container>div:nth-child(3) {
+            border-bottom: none;
+        }
+
+        .tab-output>.parts-container>div:nth-child(5) {
+            border-bottom: none;
+        }
+
+
+        .tab-output>.parts-container>div div {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            margin-top: 12px;
+            margin-bottom: 12px;
+        }
+
+        .tab-output>.parts-container>div h3 {
+            font-size: .74em;
+            margin-top: 27px;
+            margin-bottom: 9px;
+        }
+
+        .tab-output>.parts-container>div h4 {
+            font-size: .495em;
+            margin-top: 4px;
+            margin-bottom: 19px;
+        }
+
+        .tab-output>.parts-container>div h5 {
+            font-size: .75em;
+            margin-top: 0;
+            margin-bottom: 0;
+            margin-left: 5px;
+            text-align: right;
+        }
+
+
+        .disclaimer-text {
+            font-size: .1em;
+        }
+
+        .report-button {
+            background-color: var(--green);
+            border: none;
+            color: white;
+            height: 50px;
+            width: 87%;
+            margin: 0;
+            padding: 14px;
+            position: relative;
+            left: 50%;
+            transform: translate(-50%, 50%);
+            font-size: .6em;
+        }
+    </style>
 </head>
 
 <body>
-    
+
     <div style="background-image:url('https://www.uprm.edu/hortalizasygranosbasicos/wp-content/uploads/sites/330/2026/03/cc-hero-bg-scaled.jpg');background-size:cover;height:300px"
         id="hero">
         <h1
