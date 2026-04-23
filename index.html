@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Compost Calculator</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"></meta>
+</head>
+
+<body>
+    
+    <div style="background-image:url('https://www.uprm.edu/hortalizasygranosbasicos/wp-content/uploads/sites/330/2026/03/cc-hero-bg-scaled.jpg');background-size:cover;height:300px"
+        id="hero">
+        <h1
+            style="margin:0;padding:0;width:100%;position:relative;text-align:center;top:118px;font-family:serif;font-size:2.3em;">
+            Calculadora de Composta</h1>
+    </div>
+    <div style="background-color:white;height:562px;color:black;" id="tutorial">
+        <h2 style="margin:0;padding:0;padding-top:90px;font-size:.989em;width:100%;text-align:center;">CALCULADORA DE
+            COMPOSTA PARA LA PRODUCCIÓN AGRÍCOLA</h2>
+        <h3 style="margin:0;padding:0;padding-top:59px;font-size:.91em;font-weight:100;width:100%;text-align:center;">
+            ¿Cómo usar la calculadora?</h3>
+        <div style="margin:auto;margin-top:44px;width:542px;height:260px;background-color:black;"></div>
+    </div>
+    <div id="resources">
+        <h2 style="margin:0;padding:0;padding-top:56px;font-size:.86em;width:100%;text-align:center;color:black;">
+            Recursos educativos</h2>
+        <div class="button-container">
+            <button class="text-input report-button">
+                <a style="padding-left:25px;padding-right:10px;">Información educativa sobre composta</a>
+                <img src="https://www.uprm.edu/hortalizasygranosbasicos/wp-content/uploads/sites/330/2026/03/cc-download-icon.png"
+                    style="height: 50%; width: unset; display: block; position: absolute; top: 50%; transform: translate(0px, -50%);"></img>
+            </button>
+            <button class="text-input report-button">
+                <a style="padding-left:25px;padding-right:10px;">Guía de resultados de compostas</a>
+                <img src="https://www.uprm.edu/hortalizasygranosbasicos/wp-content/uploads/sites/330/2026/03/cc-download-icon.png"
+                    style="height: 50%; width: unset; display: block; position: absolute; top: 50%; transform: translate(0px, -50%);"></img>
+            </button>
+            <button class="text-input report-button">
+                <a style="padding-left:25px;padding-right:10px;">Racional de cálculos</a>
+                <img src="https://www.uprm.edu/hortalizasygranosbasicos/wp-content/uploads/sites/330/2026/03/cc-download-icon.png"
+                    style="height: 50%; width: unset; display: block; position: absolute; top: 50%; transform: translate(0px, -50%);"></img>
+            </button>
+        </div>
+    </div>
+    <div style="background-color:white;height:fit-content;color:black;" id="calculator">
+        <h2 style="margin:0;padding:0;padding-top:82px;font-size:.989em;width:100%;text-align:center;">CALCULADORA</h2>
+        <h3 style="margin:0;padding:0;padding-top:10px;font-size:.69em;font-weight:100;width:100%;text-align:center;">
+            Ingrese los datos requeridos</h3>
+        <div id="centered"></div>
+    </div>
+    <div style="background-color:var(--light-green);color:black;font-size:0.6em" id="credits">
+        <div style="padding:30px 10px 30px 10px;max-width:800px;margin:auto">
+            <p>Herramienta desarrollada por:</p>
+            <p style="font-size:1.1em;font-weight:bold;margin-bottom:0;">Agro. Gustavo A. Rodríguez Rivera, MSc.</p>
+            <p style="font-size:1.1em;margin-top:2px;">
+                Servicio de Extensión Agrícola, Universidad de Puerto Rico, Recinto Universitario de Mayagüez
+            </p>
+            <p style="font-size:1em;">Revisión técnica:</p>
+            <p style="font-size:1em;font-weight:bold;margin-bottom:0;">Profa. Ermita Hernández Heredia, PhD.</p>
+            <p style="font-size:1em;margin-top:2px;">
+                Especialista el Servicio de Extensión Agricola, Universidad de Puerto Rico, Recinto Universitario de
+                Mayaguez
+            </p>
+            <p style="font-size:1em;font-weight:bold;margin-bottom:0;">Prof. Daniel Bair Gallegos, PhD.</p>
+            <p style="font-size:1em;margin-top:2px;">
+                Especialista del Servicio de Extensión Agrícola, Universidad de Puerto Rico, Recinto Universitario de
+                Mayaguez
+            </p>
+            <p style="font-size:1em;font-weight:bold;margin-bottom:0;">Prof. Joaguín A. Chong Nuñez, PhD.</p>
+            <p style="font-size:1em;margin-top:2px;">
+                Investigador, Estación Experimental Agrícola, Universidad de Puerto Rico, Recinto Universitario de
+                Mayaguez
+            </p>
+        </div>
+    </div>
+    <div style="background-color:white;color:black;font-size:0.5em" id="footer">
+        <div style="padding:30px 0 30px 0;max-width:800px;margin:auto">
+            <p>This work...</p>
+        </div>
+    </div>
+
+    <script>
+        class Printing {
+            constructor() {
+                this.head = [];
+                this.content = [];
+                this.currentStyle = {};
+                this.documentTitle = 'Document';
+            }
+            text(content) {
+                this.content.push({
+                    type: 'text',
+                    content,
+                    style: Object.assign({}, this.currentStyle)
+                });
+                return this;
+            }
+            header1(content) {
+                this.content.push({
+                    type: 'header1',
+                    content,
+                    style: Object.assign({}, this.currentStyle)
+                });
+                return this;
+            }
+            header2(content) {
+                this.content.push({
+                    type: 'header2',
+                    content,
+                    style: Object.assign({}, this.currentStyle)
+                });
+                return this;
+            }
+            table(data, options) {
+                this.content.push({
+                    type: 'table',
+                    data,
+                    options: options || {},
+                    style: Object.assign({}, this.currentStyle)
+                });
+                return this;
+            }
+            image(src, options) {
+                this.content.push({
+                    type: 'image',
+                    src,
+                    options: options || {},
+                    style: Object.assign({}, this.currentStyle),
+                    classes: options === null || options === void 0 ? void 0 : options.classes,
+                });
+                return this;
+            }
+            headHTML(element) {
+                this.head.push(element);
+                return this;
+            }
+            rawHTML(element) {
+                element.type = 'raw';
+                this.content.push(element);
+                return this;
+            }
+            rawHTMLString(string) {
+                const el = document.createElement('div');
+                el.innerHTML = string;
+                const trueEl = el.children[0];
+                trueEl.type = 'raw';
+                this.content.push(trueEl);
+                return this;
+            }
+            style(style) {
+                this.currentStyle = Object.assign(Object.assign({}, this.currentStyle), style);
+                return this;
+            }
+            resetStyle() {
+                this.currentStyle = {};
+                return this;
+            }
+            setTitle(title) {
+                this.documentTitle = title;
+                return this;
+            }
+            print() {
+                const htmlContent = this.generateHTML();
+                const printWindow = window.open('', '_blank', 'width=800,height=600');
+                if (!printWindow) {
+                    alert('Popup blocked! Please allow popups to print.');
+                    return;
+                }
+                printWindow.document.write(htmlContent);
+                printWindow.document.close();
+                // Wait for images to load before printing
+                const images = printWindow.document.images;
+                let imagesLoaded = 0;
+                const totalImages = images.length;
+                let didTrigger = false;
+                if (totalImages === 0) {
+                    this.triggerPrint(printWindow);
+                    return;
+                }
+                for (let i = 0; i < totalImages; i++) {
+                    images[i].onload = () => {
+                        imagesLoaded++;
+                        if (imagesLoaded === totalImages) {
+                            didTrigger = true;
+                            this.triggerPrint(printWindow);
+                        }
+                    };
+                    // Also handle errors to prevent waiting forever
+                    images[i].onerror = () => {
+                        imagesLoaded++;
+                        if (imagesLoaded === totalImages) {
+                            didTrigger = true;
+                            this.triggerPrint(printWindow);
+                        }
+                    };
+                }
+                // Fallback: print after 3 seconds even if images aren't loaded
+                setTimeout(() => {
+                    if (!didTrigger)
+                        this.triggerPrint(printWindow);
+                }, 3000);
+            }
+            triggerPrint(printWindow) {
+                printWindow.focus();
+                printWindow.print();
+                // Optional: close window after print (commented out for user convenience)
+                // printWindow.onafterprint = () => {
+                //   printWindow.close();
+                // };
+            }
+            generateHTML() {
+                const headElementsHTML = this.head.map(e => e.outerHTML).join('\n');
+                const elementsHTML = this.content.map(element => this.renderElement(element)).join('\n');
+                return `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>${this.escapeHTML(this.documentTitle)}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0 10px 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+        .header2 {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 15px 0 8px 0;
+            color: #34495e;
+        }
+        .text {
+            margin: 8px 0;
+            text-align: left;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            page-break-inside: avoid;
+        }
+        .table th {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 8px 12px;
+            text-align: left;
+            font-weight: bold;
+        }
+        .table td {
+            border: 1px solid #dee2e6;
+            padding: 8px 12px;
+        }
+        .image {
+            max-width: 100%;
+            height: auto;
+            margin: 10px 0;
+            page-break-inside: avoid;
+        }
+        .image-center {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .image-left {
+            float: left;
+            margin-right: 15px;
+        }
+        .image-right {
+            float: right;
+            margin-left: 15px;
+        }
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+        @media print {
+            body {
+                padding: 10px;
+            }
+            .header1 {
+                page-break-after: avoid;
+            }
+            .header2 {
+                page-break-after: avoid;
+            }
+        }
+    </style>
+    ${headElementsHTML}
+</head>
+<body>
+    ${elementsHTML}
+</body>
+</html>`;
+            }
+            renderElement(element) {
+                switch (element.type) {
+                    case 'text': {
+                        const style = this.buildStyleString(element.style);
+                        return `<div class="text" style="${style}">${this.escapeHTML(element.content)}</div>`;
+                    }
+                    case 'header1': {
+                        const style = this.buildStyleString(element.style);
+                        return `<h1 class="header1" style="${style}">${this.escapeHTML(element.content)}</h1>`;
+                    }
+                    case 'header2': {
+                        const style = this.buildStyleString(element.style);
+                        return `<h2 class="header2" style="${style}">${this.escapeHTML(element.content)}</h2>`;
+                    }
+                    case 'table':
+                        return this.renderTable(element);
+                    case 'image':
+                        return this.renderImage(element);
+                    case 'raw':
+                        return element.outerHTML;
+                    default:
+                        return '';
+                }
+            }
+            renderTable(element) {
+                var _a;
+                const style = this.buildStyleString(element.style);
+                const hasHeaders = (_a = element.options.headers) !== null && _a !== void 0 ? _a : true;
+                let tableHTML = `<table class="table" style="${style}">\n`;
+                if (hasHeaders && element.data.length > 0) {
+                    tableHTML += '<thead><tr>\n';
+                    element.data[0].forEach(cell => {
+                        tableHTML += `  <th>${this.escapeHTML(String(cell))}</th>\n`;
+                    });
+                    tableHTML += '</tr></thead>\n';
+                }
+                tableHTML += '<tbody>\n';
+                const startRow = hasHeaders ? 1 : 0;
+                for (let i = startRow; i < element.data.length; i++) {
+                    tableHTML += '<tr>\n';
+                    element.data[i].forEach(cell => {
+                        tableHTML += `  <td>${this.escapeHTML(String(cell))}</td>\n`;
+                    });
+                    tableHTML += '</tr>\n';
+                }
+                tableHTML += '</tbody>\n</table>';
+                return tableHTML;
+            }
+            renderImage(element) {
+                var _a;
+                const style = this.buildStyleString(element.style);
+                const alignment = element.options.alignment || 'left';
+                const width = element.options.width ? `width="${element.options.width}"` : '';
+                const height = element.options.height ? `height="${element.options.height}"` : '';
+                const alignmentClass = `image-${alignment}`;
+                const containerClass = alignment !== 'center' ? 'clearfix' : '';
+                return `
+<div class="${containerClass}">
+  <img src="${element.src}" 
+    class="image ${alignmentClass} ${((_a = element.classes) !== null && _a !== void 0 ? _a : []).join(' ')}" 
+    style="${style}" 
+    ${width} 
+    ${height}
+    alt="${this.escapeHTML(element.options.alt || 'Image')}">
+</div>`;
+            }
+            buildStyleString(style) {
+                const styleParts = [];
+                if (style.fontSize)
+                    styleParts.push(`font-size: ${style.fontSize}px`);
+                if (style.fontFamily)
+                    styleParts.push(`font-family: ${style.fontFamily}`);
+                if (style.color)
+                    styleParts.push(`color: ${style.color}`);
+                if (style.bold)
+                    styleParts.push('font-weight: bold');
+                if (style.italic)
+                    styleParts.push('font-style: italic');
+                if (style.alignment)
+                    styleParts.push(`text-align: ${style.alignment}`);
+                if (style.lineHeight)
+                    styleParts.push(`line-height: ${style.lineHeight}`);
+                return styleParts.join('; ');
+            }
+            escapeHTML(unsafe) {
+                return unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+            clear() {
+                this.content = [];
+                this.currentStyle = {};
+                this.documentTitle = 'Document';
+                return this;
+            }
+            preview() {
+                const htmlContent = this.generateHTML();
+                const previewWindow = window.open('', '_blank', 'width=800,height=600');
+                if (previewWindow) {
+                    previewWindow.document.write(htmlContent);
+                    previewWindow.document.close();
+                }
+            }
+        }
+
+
+        const DEBUGGING = false;
+        class Translation {
+            static useLanguage(translations) {
+                this.labels = translations;
+                this.setLanguage(this.currentLanguage);
+            }
+            static setLanguage(lang, startIndex = 0) {
+                this.currentLanguage = lang;
+                this.currentLabels = this.labels[lang] || [];
+                this.labelIndex = startIndex;
+            }
+            static getLabel(fallback) {
+                const endString = DEBUGGING ? (' [' + fallback + ']') : '';
+                if (this.labelIndex >= this.currentLabels.length) {
+                    return fallback + endString;
+                }
+                return (this.currentLabels[this.labelIndex++] || fallback) + endString;
+            }
+        }
+        Translation.currentLanguage = 'en';
+        Translation.labelIndex = 0;
+        Translation.labels = {};
+        Translation.currentLabels = [];
+        class Tab {
+            constructor() {
+                this.element = document.createElement('div');
+                this.inputs = new Map();
+                this.inputSelections = new Map();
+                this.name = '';
+                this.inputChangeListeners = [];
+                this.element.className = 'tab-content';
+                // inputs.forEach(input => this.element.appendChild(renderUserInput(input)));
+            }
+            setName(name) {
+                this.name = name;
+            }
+            addInputListener(listener) {
+                this.inputChangeListeners.push(listener);
+            }
+            inputWasChanged() {
+                this.inputChangeListeners.forEach(l => l());
+            }
+            renderLabel(labelString, hideLabel) {
+                if (hideLabel)
+                    return;
+                const label = document.createElement('h3');
+                label.innerHTML = Translation.getLabel(labelString);
+                label.className = 'text-label';
+                this.element.appendChild(label);
+            }
+            /** Puts raw elements on the tab. */
+            raw(callback) {
+                const elements = callback(this);
+                elements.forEach(e => this.element.appendChild(e));
+                return this;
+            }
+            header(labelString, callback = () => { }) {
+                const label = document.createElement('h3');
+                label.innerHTML = Translation.getLabel(labelString);
+                label.className = 'text-header';
+                this.element.appendChild(label);
+                callback(label);
+                return this;
+            }
+            text(label, hideLabel = false) {
+                this.renderLabel(label, hideLabel);
+                const textInput = document.createElement('input');
+                textInput.className = 'text-input';
+                textInput.type = 'text';
+                textInput.onkeyup = () => {
+                    this.inputs.set(label, textInput.value.length == 0 ? undefined : textInput.value);
+                    this.inputWasChanged();
+                };
+                this.element.appendChild(textInput);
+                return this;
+            }
+            number(label, hideLabel = false) {
+                this.renderLabel(label, hideLabel);
+                const numberInput = document.createElement('input');
+                numberInput.className = 'number-input';
+                numberInput.type = 'number';
+                numberInput.onkeyup = () => {
+                    this.inputs.set(label, numberInput.value.length == 0 ? undefined : parseFloat(numberInput.value));
+                    this.inputWasChanged();
+                };
+                this.element.appendChild(numberInput);
+                return this;
+            }
+            select(label, options, hideLabel = false) {
+                this.renderLabel(label, hideLabel);
+                let optionStrings = [''];
+                if (Array.isArray(options)) {
+                    optionStrings.push(...options);
+                }
+                else {
+                    optionStrings.push(...Object.keys(options));
+                }
+                const selectInput = document.createElement('select');
+                selectInput.className = 'select-input';
+                optionStrings.forEach(o => {
+                    const option = document.createElement('option');
+                    option.text = Translation.getLabel(o);
+                    selectInput.appendChild(option);
+                });
+                selectInput.onchange = () => {
+                    var _a;
+                    const val = Array.isArray(options) ? selectInput.value : ((_a = options[selectInput.value]) !== null && _a !== void 0 ? _a : '');
+                    this.inputs.set(label, val.length == 0 ? undefined : val);
+                    this.inputSelections.set(label, selectInput.value);
+                    this.inputWasChanged();
+                };
+                this.element.appendChild(selectInput);
+                return this;
+            }
+            horizontalNumbers(label, labels, hideLabel = true) {
+                this.inputs.set(label, new Array(labels.length).fill(0));
+                this.renderLabel(label, hideLabel);
+                const horizElement = document.createElement('div');
+                horizElement.className = 'horizontal-container';
+                for (let i = 0; i < labels.length; i++) {
+                    const labelElement = document.createElement('h3');
+                    labelElement.innerHTML = Translation.getLabel(labels[i]);
+                    labelElement.className = 'text-label';
+                    horizElement.appendChild(labelElement);
+                    const numberInput = document.createElement('input');
+                    numberInput.className = 'number-input';
+                    numberInput.type = 'number';
+                    numberInput.onkeyup = () => {
+                        this.inputs.get(label)[i] = numberInput.value.length == 0
+                            ? 0 : parseFloat(numberInput.value);
+                        this.inputWasChanged();
+                    };
+                    horizElement.appendChild(numberInput);
+                }
+                this.element.appendChild(horizElement);
+                return this;
+            }
+            tryGetValue(valueKey) {
+                if (!this.inputs.has(valueKey)) {
+                    throw new Error(`Tab \`${this.name}\` doesn't have input \`${valueKey}\`!`);
+                }
+                return this.inputs.get(valueKey);
+            }
+            getValue(valueKey) {
+                const val = this.tryGetValue(valueKey);
+                if (val === undefined || val === null) {
+                    throw new Error(`This value is undefined!`);
+                }
+                return val;
+            }
+            /** Gets a selection, the STRING pointing to the value instead of the value. */
+            getSelection(valueKey) {
+                return this.inputSelections.get(valueKey);
+            }
+        }
+        class DynamicTabs {
+            constructor(parentElement) {
+                this.parentElement = parentElement;
+                this.tabs = new Map();
+            }
+            addTab(tabName, tab) {
+                this.tabs.set(tabName, tab);
+                tab.setName(tabName);
+                // TODO: multiple tabs
+                this.parentElement.appendChild(tab.element);
+                return this;
+            }
+            getValue(tabName, inputName) {
+                if (!this.tabs.has(tabName)) {
+                    throw new Error(`Tab \`${tabName}\` not found!`);
+                }
+                return this.tabs.get(tabName).getValue(inputName);
+            }
+            tryGetValue(tabName, inputName) {
+                var _a;
+                return (_a = this.tabs.get(tabName)) === null || _a === void 0 ? void 0 : _a.tryGetValue(inputName);
+            }
+            goto(tabName) {
+                // TODO: switch tabs
+            }
+        }
+
+        const AVAILABILITY_P2O5 = 0.7;
+        const AVAILABILITY_K2O = 0.9;
+        Translation.currentLanguage = 'es';
+        Translation.useLanguage({
+            "es": [
+                "Elija el tipo de composta",
+                "Composta de madera",
+                "Composta de gallinaza",
+                "Composta de setas",
+                "Composta de pulpa de café",
+                "Composta de estiercol de caballo",
+                "Composta de estiercol de vaca",
+                "Biosólidos compostados",
+
+                "<b>Yardas cúbicas de composta que planea aplicar al predio</b>",
+                "<b>Tamaño del predio en pies cuadrados</b>",
+
+                "Ingrese la información del análisis de composta",
+                "Si no cuenta con esta información, consulte<br><a href='http://www.youtube.com'>Guía de resultados de compostas</a>",
+
+                "<b>Nitrógeno</b> (% N Total As Rcvd.)",
+                "<b>Fósforo</b> (% P<sub>2</sub>O<sub>5</sub> As Rcvd.)",
+                "<b>Potasio</b> (% K<sub>2</sub>O As Rcvd.)",
+
+                "<b>C:N Ratio</b>",
+
+                "Resultados",
+
+                "Nitrógeno (N)",
+                "Lbs de nitrógeno disponibles en predio",
+                "Equivalencia en lbs N/acre",
+
+                "Fósforo (P<sub>2</sub>O<sub>5</sub>)",
+                "Lbs de P<sub>2</sub>O<sub>5</sub> disponibles en predio",
+                "Equivalencia en lbs de P<sub>2</sub>O<sub>5</sub> por acre",
+
+                "Potasio (K<sub>2</sub>O)",
+                "Lbs de K<sub>2</sub>O disponibles en predio",
+                "Equivalencia en lbs de K<sub>2</sub>O por acre",
+
+                "La liberación de nutrientes provenientes de compostas está sujeta a factores biológicos, quimicos y fisicos del suelo. Por lo tanto, los valores calculados son una estimación y podrían diferir en condiciones de campo.",
+
+                "Generar reporte"
+            ]
+        });
+        const COMPOST_TYPES = {
+            'Composta de madera': 1010,
+            'Composta de gallinaza': 1333,
+            'Composta de setas': 1333,
+            'Composta de pulpa de café': 626,
+            'Composta de estiercol de caballo': 866,
+            'Composta de estiércol de vaca': 1131,
+            'Biosólidos compostados': 1131
+        };
+        const tabInput = new Tab().select('Compost Type', COMPOST_TYPES, true).number('Amount of Compost to be Applied (yds&sup3;)').number('Lot Size (ft&sup2;)').header('info').header('info_sub', (el) => {
+            el.classList.add('header-sub');
+        }).number('N Total').number('Phosphorus (% P2O5)').number('Potassium (% K2O)').number('C:N Ratio');
+        tabInput.element.style.fontSize = '.43em';
+        const outputElements = [];
+        const tabOutput = new Tab().header('Results', (e) => {
+            e.classList.add('strong-header');
+        }).raw((tab) => {
+            const partsContainer = document.createElement('div');
+            partsContainer.classList.add('parts-container');
+            for (let p = 0; p < 3; p++) {
+                const part = document.createElement('div');
+                const header = document.createElement('h3');
+                header.innerHTML = Translation.getLabel('AUTO-HEAD');
+                part.appendChild(header);
+                const resultsContainer = document.createElement('div');
+                for (let i = 0; i < 2; i++) {
+                    const result = document.createElement('h4');
+                    result.innerHTML = Translation.getLabel('AUTO-LABEL');
+                    resultsContainer.appendChild(result);
+                    const value = document.createElement('h5');
+                    value.innerHTML = 'N/A';
+                    resultsContainer.appendChild(value);
+                    outputElements.push(value);
+                }
+                part.appendChild(resultsContainer);
+                partsContainer.appendChild(part);
+            }
+            const disclaimer = document.createElement('p');
+            disclaimer.classList.add('disclaimer-text');
+            disclaimer.innerHTML = Translation.getLabel('DISCLAIMER');
+            partsContainer.appendChild(disclaimer);
+            const report = document.createElement('button');
+            report.classList.add('text-input');
+            report.classList.add('report-button');
+            report.innerText = Translation.getLabel('GEN-REPORT');
+            {
+                const downloadIcon = document.createElement('img');
+                downloadIcon.src = 'https://www.uprm.edu/hortalizasygranosbasicos/wp-content/uploads/sites/330/2026/03/cc-download-icon.png';
+                downloadIcon.style.height = '50%';
+                downloadIcon.style.width = 'unset';
+                downloadIcon.style.display = 'block';
+                downloadIcon.style.position = 'absolute';
+                downloadIcon.style.top = '50%';
+                downloadIcon.style.transform = 'translate(0, -50%)';
+                report.appendChild(downloadIcon);
+            }
+            report.addEventListener('pointerup', () => {
+                generateReport();
+            });
+            return [
+                partsContainer,
+                report
+            ];
+        });
+        tabOutput.element.classList.add('tab-output');
+        const tabs = new DynamicTabs(document.querySelector('#centered')).addTab('Input', tabInput);
+        document.querySelector('#centered').appendChild(tabOutput.element);
+        let glbsNAvailablePerLot = '';
+        let gequivalenceLbsNPerAcre = '';
+        let glbsP2O5AvailablePerLot = '';
+        let gequivalenceLbsP2O5PerAcre = '';
+        let glbsK2OAvailablePerLot = '';
+        let gequivalenceLbsK2OPerAcre = '';
+        tabInput.addInputListener(() => {
+            const lotSize = tabInput.getValue('Lot Size (ft&sup2;)');
+            const tonsAppliedToLot = tabInput.getValue('Amount of Compost to be Applied (yds&sup3;)') * tabInput.getValue('Compost Type') / 2000;
+            const lbsNPerTonCompost = tabInput.getValue('N Total') * 20;
+            const lbsNTotalApplied = tonsAppliedToLot * lbsNPerTonCompost;
+            const percentAvailabilityN = -0.0085 * tabInput.getValue('C:N Ratio') + 0.2106;
+            const lbsNAvailablePerLot = lbsNTotalApplied * percentAvailabilityN;
+            const equivalenceLbsNPerAcre = lbsNAvailablePerLot * 43500 / lotSize;
+            const lbsP2O5PerLbCompost = tabInput.getValue('Phosphorus (% P2O5)') / 100;
+            const lbsP2O5AppliedToLot = lbsP2O5PerLbCompost * 2000 * tonsAppliedToLot;
+            const lbsP2O5AvailablePerLot = lbsP2O5AppliedToLot * AVAILABILITY_P2O5;
+            const equivalenceLbsP2O5PerAcre = lbsP2O5AvailablePerLot * 43500 / lotSize;
+            const lbsK2OPerLbCompost = tabInput.getValue('Potassium (% K2O)') / 100;
+            const lbsK2OAppliedToLot = lbsK2OPerLbCompost * 2000 * tonsAppliedToLot;
+            const lbsK2OAvailablePerLot = lbsK2OAppliedToLot * AVAILABILITY_K2O;
+            const equivalenceLbsK2OPerAcre = lbsK2OAvailablePerLot * 43500 / lotSize;
+            glbsNAvailablePerLot = outputElements[0].innerText = lbsNAvailablePerLot.toFixed(1);
+            gequivalenceLbsNPerAcre = outputElements[1].innerText = equivalenceLbsNPerAcre.toFixed(1);
+            glbsP2O5AvailablePerLot = outputElements[2].innerText = lbsP2O5AvailablePerLot.toFixed(1);
+            gequivalenceLbsP2O5PerAcre = outputElements[3].innerText = equivalenceLbsP2O5PerAcre.toFixed(1);
+            glbsK2OAvailablePerLot = outputElements[4].innerText = lbsK2OAvailablePerLot.toFixed(1);
+            gequivalenceLbsK2OPerAcre = outputElements[5].innerText = equivalenceLbsK2OPerAcre.toFixed(1);
+        });
+        async function generateReport() {
+            try {
+                const printer = new Printing();
+                printer.setTitle(Translation.getLabel('GEN-REPORT') || 'Report');
+                const styleTag = document.createElement('style');
+                styleTag.textContent = `
+                @page {
+                    margin: 0;
+                }
+                img.image {
+                    margin: 0;
+                }
+                @media print {
+                    html > body {
+                        padding: 0 !important;
+                        max-width: none;
+                    }
+                    .footerImg {
+                        position: absolute;
+                        bottom: 0;
+                        padding: 10mm;
+                        width: 100%;
+                        box-sizing: border-box;
+                    }
+                }
+                `;
+                printer.headHTML(styleTag);
+                printer.image('https://www.uprm.edu/hortalizasygranosbasicos/wp-content/uploads/sites/330/2026/04/header.png', {
+                    alignment: 'center',
+                    alt: 'Header'
+                });
+                printer.rawHTMLString('<h1 style="padding:0 90px;margin-bottom:0;">RESULTADOS</h1>');
+                printer.rawHTMLString('<h2 style="padding:0 90px;margin-top:-8px;">DE CÁLCULOS DE COMPOSTA</h2>');
+                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;"><b>Tipo de composta:</b> ${tabInput.getSelection('Compost Type')}</p>`);
+                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;"><b>Yardas cúbicas de composta que planea aplicar al predio:</b> ${tabInput.getValue('Amount of Compost to be Applied (yds&sup3;)')}</p>`);
+                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;"><b>Tamaño del predio en pies cuadrados:</b> ${tabInput.getValue('Lot Size (ft&sup2;)')}</p>`);
+                printer.rawHTMLString('<h2 style="padding:0 90px;margin-top:35px;margin-bottom:0;font-weight:lighter;"><b style="font-weight:bold;">NITRÓGENO</b> (N)</h2>');
+                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;">Lbs de nitrógeno disponibles en el predio: <b>${glbsNAvailablePerLot}</b></p>`);
+                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;">Equivalencia en lbs N/acre: <b>${gequivalenceLbsNPerAcre}</b></p>`);
+                printer.rawHTMLString('<h2 style="padding:0 90px;margin-top:35px;margin-bottom:0;font-weight:lighter;"><b style="font-weight:bold;">FÓSFORO</b> (P<sub>2</sub>O<sub>5</sub>)</h2>');
+                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;">Lbs de P2O5 disponibles en el predio: <b>${glbsP2O5AvailablePerLot}</b></p>`);
+                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;">Equivalencia en lbs P2O5 por acre: <b>${gequivalenceLbsP2O5PerAcre}</b></p>`);
+                printer.rawHTMLString('<h2 style="padding:0 90px;margin-top:35px;margin-bottom:0;font-weight:lighter;"><b style="font-weight:bold;">POTASIO</b> (K<sub>2</sub>O)</h2>');
+                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;">Lbs de K2O disponibles en el predio: <b>${glbsK2OAvailablePerLot}</b></p>`);
+                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;">Equivalencia en lbs K2O por acre: <b>${gequivalenceLbsK2OPerAcre}</b></p>`);
+                printer.rawHTMLString(`<p style="padding:0 90px;margin-top: 15px;font-size:.67em;"><i>Nota: La liberación de nutrientes provenientes de compostas está sujeta a factores biológicos, químicos y físicos del suelo. Por lo tanto, los valores calculados son una estimación y podrían diferir en condiciones de campo.</i></p>`);
+                printer.image('https://www.uprm.edu/hortalizasygranosbasicos/wp-content/uploads/sites/330/2026/04/footer.png', {
+                    alignment: 'center',
+                    alt: 'Footer',
+                    classes: [
+                        'footerImg'
+                    ]
+                });
+                printer.print();
+            } catch {
+                alert('Llene la información antes de producir un reporte.');
+            }
+        }
+    </script>
+</body>
+
+</html>
