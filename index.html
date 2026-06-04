@@ -167,20 +167,22 @@
             padding-bottom: 100px;
         }
 
-        #resources>.button-container {
+        #resources > .button-container {
             margin-top: 40px;
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            row-gap: 12px;
             max-width: 800px;
             margin: auto;
         }
 
         @media screen and (max-width: 675px) {
-            #resources>.button-container {
+            #resources > .button-container {
                 margin-top: 40px;
                 display: grid;
                 grid-template-columns: 1fr;
-                grid-template-rows: 1fr 1fr 1fr;
+                grid-template-rows: 1fr 1fr 1fr 1fr;
                 max-width: 800px;
                 margin: auto;
                 row-gap: 5px;
@@ -198,7 +200,7 @@
             grid-template-columns: 1fr 1fr 1fr;
         }
 
-        .tab-select-holder>input {
+        .tab-select-holder > input {
             width: 100%;
             height: 100%;
             border: none;
@@ -303,7 +305,7 @@
 
 
         .disclaimer-text {
-            font-size: .1em;
+            font-size: .5em;
         }
 
         .report-button {
@@ -341,18 +343,23 @@
         <h2 style="margin:0;padding:0;padding-top:56px;font-size:.86em;width:100%;text-align:center;color:black;">
             Recursos educativos</h2>
         <div class="button-container">
-            <button class="text-input report-button">
+            <button class="text-input report-button" onclick="window.open('https://www.uprm.edu/sea/wp-content/uploads/sites/351/2025/03/Gui%CC%81a_Composta-para-la-produccion-de-hortalizas-a-pequen%CC%83a-escala_Aprobada-CEE-1.pdf', '_blank');">
                 <a style="padding-left:25px;padding-right:10px;">Información educativa sobre composta</a>
                 <img src="https://www.uprm.edu/hortalizasygranosbasicos/wp-content/uploads/sites/330/2026/03/cc-download-icon.png"
                     style="height: 50%; width: unset; display: block; position: absolute; top: 50%; transform: translate(0px, -50%);"></img>
             </button>
-            <button class="text-input report-button">
+            <button class="text-input report-button" onclick="window.open('https://www.uprm.edu/hortalizasygranosbasicos/wp-content/uploads/sites/330/2026/06/Guia-de-resultados-de-compostas-en-Puerto-Rico.pdf', '_blank');">
                 <a style="padding-left:25px;padding-right:10px;">Guía de resultados de compostas</a>
                 <img src="https://www.uprm.edu/hortalizasygranosbasicos/wp-content/uploads/sites/330/2026/03/cc-download-icon.png"
                     style="height: 50%; width: unset; display: block; position: absolute; top: 50%; transform: translate(0px, -50%);"></img>
             </button>
-            <button class="text-input report-button">
+            <button class="text-input report-button" onclick="window.open('https://www.uprm.edu/hortalizasygranosbasicos/wp-content/uploads/sites/330/2026/06/Racional-de-calculos-para-la-calculadora-de-composta.pdf', '_blank');">
                 <a style="padding-left:25px;padding-right:10px;">Racional de cálculos</a>
+                <img src="https://www.uprm.edu/hortalizasygranosbasicos/wp-content/uploads/sites/330/2026/03/cc-download-icon.png"
+                    style="height: 50%; width: unset; display: block; position: absolute; top: 50%; transform: translate(0px, -50%);"></img>
+            </button>
+            <button class="text-input report-button" onclick="window.open('https://www.uprm.edu/hortalizasygranosbasicos/wp-content/uploads/sites/330/2026/06/Instrucciones-Generales-de-Uso-de-la-Calculadora-de-Composta-para-la-Produccion-Agricola.pdf', '_blank');">
+                <a style="padding-left:25px;padding-right:10px;">Instrucciones Generales</a>
                 <img src="https://www.uprm.edu/hortalizasygranosbasicos/wp-content/uploads/sites/330/2026/03/cc-download-icon.png"
                     style="height: 50%; width: unset; display: block; position: absolute; top: 50%; transform: translate(0px, -50%);"></img>
             </button>
@@ -367,31 +374,47 @@
     <div style="background-color:var(--light-green);color:black;font-size:0.6em" id="credits">
         <div style="padding:30px 10px 30px 10px;max-width:800px;margin:auto">
             <p>Herramienta desarrollada por:</p>
-            <p style="font-size:1.1em;font-weight:bold;margin-bottom:0;">Agro. Gustavo A. Rodríguez Rivera, MSc.</p>
-            <p style="font-size:1.1em;margin-top:2px;">
+            <p style="font-size:1em;font-weight:bold;margin-bottom:0;">Agro. Gustavo A. Rodríguez Rivera, MSc.</p>
+            <p style="font-size:1em;margin-top:2px;">
                 Servicio de Extensión Agrícola, Universidad de Puerto Rico, Recinto Universitario de Mayagüez
             </p>
             <p style="font-size:1em;">Revisión técnica:</p>
             <p style="font-size:1em;font-weight:bold;margin-bottom:0;">Profa. Ermita Hernández Heredia, PhD.</p>
             <p style="font-size:1em;margin-top:2px;">
                 Especialista el Servicio de Extensión Agricola, Universidad de Puerto Rico, Recinto Universitario de
-                Mayaguez
+                Mayagüez
             </p>
             <p style="font-size:1em;font-weight:bold;margin-bottom:0;">Prof. Daniel Bair Gallegos, PhD.</p>
             <p style="font-size:1em;margin-top:2px;">
                 Especialista del Servicio de Extensión Agrícola, Universidad de Puerto Rico, Recinto Universitario de
-                Mayaguez
+                Mayagüez
             </p>
             <p style="font-size:1em;font-weight:bold;margin-bottom:0;">Prof. Joaguín A. Chong Nuñez, PhD.</p>
             <p style="font-size:1em;margin-top:2px;">
                 Investigador, Estación Experimental Agrícola, Universidad de Puerto Rico, Recinto Universitario de
-                Mayaguez
+                Mayagüez
+            </p>
+            <p style="font-size:1em;">Programación (Bair Soil Lab):</p>
+            <p style="font-size:1em;font-weight:bold;margin-bottom:0;">Abby Gotay Almonte y Fabián Acevedo</p>
+            <p style="font-size:1em;margin-top:2px;">
+                Ingenieria de Software, Universidad de Puerto Rico, Recinto Universitario de Mayagüez
             </p>
         </div>
     </div>
     <div style="background-color:white;color:black;font-size:0.5em" id="footer">
-        <div style="padding:30px 0 30px 0;max-width:800px;margin:auto">
-            <p>This work...</p>
+        <div style="padding:30px 10px 30px 10px;max-width:800px;margin:auto">
+            <p>
+                This work is supported in part by the U.S. Department of Agriculture,
+                National Institute of Food and Agriculture, Rapid Response to Extreme
+                Weather Events Across Food and Agricultural systems, accession #2023-68016-39442,
+                and National Resources Conservation Service (NRCS), agreement #NR24F35200001G004.
+                Any opinions, findings, conclusions, or recommendations expressed in this
+                publication are those of the author(s) and should not be construed to
+                represent any official USDA or U.S. Government determination of policy. 
+            </p>
+            <div style="width:100%;text-align: right;">
+                <img src="https://www.uprm.edu/hortalizasygranosbasicos/wp-content/uploads/sites/330/2026/06/bottom-logos.png" style="width:100%;max-width: 400px;">
+            </div>
         </div>
     </div>
 
@@ -920,8 +943,8 @@
                 "Composta de gallinaza",
                 "Composta de setas",
                 "Composta de pulpa de café",
-                "Composta de estiercol de caballo",
-                "Composta de estiercol de vaca",
+                "Composta de estiércol de caballo",
+                "Composta de estiércol de vaca",
                 "Biosólidos compostados",
 
                 "<b>Yardas cúbicas de composta que planea aplicar al predio</b>",
@@ -960,7 +983,7 @@
             'Composta de gallinaza': 1333,
             'Composta de setas': 1333,
             'Composta de pulpa de café': 626,
-            'Composta de estiercol de caballo': 866,
+            'Composta de estiércol de caballo': 866,
             'Composta de estiércol de vaca': 1131,
             'Biosólidos compostados': 1131
         };
@@ -1035,15 +1058,15 @@
             const lbsNTotalApplied = tonsAppliedToLot * lbsNPerTonCompost;
             const percentAvailabilityN = -0.0085 * tabInput.getValue('C:N Ratio') + 0.2106;
             const lbsNAvailablePerLot = lbsNTotalApplied * percentAvailabilityN;
-            const equivalenceLbsNPerAcre = lbsNAvailablePerLot * 43500 / lotSize;
+            const equivalenceLbsNPerAcre = lbsNAvailablePerLot * 43560 / lotSize;
             const lbsP2O5PerLbCompost = tabInput.getValue('Phosphorus (% P2O5)') / 100;
             const lbsP2O5AppliedToLot = lbsP2O5PerLbCompost * 2000 * tonsAppliedToLot;
             const lbsP2O5AvailablePerLot = lbsP2O5AppliedToLot * AVAILABILITY_P2O5;
-            const equivalenceLbsP2O5PerAcre = lbsP2O5AvailablePerLot * 43500 / lotSize;
+            const equivalenceLbsP2O5PerAcre = lbsP2O5AvailablePerLot * 43560 / lotSize;
             const lbsK2OPerLbCompost = tabInput.getValue('Potassium (% K2O)') / 100;
             const lbsK2OAppliedToLot = lbsK2OPerLbCompost * 2000 * tonsAppliedToLot;
             const lbsK2OAvailablePerLot = lbsK2OAppliedToLot * AVAILABILITY_K2O;
-            const equivalenceLbsK2OPerAcre = lbsK2OAvailablePerLot * 43500 / lotSize;
+            const equivalenceLbsK2OPerAcre = lbsK2OAvailablePerLot * 43560 / lotSize;
             glbsNAvailablePerLot = outputElements[0].innerText = lbsNAvailablePerLot.toFixed(1);
             gequivalenceLbsNPerAcre = outputElements[1].innerText = equivalenceLbsNPerAcre.toFixed(1);
             glbsP2O5AvailablePerLot = outputElements[2].innerText = lbsP2O5AvailablePerLot.toFixed(1);
@@ -1051,6 +1074,13 @@
             glbsK2OAvailablePerLot = outputElements[4].innerText = lbsK2OAvailablePerLot.toFixed(1);
             gequivalenceLbsK2OPerAcre = outputElements[5].innerText = equivalenceLbsK2OPerAcre.toFixed(1);
         });
+        function formatLargeNumber(n) {
+            if (typeof n === 'number') {
+                return n.toLocaleString('en-US');
+            } else {
+                return parseFloat(n).toLocaleString('en-US');
+            }
+        }
         async function generateReport() {
             try {
                 const printer = new Printing();
@@ -1083,21 +1113,22 @@
                     alt: 'Header'
                 });
                 printer.rawHTMLString('<h1 style="padding:0 90px;margin-bottom:0;">RESULTADOS</h1>');
-                printer.rawHTMLString('<h2 style="padding:0 90px;margin-top:-8px;">DE CÁLCULOS DE COMPOSTA</h2>');
-                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;"><b>Tipo de composta:</b> ${tabInput.getSelection('Compost Type')}</p>`);
-                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;"><b>Yardas cúbicas de composta que planea aplicar al predio:</b> ${tabInput.getValue('Amount of Compost to be Applied (yds&sup3;)')}</p>`);
-                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;"><b>Tamaño del predio en pies cuadrados:</b> ${tabInput.getValue('Lot Size (ft&sup2;)')}</p>`);
+                printer.rawHTMLString('<h2 style="padding:0 90px;margin-top:-14px;">DE CÁLCULOS DE COMPOSTA</h2>');
+                printer.rawHTMLString('<p style="padding:0 90px;margin-top:-20px;color:#b00;opacity:0.7;font-size:.8em;line-height:1;">Este reporte fue generado mediante una herramienta digital de libre acceso. Su contenido no constituye una recomendación oficial del Servicio de Extensión Agrícola ni de sus extensionistas.</p>');
+                printer.rawHTMLString(`<p style="padding:0 90px;margin-top:-2px;margin-bottom:0;"><b>Tipo de composta:</b> ${tabInput.getSelection('Compost Type')}</p>`);
+                printer.rawHTMLString(`<p style="padding:0 90px;margin-top:-2px;margin-bottom:0;"><b>Yardas cúbicas de composta que planea aplicar al predio:</b> ${formatLargeNumber(tabInput.getValue('Amount of Compost to be Applied (yds&sup3;)'))}</p>`);
+                printer.rawHTMLString(`<p style="padding:0 90px;margin-top:-2px;margin-bottom:0;"><b>Tamaño del predio en pies cuadrados:</b> ${formatLargeNumber(tabInput.getValue('Lot Size (ft&sup2;)'))}</p>`);
                 printer.rawHTMLString('<h2 style="padding:0 90px;margin-top:35px;margin-bottom:0;font-weight:lighter;"><b style="font-weight:bold;">NITRÓGENO</b> (N)</h2>');
-                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;">Lbs de nitrógeno disponibles en el predio: <b>${glbsNAvailablePerLot}</b></p>`);
-                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;">Equivalencia en lbs N/acre: <b>${gequivalenceLbsNPerAcre}</b></p>`);
+                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;">Lbs de nitrógeno disponibles en el predio: <b>${formatLargeNumber(glbsNAvailablePerLot)}</b></p>`);
+                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;">Equivalencia en lbs N/acre: <b>${formatLargeNumber(gequivalenceLbsNPerAcre)}</b></p>`);
                 printer.rawHTMLString('<h2 style="padding:0 90px;margin-top:35px;margin-bottom:0;font-weight:lighter;"><b style="font-weight:bold;">FÓSFORO</b> (P<sub>2</sub>O<sub>5</sub>)</h2>');
-                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;">Lbs de P2O5 disponibles en el predio: <b>${glbsP2O5AvailablePerLot}</b></p>`);
-                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;">Equivalencia en lbs P2O5 por acre: <b>${gequivalenceLbsP2O5PerAcre}</b></p>`);
+                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;">Lbs de P2O5 disponibles en el predio: <b>${formatLargeNumber(glbsP2O5AvailablePerLot)}</b></p>`);
+                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;">Equivalencia en lbs P2O5 por acre: <b>${formatLargeNumber(gequivalenceLbsP2O5PerAcre)}</b></p>`);
                 printer.rawHTMLString('<h2 style="padding:0 90px;margin-top:35px;margin-bottom:0;font-weight:lighter;"><b style="font-weight:bold;">POTASIO</b> (K<sub>2</sub>O)</h2>');
-                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;">Lbs de K2O disponibles en el predio: <b>${glbsK2OAvailablePerLot}</b></p>`);
-                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;">Equivalencia en lbs K2O por acre: <b>${gequivalenceLbsK2OPerAcre}</b></p>`);
-                printer.rawHTMLString(`<p style="padding:0 90px;margin-top: 15px;font-size:.67em;"><i>Nota: La liberación de nutrientes provenientes de compostas está sujeta a factores biológicos, químicos y físicos del suelo. Por lo tanto, los valores calculados son una estimación y podrían diferir en condiciones de campo.</i></p>`);
-                printer.image('https://www.uprm.edu/hortalizasygranosbasicos/wp-content/uploads/sites/330/2026/04/footer.png', {
+                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;">Lbs de K2O disponibles en el predio: <b>${formatLargeNumber(glbsK2OAvailablePerLot)}</b></p>`);
+                printer.rawHTMLString(`<p style="padding:0 90px;margin:0;">Equivalencia en lbs K2O por acre: <b>${formatLargeNumber(gequivalenceLbsK2OPerAcre)}</b></p>`);
+                printer.rawHTMLString(`<p style="padding:0 90px;margin-top: 15px;font-size:.85em;"><i>Nota: La liberación de nutrientes provenientes de compostas está sujeta a factores biológicos, químicos y físicos del suelo. Por lo tanto, los valores calculados son una estimación y podrían diferir en condiciones de campo.</i></p>`);
+                printer.image('https://www.uprm.edu/hortalizasygranosbasicos/wp-content/uploads/sites/330/2026/06/footer.png', {
                     alignment: 'center',
                     alt: 'Footer',
                     classes: [
