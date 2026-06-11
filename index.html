@@ -1056,7 +1056,7 @@
             const tonsAppliedToLot = tabInput.getValue('Amount of Compost to be Applied (yds&sup3;)') * tabInput.getValue('Compost Type') / 2000;
             const lbsNPerTonCompost = tabInput.getValue('N Total') * 20;
             const lbsNTotalApplied = tonsAppliedToLot * lbsNPerTonCompost;
-            const percentAvailabilityN = -0.0085 * tabInput.getValue('C:N Ratio') + 0.2106;
+            const percentAvailabilityN = -0.115 * tabInput.getValue('C:N Ratio') + 0.3853;
             const lbsNAvailablePerLot = lbsNTotalApplied * percentAvailabilityN;
             const equivalenceLbsNPerAcre = lbsNAvailablePerLot * 43560 / lotSize;
             const lbsP2O5PerLbCompost = tabInput.getValue('Phosphorus (% P2O5)') / 100;
